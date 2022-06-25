@@ -1,4 +1,4 @@
-package com.lucastrodev.gerenciamentoDeAcademia;
+package gerenciamentoDeAcademia;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
