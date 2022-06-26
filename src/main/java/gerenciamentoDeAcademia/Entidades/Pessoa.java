@@ -18,29 +18,24 @@ public class Pessoa {
     private String telefone;
 
     public Pessoa(String nome, String rg, String cpf, LocalDateTime dataDeNascimento, String endereco, String telefone) {
-        if (nome == null) {
+
+        if (nome == null)
             throw new RuntimeException("Nome é obrigatório!");
-        }
 
-        if (rg == null) {
+        if (rg == null)
             throw new RuntimeException("RG é obrigatório!");
-        }
 
-        if (cpf == null) {
+        if (cpf == null)
             throw new RuntimeException("CPF é obrigatório!");
-        }
 
-        if (dataDeNascimento == null) {
+        if (dataDeNascimento == null)
             throw new RuntimeException("Data de nascimento é obrigatória!");
-        }
 
-        if (endereco == null) {
+        if (endereco == null)
             throw new RuntimeException("Endereço é obrigatório!");
-        }
 
-        if (telefone == null) {
+        if (telefone == null)
             throw new RuntimeException("Telefone é obrigatório!");
-        }
 
         this.nome = nome;
         this.rg = rg;
