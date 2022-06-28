@@ -1,6 +1,5 @@
-package gerenciamentoDeAcademia;
+package gerenciamentoDeAcademia.Entidades;
 
-import gerenciamentoDeAcademia.Entidades.Aluno;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
