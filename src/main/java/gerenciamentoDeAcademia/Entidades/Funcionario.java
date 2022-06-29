@@ -17,15 +17,12 @@ public class Funcionario extends Pessoa {
     public Funcionario(String nome, String rg, String cpf, LocalDateTime dataDeNascimento, String endereco, String telefone, String cargo, String especializacao) {
         super(nome, rg, cpf, dataDeNascimento, endereco, telefone);
 
-        if (cargo == null) {
+        if (cargo == null)
             throw new RuntimeException("Cargo é obrigatório!");
-        }
 
-        if (cargo == "Professor") {
-            if (especializacao == null) {
+        if (cargo == "Professor")
+            if (especializacao == null)
                 throw new RuntimeException("Especialização é obrigatória para professor!");
-            }
-        }
 
         this.cargo = cargo;
         this.especializacao = especializacao;
