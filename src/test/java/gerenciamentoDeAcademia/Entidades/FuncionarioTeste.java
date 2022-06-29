@@ -11,7 +11,7 @@ public class FuncionarioTeste {
     public void cargo_nao_pode_ser_nulo() {
         try {
             new Funcionario("Nome da Pessoa", "12345678-9", "111.222.333-44",
-                    LocalDateTime.now(), "Rua logo ali", "2111111-11111", null, "Programação");
+                    LocalDateTime.now(), "Rua logo ali", "2111111-11111", null, null);
             Assertions.fail();
         } catch (Exception exception) {
             Assertions.assertEquals(exception.getMessage(), "Cargo é obrigatório!");

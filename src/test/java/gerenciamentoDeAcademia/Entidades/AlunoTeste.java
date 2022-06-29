@@ -33,7 +33,7 @@ public class AlunoTeste {
     public void deve_extourar_exceção_caso_for_menor_de_idade() {
         try {
             new Aluno("Nome Aluno", "12345678-9", "111.222.333-44",
-                    LocalDateTime.of(2015, 10, 10, 22, 00), "Rua logo ali", "2111111-11111", 100.0, 10, "Nome responsavel", "21123123");
+                    LocalDateTime.of(2015, 10, 10, 22, 00), "Rua logo ali", "2111111-11111", 100.0, 10, "Lucas", null);
             Assertions.fail();
         } catch (Exception exception) {
             Assertions.assertEquals(exception.getMessage(), "Dados do responsável são obrigatório!");

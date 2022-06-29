@@ -25,7 +25,7 @@ public class Aluno extends Pessoa {
         if (diaVencimentoMensalidade == null)
             throw new RuntimeException("Data de vencimento da mensalidade é obrigatório!");
 
-        if ((LocalDateTime.now().getYear() - dataDeNascimento.getYear()) < 18)
+        if ((LocalDateTime.now().getYear() - dataDeNascimento.getYear()) < 18 && nomeResponsavel == null || telefoneResponsavel == null)
             throw new RuntimeException("Dados do responsável são obrigatório!");
 
         this.valorMensalidade = valorMensalidade;
