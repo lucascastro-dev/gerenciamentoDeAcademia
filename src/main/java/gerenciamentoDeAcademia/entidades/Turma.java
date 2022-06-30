@@ -1,4 +1,4 @@
-package gerenciamentoDeAcademia.Entidades;
+package gerenciamentoDeAcademia.entidades;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

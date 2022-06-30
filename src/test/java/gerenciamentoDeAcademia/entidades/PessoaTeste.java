@@ -1,9 +1,9 @@
-package gerenciamentoDeAcademia.Entidades;
+package gerenciamentoDeAcademia.entidades;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 public class PessoaTeste {
 
@@ -11,7 +11,7 @@ public class PessoaTeste {
     public void nome_nao_pode_ser_nulo() {
         try {
             new Pessoa(null, "12345678-9", "111.222.333-44",
-                    LocalDateTime.now(), "Rua logo ali", "2111111-11111");
+                    LocalDate.now(), "Rua logo ali", "2111111-11111");
             Assertions.fail();
         } catch (Exception exception) {
             Assertions.assertEquals(exception.getMessage(), "Nome é obrigatório!");
@@ -22,7 +22,7 @@ public class PessoaTeste {
     public void rg_nao_pode_ser_nulo() {
         try {
             new Pessoa("Nome da Pessoa", null, "111.222.333-44",
-                    LocalDateTime.now(), "Rua logo ali", "2111111-11111");
+                    LocalDate.now(), "Rua logo ali", "2111111-11111");
             Assertions.fail();
         } catch (Exception exception) {
             Assertions.assertEquals(exception.getMessage(), "RG é obrigatório!");
@@ -33,7 +33,7 @@ public class PessoaTeste {
     public void cpf_nao_pode_ser_nulo() {
         try {
             new Pessoa("Nome da Pessoa", "12345678-9", null,
-                    LocalDateTime.now(), "Rua logo ali", "2111111-11111");
+                    LocalDate.now(), "Rua logo ali", "2111111-11111");
             Assertions.fail();
         } catch (Exception exception) {
             Assertions.assertEquals(exception.getMessage(), "CPF é obrigatório!");
@@ -55,7 +55,7 @@ public class PessoaTeste {
     public void endereco_nao_pode_ser_nulo() {
         try {
             new Pessoa("Nome da Pessoa", "12345678-9", "111.222.333-44",
-                    LocalDateTime.now(), null, "2111111-11111");
+                    LocalDate.now(), null, "2111111-11111");
             Assertions.fail();
         } catch (Exception exception) {
             Assertions.assertEquals(exception.getMessage(), "Endereço é obrigatório!");
@@ -66,7 +66,7 @@ public class PessoaTeste {
     public void telefone_nao_pode_ser_nulo() {
         try {
             new Pessoa("Nome da Pessoa", "12345678-9", "111.222.333-44",
-                    LocalDateTime.now(), "Rua logo ali", null);
+                    LocalDate.now(), "Rua logo ali", null);
             Assertions.fail();
         } catch (Exception exception) {
             Assertions.assertEquals(exception.getMessage(), "Telefone é obrigatório!");

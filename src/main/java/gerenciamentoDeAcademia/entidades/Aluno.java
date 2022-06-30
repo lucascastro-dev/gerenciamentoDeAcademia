@@ -1,10 +1,10 @@
-package gerenciamentoDeAcademia.Entidades;
+package gerenciamentoDeAcademia.entidades;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -15,18 +15,20 @@ public class Aluno extends Pessoa {
     private String nomeResponsavel;
     private String telefoneResponsavel;
 
-    public Aluno(String nome, String rg, String cpf, LocalDateTime dataDeNascimento, String endereco, String telefone, Double valorMensalidade, Integer diaVencimentoMensalidade, String nomeResponsavel, String telefoneResponsavel) {
-
+    public Aluno(String nome, String rg, String cpf, LocalDate dataDeNascimento, String endereco, String telefone, Double valorMensalidade, Integer diaVencimentoMensalidade, String nomeResponsavel, String telefoneResponsavel) {
         super(nome, rg, cpf, dataDeNascimento, endereco, telefone);
 
-        if (valorMensalidade == null)
+        if (valorMensalidade == null) {
             throw new RuntimeException("Valor da mensalidade é obrigatório!");
+        }
 
-        if (diaVencimentoMensalidade == null)
+        if (diaVencimentoMensalidade == null) {
             throw new RuntimeException("Data de vencimento da mensalidade é obrigatório!");
+        }
 
-        if ((LocalDateTime.now().getYear() - dataDeNascimento.getYear()) < 18 && nomeResponsavel == null || telefoneResponsavel == null)
+        if ((LocalDate.now().getYear() - dataDeNascimento.getYear()) < 18 && nomeResponsavel == null || telefoneResponsavel == null) {
             throw new RuntimeException("Dados do responsável são obrigatório!");
+        }
 
         this.valorMensalidade = valorMensalidade;
         this.diaVencimentoMensalidade = diaVencimentoMensalidade;

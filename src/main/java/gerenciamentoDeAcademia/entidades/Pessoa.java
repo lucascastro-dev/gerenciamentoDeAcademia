@@ -1,10 +1,10 @@
-package gerenciamentoDeAcademia.Entidades;
+package gerenciamentoDeAcademia.entidades;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -13,11 +13,11 @@ public class Pessoa {
     private String nome;
     private String rg;
     private String cpf;
-    private LocalDateTime dataDeNascimento;
+    private LocalDate dataDeNascimento;
     private String endereco;
     private String telefone;
 
-    public Pessoa(String nome, String rg, String cpf, LocalDateTime dataDeNascimento, String endereco, String telefone) {
+    public Pessoa(String nome, String rg, String cpf, LocalDate dataDeNascimento, String endereco, String telefone) {
 
         if (nome == null)
             throw new RuntimeException("Nome é obrigatório!");

@@ -1,10 +1,10 @@
-package gerenciamentoDeAcademia.Entidades;
+package gerenciamentoDeAcademia.entidades;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -14,7 +14,7 @@ public class Funcionario extends Pessoa {
     private String cargo;
     private String especializacao;
 
-    public Funcionario(String nome, String rg, String cpf, LocalDateTime dataDeNascimento, String endereco, String telefone, String cargo, String especializacao) {
+    public Funcionario(String nome, String rg, String cpf, LocalDate dataDeNascimento, String endereco, String telefone, String cargo, String especializacao) {
         super(nome, rg, cpf, dataDeNascimento, endereco, telefone);
 
         if (cargo == null)
