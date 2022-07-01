@@ -14,10 +14,10 @@ public class Turma {
     private String horario;
     private List<String> dias;
     private String especificacao;
-    private String professor;
-    private List<String> alunos;
+    private Funcionario professor;
+    private List<Aluno> alunos;
 
-    public Turma(String horario, List<String> dias, String especificacao, String professor, List<String> alunos) {
+    public Turma(String horario, List<String> dias, String especificacao, Funcionario professor, List<Aluno> alunos) {
 
         if (horario == null)
             throw new RuntimeException("Horário da turma é obrigatório!");

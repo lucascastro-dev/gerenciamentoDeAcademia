@@ -14,7 +14,8 @@ public class TurmaTeste {
         dias.add("Segunda-feira");
         dias.add("Quarta-quarta");
         String especificacao = "Judô";
-        String professor = "Lucas";
+        Funcionario professor = new Funcionario();
+        professor.setNome("Lucas");
 
         try {
             new Turma(null, dias, especificacao, professor, null);
@@ -28,7 +29,8 @@ public class TurmaTeste {
     public void dias_de_aula_nao_pode_ser_nulo(){
         String horario = "19h";
         String especificacao = "Judô";
-        String professor = "Lucas";
+        Funcionario professor = new Funcionario();
+        professor.setNome("Lucas");
 
         try {
             new Turma(horario, null, especificacao, professor, null);
@@ -41,9 +43,9 @@ public class TurmaTeste {
     @Test
     public void dias_de_aula_nao_pode_ser_zero(){
         String horario = "19h";
-        List<String> dias = new ArrayList<>();
         String especificacao = "Judô";
-        String professor = "Lucas";
+        Funcionario professor = new Funcionario();
+        professor.setNome("Lucas");
 
         try {
             new Turma(horario, null, especificacao, professor, null);
@@ -59,7 +61,8 @@ public class TurmaTeste {
         List<String> dias = new ArrayList<>();
         dias.add("Segunda-feira");
         dias.add("Quarta-quarta");
-        String professor = "Lucas";
+        Funcionario professor = new Funcionario();
+        professor.setNome("Lucas");
 
         try {
             new Turma(horario, dias, null, professor, null);

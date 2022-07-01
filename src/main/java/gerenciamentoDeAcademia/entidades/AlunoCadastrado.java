@@ -1,4 +1,4 @@
-package gerenciamentoDeAcademia.servicos;
+package gerenciamentoDeAcademia.entidades;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
