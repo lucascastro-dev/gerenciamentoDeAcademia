@@ -1,7 +1,6 @@
 package gerenciamentoDeAcademia.servicos;
 
 import gerenciamentoDeAcademia.entidades.Aluno;
-import gerenciamentoDeAcademia.entidades.CadastradorDeAluno;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

@@ -1,6 +1,7 @@
 package gerenciamentoDeAcademia.servicos;
 
 import gerenciamentoDeAcademia.entidades.Funcionario;
+import gerenciamentoDeAcademia.entidades.FuncionarioCadastrado;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

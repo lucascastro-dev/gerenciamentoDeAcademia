@@ -1,6 +1,7 @@
-package gerenciamentoDeAcademia.entidades;
+package gerenciamentoDeAcademia.servicos;
 
-import gerenciamentoDeAcademia.servicos.ICadastradorDeAluno;
+import gerenciamentoDeAcademia.entidades.Aluno;
+import gerenciamentoDeAcademia.entidades.AlunoCadastrado;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
