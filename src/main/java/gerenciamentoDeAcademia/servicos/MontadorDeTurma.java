@@ -4,9 +4,11 @@ import gerenciamentoDeAcademia.entidades.Turma;
 import gerenciamentoDeAcademia.entidades.TurmaMontada;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
 @Component
+@Service
 public class MontadorDeTurma implements IMontadorDeTurma {
 
     @Override

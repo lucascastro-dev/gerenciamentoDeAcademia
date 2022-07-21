@@ -4,9 +4,11 @@ import gerenciamentoDeAcademia.entidades.Aluno;
 import gerenciamentoDeAcademia.entidades.AlunoCadastrado;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
 @Component
+@Service
 public class CadastradorDeAluno implements ICadastradorDeAluno {
 
     @Override

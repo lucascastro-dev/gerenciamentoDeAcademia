@@ -4,9 +4,11 @@ import gerenciamentoDeAcademia.entidades.Funcionario;
 import gerenciamentoDeAcademia.entidades.FuncionarioCadastrado;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
 @Component
+@Service
 public class CadastradorDeFuncionario implements ICadastradorDeFuncionario {
 
     @Override
