@@ -7,6 +7,9 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDate;
 
 public class CadastradorDeFuncionarioTeste {
+
+    Funcionario funcionario = new Funcionario();
+
     @Test
     public void deve_cadastrar_aluno() {
         var funcionario = new Funcionario();
@@ -30,5 +33,99 @@ public class CadastradorDeFuncionarioTeste {
         Assertions.assertEquals(funcionario.getTelefone(), funcionarioCadastrado.getTelefone());
         Assertions.assertEquals(funcionario.getCargo(), funcionarioCadastrado.getCargo());
         Assertions.assertEquals(funcionario.getEspecializacao(), funcionarioCadastrado.getEspecializacao());
+    }
+
+    @Test
+    public void nome_nao_pode_ser_nulo() {
+        try {
+            new Funcionario(null, "12345678-9", "111.222.333-44",
+                    LocalDate.now(), "Rua logo ali", "2111111-11111", "Professor", "Lutas");
+            Assertions.fail();
+        } catch (Exception exception) {
+            Assertions.assertEquals(exception.getMessage(), "Nome é obrigatório!");
+        }
+    }
+
+    @Test
+    public void rg_nao_pode_ser_nulo() {
+        try {
+            new Funcionario("Nome da Pessoa", null, "111.222.333-44",
+                    LocalDate.now(), "Rua logo ali", "2111111-11111", "Professor", "Lutas");
+            Assertions.fail();
+        } catch (Exception exception) {
+            Assertions.assertEquals(exception.getMessage(), "RG é obrigatório!");
+        }
+    }
+
+    @Test
+    public void cpf_nao_pode_ser_nulo() {
+        try {
+            new Funcionario("Nome da Pessoa", "12345678-9", null,
+                    LocalDate.now(), "Rua logo ali", "2111111-11111", "Professor", "Lutas");
+            Assertions.fail();
+        } catch (Exception exception) {
+            Assertions.assertEquals(exception.getMessage(), "CPF é obrigatório!");
+        }
+    }
+
+    @Test
+    public void data_de_nascimento_nao_pode_ser_nulo() {
+        try {
+            new Funcionario("Nome da Pessoa", "12345678-9", "111.222.333-44",
+                    null, "Rua logo ali", "2111111-11111", "Professor", "Lutas");
+            Assertions.fail();
+        } catch (Exception exception) {
+            Assertions.assertEquals(exception.getMessage(), "Data de nascimento é obrigatória!");
+        }
+    }
+
+    @Test
+    public void endereco_nao_pode_ser_nulo() {
+        try {
+            new Funcionario("Nome da Pessoa", "12345678-9", "111.222.333-44",
+                    LocalDate.now(), null, "2111111-11111", "Professor", "Lutas");
+            Assertions.fail();
+        } catch (Exception exception) {
+            Assertions.assertEquals(exception.getMessage(), "Endereço é obrigatório!");
+        }
+    }
+
+    @Test
+    public void telefone_nao_pode_ser_nulo() {
+        try {
+            new Funcionario("Nome da Pessoa", "12345678-9", "111.222.333-44",
+                    LocalDate.now(), "Rua logo ali", null, "Professor", "Lutas");
+            Assertions.fail();
+        } catch (Exception exception) {
+            Assertions.assertEquals(exception.getMessage(), "Telefone é obrigatório!");
+        }
+    }
+
+    @Test
+    public void cargo_nao_pode_ser_nulo() {
+        try {
+            new Funcionario("Nome da Pessoa", "12345678-9", "111.222.333-44",
+                    LocalDate.now(), "Rua logo ali", "2111111-11111", null, null);
+            Assertions.fail();
+        } catch (Exception exception) {
+            Assertions.assertEquals(exception.getMessage(), "Cargo é obrigatório!");
+        }
+    }
+
+    @Test
+    public void especializacao_eh_obrigatoria_se_for_professor() {
+        try {
+            new Funcionario("Nome da Pessoa", "12345678-9", "111.222.333-44",
+                    LocalDate.now(), "Rua logo ali", "2111111-11111", "Professor", null);
+            Assertions.fail();
+        } catch (Exception exception) {
+            Assertions.assertEquals(exception.getMessage(), "Especialização é obrigatória para professor!");
+        }
+    }
+
+    @Test
+    public void nao_deve_estourar_excecao_se_cargo_for_diferente_de_professor() {
+        Assertions.assertDoesNotThrow(() -> new Funcionario("Nome da Pessoa", "12345678-9", "111.222.333-44",
+                LocalDate.now(), "Rua logo ali", "2111111-11111", "Estagiário", null));
     }
 }

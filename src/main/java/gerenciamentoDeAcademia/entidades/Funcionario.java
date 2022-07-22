@@ -10,20 +10,11 @@ import java.time.LocalDate;
 @Setter
 @NoArgsConstructor
 public class Funcionario extends Pessoa {
-
     private String cargo;
     private String especializacao;
 
     public Funcionario(String nome, String rg, String cpf, LocalDate dataDeNascimento, String endereco, String telefone, String cargo, String especializacao) {
         super(nome, rg, cpf, dataDeNascimento, endereco, telefone);
-
-        if (cargo == null)
-            throw new RuntimeException("Cargo é obrigatório!");
-
-        if (cargo == "Professor")
-            if (especializacao == null)
-                throw new RuntimeException("Especialização é obrigatória para professor!");
-
         this.cargo = cargo;
         this.especializacao = especializacao;
     }

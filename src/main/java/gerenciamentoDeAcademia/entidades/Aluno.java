@@ -17,19 +17,6 @@ public class Aluno extends Pessoa {
 
     public Aluno(String nome, String rg, String cpf, LocalDate dataDeNascimento, String endereco, String telefone, Double valorMensalidade, Integer diaVencimentoMensalidade, String nomeResponsavel, String telefoneResponsavel) {
         super(nome, rg, cpf, dataDeNascimento, endereco, telefone);
-
-        if (valorMensalidade == null) {
-            throw new RuntimeException("Valor da mensalidade é obrigatório!");
-        }
-
-        if (diaVencimentoMensalidade == null) {
-            throw new RuntimeException("Data de vencimento da mensalidade é obrigatório!");
-        }
-
-        if ((LocalDate.now().getYear() - dataDeNascimento.getYear()) < 18 && nomeResponsavel == null || telefoneResponsavel == null) {
-            throw new RuntimeException("Dados do responsável são obrigatório!");
-        }
-
         this.valorMensalidade = valorMensalidade;
         this.diaVencimentoMensalidade = diaVencimentoMensalidade;
         this.nomeResponsavel = nomeResponsavel;

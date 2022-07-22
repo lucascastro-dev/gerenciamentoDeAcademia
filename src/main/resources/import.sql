@@ -1,0 +1,4 @@
+INSERT INTO tb_funcionario(nome,rg,cpf,data_de_nascimento,endereco,telefone,cargo,especializacao) VALUES ('Lucas Castro','280459033','15179950783','1994-11-30','Rua Lumiar','(21) 96532-4465','Professor','Judô');
+INSERT INTO tb_funcionario(nome,rg,cpf,data_de_nascimento,endereco,telefone,cargo,especializacao) VALUES ('Marcelo Castro','280459033','15179950783','1994-11-30','Rua Lumiar','(21) 96532-4465','Professor','Judô');
+INSERT INTO tb_funcionario(nome,rg,cpf,data_de_nascimento,endereco,telefone,cargo,especializacao) VALUES ('Junior Rueles','280459033','15179950783','1994-11-30','Rua Lumiar','(21) 96532-4465','Professor','Judô');
+INSERT INTO tb_funcionario(nome,rg,cpf,data_de_nascimento,endereco,telefone,cargo,especializacao) VALUES ('Marcos','280459033','15179950783','1994-11-30','Rua Lumiar','(21) 96532-4465','Professor','Judô');
