@@ -1,54 +1,51 @@
 package gerenciamentoDeAcademia.servicos;
 
+import gerenciamentoDeAcademia.entidades.Aluno;
 import gerenciamentoDeAcademia.entidades.Funcionario;
 import gerenciamentoDeAcademia.entidades.FuncionarioCadastrado;
+import gerenciamentoDeAcademia.repositorios.FuncionarioRepository;
+import gerenciamentoDeAcademia.utils.ExcecaoDeDominio;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
 
 @RequiredArgsConstructor
 @Component
 @Service
 public class CadastradorDeFuncionario implements ICadastradorDeFuncionario {
 
+    @Autowired
+    private FuncionarioRepository funcionarioRepository;
+
     @Override
     public FuncionarioCadastrado cadastrar(Funcionario funcionario) {
+        validar(funcionario);
 
-        if (funcionario.getNome() == null)
-            throw new RuntimeException("Nome é obrigatório!");
+        var funcionarioCadastrado = FuncionarioCadastrado.builder()
+                .nome(funcionario.getNome())
+                .rg(funcionario.getRg())
+                .cpf(funcionario.getCpf())
+                .dataDeNascimento(funcionario.getDataDeNascimento())
+                .endereco(funcionario.getEndereco())
+                .telefone(funcionario.getTelefone())
+                .cargo(funcionario.getCargo())
+                .especializacao(funcionario.getEspecializacao());
 
-        if (funcionario.getRg() == null)
-            throw new RuntimeException("RG é obrigatório!");
+        return funcionarioRepository.save(funcionarioCadastrado.build());
+    }
 
-        if (funcionario.getCpf() == null)
-            throw new RuntimeException("CPF é obrigatório!");
-
-        if (funcionario.getDataDeNascimento() == null)
-            throw new RuntimeException("Data de nascimento é obrigatória!");
-
-        if (funcionario.getEndereco() == null)
-            throw new RuntimeException("Endereço é obrigatório!");
-
-        if (funcionario.getTelefone() == null)
-            throw new RuntimeException("Telefone é obrigatório!");
-
-        if (funcionario.getCargo() == null)
-            throw new RuntimeException("Cargo é obrigatório!");
-
-        if (funcionario.getCargo() == "Professor")
-            if (funcionario.getEspecializacao() == null)
-                throw new RuntimeException("Especialização é obrigatória para professor!");
-
-        var funcionarioCadastrado = new FuncionarioCadastrado();
-        funcionarioCadastrado.setNome(funcionario.getNome());
-        funcionarioCadastrado.setRg(funcionario.getRg());
-        funcionarioCadastrado.setCpf(funcionario.getCpf());
-        funcionarioCadastrado.setDataDeNascimento(funcionario.getDataDeNascimento());
-        funcionarioCadastrado.setEndereco(funcionario.getEndereco());
-        funcionarioCadastrado.setTelefone(funcionario.getTelefone());
-        funcionarioCadastrado.setCargo(funcionario.getCargo());
-        funcionarioCadastrado.setEspecializacao(funcionario.getEspecializacao());
-
-        return funcionarioCadastrado;
+    public void validar(Funcionario funcionario) {
+        ExcecaoDeDominio.quandoTextoVazioOuNulo(funcionario.getNome(), "Nome é obrigatório!");
+        ExcecaoDeDominio.quandoTextoVazioOuNulo(funcionario.getRg(), "RG é obrigatório!");
+        ExcecaoDeDominio.quandoTextoVazioOuNulo(funcionario.getCpf(), "CPF é obrigatório!");
+        ExcecaoDeDominio.quandoDataNulaOuVazia(funcionario.getDataDeNascimento(), "Data de nascimento é obrigatória!");
+        ExcecaoDeDominio.quandoTextoVazioOuNulo(funcionario.getEndereco(), "Endereço é obrigatório!");
+        ExcecaoDeDominio.quandoTextoVazioOuNulo(funcionario.getTelefone(), "Telefone é obrigatório!");
+        ExcecaoDeDominio.quandoTextoVazioOuNulo(funcionario.getCargo(), "Cargo é obrigatório!");
+        if (funcionario.getCargo() != null || funcionario.getCargo().isEmpty())
+            ExcecaoDeDominio.quandoTextoVazioOuNulo(funcionario.getEspecializacao(), "Especialização é obrigatório!");
     }
 }

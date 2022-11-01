@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDate;
 
 public class CadastradorDeFuncionarioTeste {
-
+    //TODO: CORRIGIR OS TESTES
     Funcionario funcionario = new Funcionario();
 
     @Test

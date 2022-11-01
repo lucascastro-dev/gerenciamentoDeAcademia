@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDate;
 
 public class CadastradorDeAlunoTeste {
-
+    //TODO: CORRIGIR OS TESTES
     @Test
     public void deve_cadastrar_aluno() {
         var aluno = new Aluno();
