@@ -1,4 +1,4 @@
-package gerenciamentoDeAcademia.entidades;
+package gerenciamentoDeAcademia.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,7 +9,7 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Pessoa {
+public class PessoaDto {
     private String nome;
     private String rg;
     private String cpf;
@@ -17,7 +17,7 @@ public class Pessoa {
     private String endereco;
     private String telefone;
 
-    public Pessoa(String nome, String rg, String cpf, LocalDate dataDeNascimento, String endereco, String telefone) {
+    public PessoaDto(String nome, String rg, String cpf, LocalDate dataDeNascimento, String endereco, String telefone) {
         this.nome = nome;
         this.rg = rg;
         this.cpf = cpf;

@@ -1,28 +1,28 @@
 package gerenciamentoDeAcademia.servicos;
 
-import gerenciamentoDeAcademia.entidades.Aluno;
-import gerenciamentoDeAcademia.entidades.Funcionario;
-import gerenciamentoDeAcademia.entidades.Turma;
+import gerenciamentoDeAcademia.dto.AlunoDto;
+import gerenciamentoDeAcademia.dto.FuncionarioDto;
+import gerenciamentoDeAcademia.dto.TurmaDto;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class MontadorDeTurmaTeste {
+public class MontadorDeTurmaTesteDto {
 
     @Test
     public void deve_montar_turma() {
-        var turma = new Turma();
+        var turma = new TurmaDto();
         List<String> lista = new ArrayList<>();
         lista.add("Segunda");
         lista.add("Quarta");
-        List<Aluno> alunos = new ArrayList<>();
+        List<AlunoDto> alunoDtos = new ArrayList<>();
         turma.setHorario("20:00");
         turma.setDias(lista);
         turma.setEspecificacao("Spinning");
-        turma.setProfessor(new Funcionario());
-        turma.setAlunos(alunos);
+        turma.setProfessor(new FuncionarioDto());
+        turma.setAlunos(alunoDtos);
         var montadorDeTurma = new MontadorDeTurma();
 
         var turmaMontada = montadorDeTurma.montar(turma);
@@ -40,11 +40,11 @@ public class MontadorDeTurmaTeste {
         dias.add("Segunda-feira");
         dias.add("Quarta-quarta");
         String especificacao = "Judô";
-        Funcionario professor = new Funcionario();
+        FuncionarioDto professor = new FuncionarioDto();
         professor.setNome("Lucas");
 
         try {
-            new Turma(null, dias, especificacao, professor, null);
+            new TurmaDto(null, dias, especificacao, professor, null);
             Assertions.fail();
         } catch (Exception exception) {
             Assertions.assertEquals(exception.getMessage(), "Horário da turma é obrigatório!");
@@ -55,11 +55,11 @@ public class MontadorDeTurmaTeste {
     public void dias_de_aula_nao_pode_ser_nulo(){
         String horario = "19h";
         String especificacao = "Judô";
-        Funcionario professor = new Funcionario();
+        FuncionarioDto professor = new FuncionarioDto();
         professor.setNome("Lucas");
 
         try {
-            new Turma(horario, null, especificacao, professor, null);
+            new TurmaDto(horario, null, especificacao, professor, null);
             Assertions.fail();
         } catch (Exception exception) {
             Assertions.assertEquals(exception.getMessage(), "Dias de aula são obrigatórios!");
@@ -70,11 +70,11 @@ public class MontadorDeTurmaTeste {
     public void dias_de_aula_nao_pode_ser_zero(){
         String horario = "19h";
         String especificacao = "Judô";
-        Funcionario professor = new Funcionario();
+        FuncionarioDto professor = new FuncionarioDto();
         professor.setNome("Lucas");
 
         try {
-            new Turma(horario, null, especificacao, professor, null);
+            new TurmaDto(horario, null, especificacao, professor, null);
             Assertions.fail();
         } catch (Exception exception) {
             Assertions.assertEquals(exception.getMessage(), "Dias de aula são obrigatórios!");
@@ -87,11 +87,11 @@ public class MontadorDeTurmaTeste {
         List<String> dias = new ArrayList<>();
         dias.add("Segunda-feira");
         dias.add("Quarta-quarta");
-        Funcionario professor = new Funcionario();
+        FuncionarioDto professor = new FuncionarioDto();
         professor.setNome("Lucas");
 
         try {
-            new Turma(horario, dias, null, professor, null);
+            new TurmaDto(horario, dias, null, professor, null);
             Assertions.fail();
         } catch (Exception exception) {
             Assertions.assertEquals(exception.getMessage(), "Especificação da turma é obrigatória!");
@@ -107,7 +107,7 @@ public class MontadorDeTurmaTeste {
         String especificacao = "Judô";
 
         try {
-            new Turma(horario, dias, especificacao, null, null);
+            new TurmaDto(horario, dias, especificacao, null, null);
             Assertions.fail();
         } catch (Exception exception) {
             Assertions.assertEquals(exception.getMessage(), "Professor para a turma é obrigatória!");

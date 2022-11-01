@@ -1,7 +1,6 @@
 package gerenciamentoDeAcademia.servicos;
 
-import gerenciamentoDeAcademia.entidades.Aluno;
-import gerenciamentoDeAcademia.entidades.Funcionario;
+import gerenciamentoDeAcademia.dto.FuncionarioDto;
 import gerenciamentoDeAcademia.entidades.FuncionarioCadastrado;
 import gerenciamentoDeAcademia.repositorios.FuncionarioRepository;
 import gerenciamentoDeAcademia.utils.ExcecaoDeDominio;
@@ -9,8 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDate;
 
 @RequiredArgsConstructor
 @Component
@@ -21,31 +18,31 @@ public class CadastradorDeFuncionario implements ICadastradorDeFuncionario {
     private FuncionarioRepository funcionarioRepository;
 
     @Override
-    public FuncionarioCadastrado cadastrar(Funcionario funcionario) {
-        validar(funcionario);
+    public FuncionarioCadastrado cadastrar(FuncionarioDto funcionarioDto) {
+        validar(funcionarioDto);
 
         var funcionarioCadastrado = FuncionarioCadastrado.builder()
-                .nome(funcionario.getNome())
-                .rg(funcionario.getRg())
-                .cpf(funcionario.getCpf())
-                .dataDeNascimento(funcionario.getDataDeNascimento())
-                .endereco(funcionario.getEndereco())
-                .telefone(funcionario.getTelefone())
-                .cargo(funcionario.getCargo())
-                .especializacao(funcionario.getEspecializacao());
+                .nome(funcionarioDto.getNome())
+                .rg(funcionarioDto.getRg())
+                .cpf(funcionarioDto.getCpf())
+                .dataDeNascimento(funcionarioDto.getDataDeNascimento())
+                .endereco(funcionarioDto.getEndereco())
+                .telefone(funcionarioDto.getTelefone())
+                .cargo(funcionarioDto.getCargo())
+                .especializacao(funcionarioDto.getEspecializacao());
 
         return funcionarioRepository.save(funcionarioCadastrado.build());
     }
 
-    public void validar(Funcionario funcionario) {
-        ExcecaoDeDominio.quandoTextoVazioOuNulo(funcionario.getNome(), "Nome é obrigatório!");
-        ExcecaoDeDominio.quandoTextoVazioOuNulo(funcionario.getRg(), "RG é obrigatório!");
-        ExcecaoDeDominio.quandoTextoVazioOuNulo(funcionario.getCpf(), "CPF é obrigatório!");
-        ExcecaoDeDominio.quandoDataNulaOuVazia(funcionario.getDataDeNascimento(), "Data de nascimento é obrigatória!");
-        ExcecaoDeDominio.quandoTextoVazioOuNulo(funcionario.getEndereco(), "Endereço é obrigatório!");
-        ExcecaoDeDominio.quandoTextoVazioOuNulo(funcionario.getTelefone(), "Telefone é obrigatório!");
-        ExcecaoDeDominio.quandoTextoVazioOuNulo(funcionario.getCargo(), "Cargo é obrigatório!");
-        if (funcionario.getCargo() != null || funcionario.getCargo().isEmpty())
-            ExcecaoDeDominio.quandoTextoVazioOuNulo(funcionario.getEspecializacao(), "Especialização é obrigatório!");
+    public void validar(FuncionarioDto funcionarioDto) {
+        ExcecaoDeDominio.quandoTextoVazioOuNulo(funcionarioDto.getNome(), "Nome é obrigatório!");
+        ExcecaoDeDominio.quandoTextoVazioOuNulo(funcionarioDto.getRg(), "RG é obrigatório!");
+        ExcecaoDeDominio.quandoTextoVazioOuNulo(funcionarioDto.getCpf(), "CPF é obrigatório!");
+        ExcecaoDeDominio.quandoDataNulaOuVazia(funcionarioDto.getDataDeNascimento(), "Data de nascimento é obrigatória!");
+        ExcecaoDeDominio.quandoTextoVazioOuNulo(funcionarioDto.getEndereco(), "Endereço é obrigatório!");
+        ExcecaoDeDominio.quandoTextoVazioOuNulo(funcionarioDto.getTelefone(), "Telefone é obrigatório!");
+        ExcecaoDeDominio.quandoTextoVazioOuNulo(funcionarioDto.getCargo(), "Cargo é obrigatório!");
+        if (funcionarioDto.getCargo() != null || funcionarioDto.getCargo().isEmpty())
+            ExcecaoDeDominio.quandoTextoVazioOuNulo(funcionarioDto.getEspecializacao(), "Especialização é obrigatório!");
     }
 }

@@ -1,5 +1,8 @@
 package gerenciamentoDeAcademia.controller;
 
+import gerenciamentoDeAcademia.dto.AlunoDto;
+import gerenciamentoDeAcademia.dto.FuncionarioDto;
+import gerenciamentoDeAcademia.dto.TurmaDto;
 import gerenciamentoDeAcademia.entidades.*;
 import gerenciamentoDeAcademia.servicos.CadastradorDeAluno;
 import gerenciamentoDeAcademia.servicos.CadastradorDeFuncionario;
@@ -19,12 +22,17 @@ public class GerenciamentoController {
     MontadorDeTurma montadorDeTurma;
 
     @PostMapping("/cadastrarAluno")
-    public AlunoCadastrado alunoCadastrado(@RequestBody Aluno aluno) {
-        return cadastradorDeAluno.cadastrar(aluno);
+    public AlunoCadastrado alunoCadastrado(@RequestBody AlunoDto alunoDto) {
+        return cadastradorDeAluno.cadastrar(alunoDto);
     }
 
     @PostMapping("/cadastrarFuncionario")
-    public FuncionarioCadastrado funcionarioCadastrado(@RequestBody Funcionario funcionario) {
-        return cadastradorDeFuncionario.cadastrar(funcionario);
+    public FuncionarioCadastrado funcionarioCadastrado(@RequestBody FuncionarioDto funcionarioDto) {
+        return cadastradorDeFuncionario.cadastrar(funcionarioDto);
+    }
+
+    @PostMapping("/montarTurma")
+    public TurmaMontada turmaMontada(@RequestBody TurmaDto turmaDto) {
+        return montadorDeTurma.montar(turmaDto);
     }
 }

@@ -1,8 +1,8 @@
 package gerenciamentoDeAcademia.servicos;
 
-import gerenciamentoDeAcademia.entidades.Aluno;
+import gerenciamentoDeAcademia.dto.AlunoDto;
 import gerenciamentoDeAcademia.entidades.AlunoCadastrado;
 
 public interface ICadastradorDeAluno {
-    AlunoCadastrado cadastrar(Aluno aluno);
+    AlunoCadastrado cadastrar(AlunoDto alunoDto);
 }

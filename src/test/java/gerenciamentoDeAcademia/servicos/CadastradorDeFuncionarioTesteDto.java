@@ -1,18 +1,18 @@
 package gerenciamentoDeAcademia.servicos;
 
-import gerenciamentoDeAcademia.entidades.Funcionario;
+import gerenciamentoDeAcademia.dto.FuncionarioDto;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 
-public class CadastradorDeFuncionarioTeste {
+public class CadastradorDeFuncionarioTesteDto {
     //TODO: CORRIGIR OS TESTES
-    Funcionario funcionario = new Funcionario();
+    FuncionarioDto funcionarioDto = new FuncionarioDto();
 
     @Test
     public void deve_cadastrar_aluno() {
-        var funcionario = new Funcionario();
+        var funcionario = new FuncionarioDto();
         funcionario.setNome("Lucas");
         funcionario.setRg("12345678-9");
         funcionario.setCpf("123.456.789-00");
@@ -38,7 +38,7 @@ public class CadastradorDeFuncionarioTeste {
     @Test
     public void nome_nao_pode_ser_nulo() {
         try {
-            new Funcionario(null, "12345678-9", "111.222.333-44",
+            new FuncionarioDto(null, "12345678-9", "111.222.333-44",
                     LocalDate.now(), "Rua logo ali", "2111111-11111", "Professor", "Lutas");
             Assertions.fail();
         } catch (Exception exception) {
@@ -49,7 +49,7 @@ public class CadastradorDeFuncionarioTeste {
     @Test
     public void rg_nao_pode_ser_nulo() {
         try {
-            new Funcionario("Nome da Pessoa", null, "111.222.333-44",
+            new FuncionarioDto("Nome da Pessoa", null, "111.222.333-44",
                     LocalDate.now(), "Rua logo ali", "2111111-11111", "Professor", "Lutas");
             Assertions.fail();
         } catch (Exception exception) {
@@ -60,7 +60,7 @@ public class CadastradorDeFuncionarioTeste {
     @Test
     public void cpf_nao_pode_ser_nulo() {
         try {
-            new Funcionario("Nome da Pessoa", "12345678-9", null,
+            new FuncionarioDto("Nome da Pessoa", "12345678-9", null,
                     LocalDate.now(), "Rua logo ali", "2111111-11111", "Professor", "Lutas");
             Assertions.fail();
         } catch (Exception exception) {
@@ -71,7 +71,7 @@ public class CadastradorDeFuncionarioTeste {
     @Test
     public void data_de_nascimento_nao_pode_ser_nulo() {
         try {
-            new Funcionario("Nome da Pessoa", "12345678-9", "111.222.333-44",
+            new FuncionarioDto("Nome da Pessoa", "12345678-9", "111.222.333-44",
                     null, "Rua logo ali", "2111111-11111", "Professor", "Lutas");
             Assertions.fail();
         } catch (Exception exception) {
@@ -82,7 +82,7 @@ public class CadastradorDeFuncionarioTeste {
     @Test
     public void endereco_nao_pode_ser_nulo() {
         try {
-            new Funcionario("Nome da Pessoa", "12345678-9", "111.222.333-44",
+            new FuncionarioDto("Nome da Pessoa", "12345678-9", "111.222.333-44",
                     LocalDate.now(), null, "2111111-11111", "Professor", "Lutas");
             Assertions.fail();
         } catch (Exception exception) {
@@ -93,7 +93,7 @@ public class CadastradorDeFuncionarioTeste {
     @Test
     public void telefone_nao_pode_ser_nulo() {
         try {
-            new Funcionario("Nome da Pessoa", "12345678-9", "111.222.333-44",
+            new FuncionarioDto("Nome da Pessoa", "12345678-9", "111.222.333-44",
                     LocalDate.now(), "Rua logo ali", null, "Professor", "Lutas");
             Assertions.fail();
         } catch (Exception exception) {
@@ -104,7 +104,7 @@ public class CadastradorDeFuncionarioTeste {
     @Test
     public void cargo_nao_pode_ser_nulo() {
         try {
-            new Funcionario("Nome da Pessoa", "12345678-9", "111.222.333-44",
+            new FuncionarioDto("Nome da Pessoa", "12345678-9", "111.222.333-44",
                     LocalDate.now(), "Rua logo ali", "2111111-11111", null, null);
             Assertions.fail();
         } catch (Exception exception) {
@@ -115,7 +115,7 @@ public class CadastradorDeFuncionarioTeste {
     @Test
     public void especializacao_eh_obrigatoria_se_for_professor() {
         try {
-            new Funcionario("Nome da Pessoa", "12345678-9", "111.222.333-44",
+            new FuncionarioDto("Nome da Pessoa", "12345678-9", "111.222.333-44",
                     LocalDate.now(), "Rua logo ali", "2111111-11111", "Professor", null);
             Assertions.fail();
         } catch (Exception exception) {
@@ -125,7 +125,7 @@ public class CadastradorDeFuncionarioTeste {
 
     @Test
     public void nao_deve_estourar_excecao_se_cargo_for_diferente_de_professor() {
-        Assertions.assertDoesNotThrow(() -> new Funcionario("Nome da Pessoa", "12345678-9", "111.222.333-44",
+        Assertions.assertDoesNotThrow(() -> new FuncionarioDto("Nome da Pessoa", "12345678-9", "111.222.333-44",
                 LocalDate.now(), "Rua logo ali", "2111111-11111", "Estagiário", null));
     }
 }

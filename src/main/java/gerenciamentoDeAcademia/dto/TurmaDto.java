@@ -1,4 +1,4 @@
-package gerenciamentoDeAcademia.entidades;
+package gerenciamentoDeAcademia.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,15 +9,15 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Turma {
+public class TurmaDto {
 
     private String horario;
     private List<String> dias;
     private String especificacao;
-    private Funcionario professor;
-    private List<Aluno> alunos;
+    private FuncionarioDto professor;
+    private List<AlunoDto> alunos;
 
-    public Turma(String horario, List<String> dias, String especificacao, Funcionario professor, List<Aluno> alunos) {
+    public TurmaDto(String horario, List<String> dias, String especificacao, FuncionarioDto professor, List<AlunoDto> alunos) {
         this.horario = horario;
         this.dias = dias;
         this.especificacao = especificacao;

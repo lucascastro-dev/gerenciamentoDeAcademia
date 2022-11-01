@@ -1,16 +1,16 @@
 package gerenciamentoDeAcademia.servicos;
 
-import gerenciamentoDeAcademia.entidades.Aluno;
+import gerenciamentoDeAcademia.dto.AlunoDto;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 
-public class CadastradorDeAlunoTeste {
+public class CadastradorDeAlunoTesteDto {
     //TODO: CORRIGIR OS TESTES
     @Test
     public void deve_cadastrar_aluno() {
-        var aluno = new Aluno();
+        var aluno = new AlunoDto();
         aluno.setNome("Lucas");
         aluno.setRg("12345678-9");
         aluno.setCpf("123.456.789-00");
@@ -40,7 +40,7 @@ public class CadastradorDeAlunoTeste {
     @Test
     public void nome_nao_pode_ser_nulo() {
         try {
-            new Aluno(null, "12345678-9", "111.222.333-44",
+            new AlunoDto(null, "12345678-9", "111.222.333-44",
                     LocalDate.now(), "Rua logo ali", "2111111-11111", 100.0, 10, "Lucas", "0000000");
             Assertions.fail();
         } catch (Exception exception) {
@@ -51,7 +51,7 @@ public class CadastradorDeAlunoTeste {
     @Test
     public void rg_nao_pode_ser_nulo() {
         try {
-            new Aluno("Nome da Pessoa", null, "111.222.333-44",
+            new AlunoDto("Nome da Pessoa", null, "111.222.333-44",
                     LocalDate.now(), "Rua logo ali", "2111111-11111", 100.0, 10, "Lucas", "0000000");
             Assertions.fail();
         } catch (Exception exception) {
@@ -62,7 +62,7 @@ public class CadastradorDeAlunoTeste {
     @Test
     public void cpf_nao_pode_ser_nulo() {
         try {
-            new Aluno("Nome da Pessoa", "12345678-9", null,
+            new AlunoDto("Nome da Pessoa", "12345678-9", null,
                     LocalDate.now(), "Rua logo ali", "2111111-11111", 100.0, 10, "Lucas", "0000000");
             Assertions.fail();
         } catch (Exception exception) {
@@ -73,7 +73,7 @@ public class CadastradorDeAlunoTeste {
     @Test
     public void data_de_nascimento_nao_pode_ser_nulo() {
         try {
-            new Aluno("Nome da Pessoa", "12345678-9", "111.222.333-44",
+            new AlunoDto("Nome da Pessoa", "12345678-9", "111.222.333-44",
                     null, "Rua logo ali", "2111111-11111", 100.0, 10, "Lucas", "0000000");
             Assertions.fail();
         } catch (Exception exception) {
@@ -84,7 +84,7 @@ public class CadastradorDeAlunoTeste {
     @Test
     public void endereco_nao_pode_ser_nulo() {
         try {
-            new Aluno("Nome da Pessoa", "12345678-9", "111.222.333-44",
+            new AlunoDto("Nome da Pessoa", "12345678-9", "111.222.333-44",
                     LocalDate.now(), null, "2111111-11111", 100.0, 10, "Lucas", "0000000");
             Assertions.fail();
         } catch (Exception exception) {
@@ -95,7 +95,7 @@ public class CadastradorDeAlunoTeste {
     @Test
     public void telefone_nao_pode_ser_nulo() {
         try {
-            new Aluno("Nome da Pessoa", "12345678-9", "111.222.333-44",
+            new AlunoDto("Nome da Pessoa", "12345678-9", "111.222.333-44",
                     LocalDate.now(), "Rua logo ali", null, 100.0, 10, "Lucas", "0000000");
             Assertions.fail();
         } catch (Exception exception) {
@@ -106,7 +106,7 @@ public class CadastradorDeAlunoTeste {
     @Test
     public void valor_da_mensalidade_nao_pode_ser_nulo() {
         try {
-            new Aluno("Nome Aluno", "12345678-9", "111.222.333-44",
+            new AlunoDto("Nome Aluno", "12345678-9", "111.222.333-44",
                     LocalDate.now(), "Rua logo ali", "2111111-11111", null, 10, "Nome responsavel", "21123123");
             Assertions.fail();
         } catch (Exception exception) {
@@ -117,7 +117,7 @@ public class CadastradorDeAlunoTeste {
     @Test
     public void dia_vencimento_mensalidade_nao_pode_ser_nulo() {
         try {
-            new Aluno("Nome Aluno", "12345678-9", "111.222.333-44",
+            new AlunoDto("Nome Aluno", "12345678-9", "111.222.333-44",
                     LocalDate.now(), "Rua logo ali", "2111111-11111", 100.0, null, "Nome responsavel", "21123123");
             Assertions.fail();
         } catch (Exception exception) {
@@ -128,7 +128,7 @@ public class CadastradorDeAlunoTeste {
     @Test
     public void deve_extourar_exceção_caso_for_menor_de_idade() {
         try {
-            new Aluno("Nome Aluno", "12345678-9", "111.222.333-44",
+            new AlunoDto("Nome Aluno", "12345678-9", "111.222.333-44",
                     LocalDate.of(2015, 10, 10), "Rua logo ali", "2111111-11111", 100.0, 10, "Lucas", null);
             Assertions.fail();
         } catch (Exception exception) {
