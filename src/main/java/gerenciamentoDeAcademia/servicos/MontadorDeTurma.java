@@ -1,8 +1,9 @@
 package gerenciamentoDeAcademia.servicos;
 
 import gerenciamentoDeAcademia.dto.TurmaDto;
-import gerenciamentoDeAcademia.entidades.TurmaMontada;
+import gerenciamentoDeAcademia.entidades.Turma;
 import gerenciamentoDeAcademia.repositorios.TurmaRepository;
+import gerenciamentoDeAcademia.servicos.interfaces.IMontadorDeTurma;
 import gerenciamentoDeAcademia.utils.ExcecaoDeDominio;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,10 +19,10 @@ public class MontadorDeTurma implements IMontadorDeTurma {
     private TurmaRepository turmaRepository;
 
     @Override
-    public TurmaMontada montar(TurmaDto turmaDto) {
+    public Turma montar(TurmaDto turmaDto) {
         validar(turmaDto);
         
-        var turmaMontada = TurmaMontada.builder()
+        var turmaMontada = Turma.builder()
                 .horario(turmaDto.getHorario())
                 .dias(turmaDto.getDias())
                 .especificacao(turmaDto.getEspecificacao())

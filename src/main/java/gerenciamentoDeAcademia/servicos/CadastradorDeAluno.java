@@ -1,8 +1,9 @@
 package gerenciamentoDeAcademia.servicos;
 
 import gerenciamentoDeAcademia.dto.AlunoDto;
-import gerenciamentoDeAcademia.entidades.AlunoCadastrado;
+import gerenciamentoDeAcademia.entidades.Aluno;
 import gerenciamentoDeAcademia.repositorios.AlunoRepository;
+import gerenciamentoDeAcademia.servicos.interfaces.ICadastradorDeAluno;
 import gerenciamentoDeAcademia.utils.ExcecaoDeDominio;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,10 +21,10 @@ public class CadastradorDeAluno implements ICadastradorDeAluno {
     private AlunoRepository alunoRepository;
 
     @Override
-    public AlunoCadastrado cadastrar(AlunoDto alunoDto) {
+    public Aluno cadastrar(AlunoDto alunoDto) {
         validar(alunoDto);
 
-        var alunoCadastrado = AlunoCadastrado.builder()
+        var alunoCadastrado = Aluno.builder()
                 .nome(alunoDto.getNome())
                 .rg(alunoDto.getRg())
                 .cpf(alunoDto.getCpf())

@@ -1,8 +1,9 @@
 package gerenciamentoDeAcademia.servicos;
 
 import gerenciamentoDeAcademia.dto.FuncionarioDto;
-import gerenciamentoDeAcademia.entidades.FuncionarioCadastrado;
+import gerenciamentoDeAcademia.entidades.Funcionario;
 import gerenciamentoDeAcademia.repositorios.FuncionarioRepository;
+import gerenciamentoDeAcademia.servicos.interfaces.ICadastradorDeFuncionario;
 import gerenciamentoDeAcademia.utils.ExcecaoDeDominio;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,10 +19,10 @@ public class CadastradorDeFuncionario implements ICadastradorDeFuncionario {
     private FuncionarioRepository funcionarioRepository;
 
     @Override
-    public FuncionarioCadastrado cadastrar(FuncionarioDto funcionarioDto) {
+    public Funcionario cadastrar(FuncionarioDto funcionarioDto) {
         validar(funcionarioDto);
 
-        var funcionarioCadastrado = FuncionarioCadastrado.builder()
+        var funcionarioCadastrado = Funcionario.builder()
                 .nome(funcionarioDto.getNome())
                 .rg(funcionarioDto.getRg())
                 .cpf(funcionarioDto.getCpf())

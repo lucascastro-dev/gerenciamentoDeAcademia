@@ -14,7 +14,7 @@ import java.util.List;
 @Builder
 @Entity
 @Table(name = "tb_turma")
-public class TurmaMontada {
+public class Turma {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

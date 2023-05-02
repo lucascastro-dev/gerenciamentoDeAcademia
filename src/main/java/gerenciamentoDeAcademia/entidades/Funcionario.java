@@ -11,8 +11,8 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "tb_aluno")
-public class AlunoCadastrado {
+@Table(name = "tb_funcionario")
+public class Funcionario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -22,8 +22,6 @@ public class AlunoCadastrado {
     private LocalDate dataDeNascimento;
     private String endereco;
     private String telefone;
-    private Double valorMensalidade;
-    private Integer diaVencimentoMensalidade;
-    private String nomeResponsavel;
-    private String telefoneResponsavel;
+    private String cargo;
+    private String especializacao;
 }
