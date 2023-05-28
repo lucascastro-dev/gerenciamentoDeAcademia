@@ -1,30 +1,26 @@
 package gerenciamentoDeAcademia.controller;
 
 import gerenciamentoDeAcademia.dto.AlunoDto;
-import gerenciamentoDeAcademia.dto.FuncionarioDto;
 import gerenciamentoDeAcademia.entidades.Aluno;
-import gerenciamentoDeAcademia.entidades.Funcionario;
 import gerenciamentoDeAcademia.servicos.CadastradorDeAluno;
-import gerenciamentoDeAcademia.servicos.CadastradorDeFuncionario;
+import gerenciamentoDeAcademia.servicos.ConsultaDeAlunos;
 import gerenciamentoDeAcademia.servicos.DesmatricularAluno;
-import gerenciamentoDeAcademia.servicos.ExcluirFuncionario;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @CrossOrigin("*")
-public class GerenciarPessoasController {
-
+public class GerenciarAlunoController {
     @Autowired
     CadastradorDeAluno cadastradorDeAluno;
     @Autowired
     DesmatricularAluno desmatricularAluno;
     @Autowired
-    CadastradorDeFuncionario cadastradorDeFuncionario;
-    @Autowired
-    ExcluirFuncionario excluirFuncionario;
+    ConsultaDeAlunos consultaDeAlunos;
 
     @PostMapping("/matricularAluno")
     public Aluno aluno(@RequestBody AlunoDto alunoDto) {
@@ -34,17 +30,19 @@ public class GerenciarPessoasController {
     @DeleteMapping("/desmatricularAluno/{cpf}")
     public ResponseEntity<String> desmatricularAlunoPorCpf(@PathVariable("cpf") String cpf) {
         desmatricularAluno.excluirCadastro(cpf);
+
         return new ResponseEntity<>("Aluno desmatriculado com sucesso!", HttpStatus.OK);
     }
 
-    @PostMapping("/cadastrarFuncionario")
-    public Funcionario funcionario(@RequestBody FuncionarioDto funcionarioDto) {
-        return cadastradorDeFuncionario.cadastrar(funcionarioDto);
+    @GetMapping("/consultarAluno")
+    public List<Aluno> listarAlunos() {
+        return consultaDeAlunos.listarAlunos();
     }
 
-    @DeleteMapping("/excluirFuncionario/{cpf}")
-    public ResponseEntity<String> exlcuirFuncionarioPorCpf(@PathVariable("cpf") String cpf) {
-        excluirFuncionario.excluirCadastro(cpf);
-        return new ResponseEntity<>("Funcionário excluído com sucesso!", HttpStatus.OK);
+    @GetMapping("/consultarAluno/{cpf}")
+    public ResponseEntity<Aluno> consultarAlunoPorCpf(@PathVariable("cpf") String cpf) {
+        var aluno = consultaDeAlunos.consultaAlunoPorCpf(cpf);
+
+        return aluno != null ? ResponseEntity.ok(aluno) : ResponseEntity.notFound().build();
     }
 }
