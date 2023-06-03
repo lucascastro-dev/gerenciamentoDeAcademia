@@ -1,8 +1,8 @@
 package gerenciamentoDeAcademia.servicos;
 
-import gerenciamentoDeAcademia.dto.AlunoDto;
-import gerenciamentoDeAcademia.dto.FuncionarioDto;
 import gerenciamentoDeAcademia.dto.TurmaDto;
+import gerenciamentoDeAcademia.entidades.Aluno;
+import gerenciamentoDeAcademia.entidades.Funcionario;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -17,11 +17,11 @@ public class MontadorDeTurmaTesteDto {
         List<String> lista = new ArrayList<>();
         lista.add("Segunda");
         lista.add("Quarta");
-        List<AlunoDto> alunoDtos = new ArrayList<>();
+        List<Aluno> alunoDtos = new ArrayList<>();
         turma.setHorario("20:00");
         turma.setDias(lista);
-        turma.setEspecificacao("Spinning");
-        turma.setProfessor(new FuncionarioDto());
+        turma.setModalidade("Spinning");
+        turma.setProfessor(new Funcionario());
         turma.setAlunos(alunoDtos);
         var montadorDeTurma = new MontadorDeTurma();
 
@@ -29,18 +29,18 @@ public class MontadorDeTurmaTesteDto {
 
         Assertions.assertEquals(turmaMontada.getHorario(), turma.getHorario());
         Assertions.assertEquals(turmaMontada.getDias(), turma.getDias());
-        Assertions.assertEquals(turmaMontada.getEspecificacao(), turma.getEspecificacao());
+        Assertions.assertEquals(turmaMontada.getModalidade(), turma.getModalidade());
         Assertions.assertEquals(turmaMontada.getProfessor(), turma.getProfessor());
         Assertions.assertEquals(turmaMontada.getAlunos(), turma.getAlunos());
     }
 
     @Test
-    public void horario_eh_obrigatorio(){
+    public void horario_eh_obrigatorio() {
         List<String> dias = new ArrayList<>();
         dias.add("Segunda-feira");
         dias.add("Quarta-quarta");
         String especificacao = "Judô";
-        FuncionarioDto professor = new FuncionarioDto();
+        Funcionario professor = new Funcionario();
         professor.setNome("Lucas");
 
         try {
@@ -52,10 +52,10 @@ public class MontadorDeTurmaTesteDto {
     }
 
     @Test
-    public void dias_de_aula_nao_pode_ser_nulo(){
+    public void dias_de_aula_nao_pode_ser_nulo() {
         String horario = "19h";
         String especificacao = "Judô";
-        FuncionarioDto professor = new FuncionarioDto();
+        Funcionario professor = new Funcionario();
         professor.setNome("Lucas");
 
         try {
@@ -67,10 +67,10 @@ public class MontadorDeTurmaTesteDto {
     }
 
     @Test
-    public void dias_de_aula_nao_pode_ser_zero(){
+    public void dias_de_aula_nao_pode_ser_zero() {
         String horario = "19h";
         String especificacao = "Judô";
-        FuncionarioDto professor = new FuncionarioDto();
+        Funcionario professor = new Funcionario();
         professor.setNome("Lucas");
 
         try {
@@ -82,12 +82,12 @@ public class MontadorDeTurmaTesteDto {
     }
 
     @Test
-    public void especificacao_eh_obrigatorio(){
+    public void especificacao_eh_obrigatorio() {
         String horario = "19h";
         List<String> dias = new ArrayList<>();
         dias.add("Segunda-feira");
         dias.add("Quarta-quarta");
-        FuncionarioDto professor = new FuncionarioDto();
+        Funcionario professor = new Funcionario();
         professor.setNome("Lucas");
 
         try {
@@ -99,7 +99,7 @@ public class MontadorDeTurmaTesteDto {
     }
 
     @Test
-    public void professor_eh_obrigatorio(){
+    public void professor_eh_obrigatorio() {
         String horario = "19h";
         List<String> dias = new ArrayList<>();
         dias.add("Segunda-feira");
@@ -112,4 +112,5 @@ public class MontadorDeTurmaTesteDto {
         } catch (Exception exception) {
             Assertions.assertEquals(exception.getMessage(), "Professor para a turma é obrigatória!");
         }
-    }}
+    }
+}
