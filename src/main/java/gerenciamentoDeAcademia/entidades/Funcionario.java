@@ -1,16 +1,22 @@
 package gerenciamentoDeAcademia.entidades;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.time.LocalDate;
 
-@Getter
-@Setter
+@Data
+@Entity
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@Entity
 @Table(name = "tb_funcionario")
 public class Funcionario {
     @Id

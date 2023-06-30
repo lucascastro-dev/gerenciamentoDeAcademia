@@ -14,9 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 @RequiredArgsConstructor
 @Component
@@ -40,7 +40,7 @@ public class MontadorDeTurma implements IMontadorDeTurma {
                 .modalidade(turmaDto.getModalidade())
                 .build();
 
-        List<Aluno> alunosExistentes = new ArrayList<>();
+        Set<Aluno> alunosExistentes = new HashSet<>();
 
         if (turmaDto.getAlunos() != null && !turmaDto.getAlunos().isEmpty()) {
             for (Aluno aluno : turmaDto.getAlunos()) {
