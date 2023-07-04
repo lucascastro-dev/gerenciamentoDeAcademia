@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.envers.Audited;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -15,6 +16,7 @@ import java.time.LocalDate;
 @Data
 @Entity
 @Builder
+@Audited
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "tb_funcionario")
@@ -30,4 +32,5 @@ public class Funcionario {
     private String telefone;
     private String cargo;
     private String especializacao;
+    private Boolean permitirGerenciarFuncoes;
 }
