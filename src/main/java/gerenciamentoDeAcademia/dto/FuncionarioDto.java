@@ -1,11 +1,9 @@
 package gerenciamentoDeAcademia.dto;
 
+import gerenciamentoDeAcademia.entidades.Funcionario;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import javax.persistence.ManyToOne;
-import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -13,10 +11,17 @@ import java.time.LocalDate;
 public class FuncionarioDto extends PessoaDto {
     private String cargo;
     private String especializacao;
+    private Boolean permitirGerenciarFuncoes;
 
-    public FuncionarioDto(String nome, String rg, String cpf, LocalDate dataDeNascimento, String endereco, String telefone, String cargo, String especializacao) {
-        super(nome, rg, cpf, dataDeNascimento, endereco, telefone);
-        this.cargo = cargo;
-        this.especializacao = especializacao;
+    public FuncionarioDto(Funcionario funcionario) {
+        super(funcionario.getNome(),
+                funcionario.getRg(),
+                funcionario.getCpf(),
+                funcionario.getDataDeNascimento(),
+                funcionario.getEndereco(),
+                funcionario.getTelefone());
+        this.cargo = funcionario.getCargo();
+        this.especializacao = funcionario.getEspecializacao();
+        this.permitirGerenciarFuncoes = funcionario.getPermitirGerenciarFuncoes();
     }
 }

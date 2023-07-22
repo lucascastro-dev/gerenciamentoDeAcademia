@@ -1,11 +1,12 @@
 package gerenciamentoDeAcademia.servicos.interfaces;
 
+import gerenciamentoDeAcademia.dto.AlunoDto;
 import gerenciamentoDeAcademia.entidades.Aluno;
 
 import java.util.List;
 
 public interface IConsultaDeAlunos {
-    List<Aluno> listarAlunos();
+    List<AlunoDto> listarAlunos();
 
-    Aluno consultaAlunoPorCpf(String cpf);
+    AlunoDto consultaAlunoPorCpf(String cpf);
 }

@@ -2,7 +2,6 @@ package gerenciamentoDeAcademia.controller;
 
 import gerenciamentoDeAcademia.dto.FuncionarioDto;
 import gerenciamentoDeAcademia.entidades.Funcionario;
-import gerenciamentoDeAcademia.repositorios.FuncionarioRepository;
 import gerenciamentoDeAcademia.servicos.CadastradorDeFuncionario;
 import gerenciamentoDeAcademia.servicos.ConsultaDeFuncionario;
 import gerenciamentoDeAcademia.servicos.ExcluirFuncionario;
@@ -18,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin("*")
@@ -29,12 +27,11 @@ public class GerenciarFuncionarioController {
     ExcluirFuncionario excluirFuncionario;
     @Autowired
     ConsultaDeFuncionario consultaDeFuncionario;
-    @Autowired
-    FuncionarioRepository funcionarioRepository;
 
     @PostMapping("/cadastrarFuncionario")
-    public Funcionario funcionario(@RequestBody FuncionarioDto funcionarioDto) {
-        return cadastradorDeFuncionario.cadastrar(funcionarioDto);
+    public ResponseEntity<String> funcionario(@RequestBody FuncionarioDto funcionarioDto) {
+        cadastradorDeFuncionario.cadastrar(funcionarioDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body("Funcionario cadastrado com sucesso!");
     }
 
     @DeleteMapping("/excluirFuncionario/{cpf}")
@@ -44,13 +41,12 @@ public class GerenciarFuncionarioController {
     }
 
     @GetMapping("/consultarFuncionario")
-    public List<Funcionario> listarFuncionarios() {
+    public List<FuncionarioDto> listarFuncionarios() {
         return consultaDeFuncionario.listarFuncionarios();
     }
 
     @GetMapping("/revision/{id}")
     public List<String> revisions(@PathVariable("id") Long id) {
-        return funcionarioRepository.findRevisions(id)
-                .stream().map(Object::toString).collect(Collectors.toList());
+        return consultaDeFuncionario.listarLogs(id);
     }
 }

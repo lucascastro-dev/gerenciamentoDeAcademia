@@ -1,14 +1,19 @@
 package gerenciamentoDeAcademia.controller;
 
 import gerenciamentoDeAcademia.dto.AlunoDto;
-import gerenciamentoDeAcademia.entidades.Aluno;
 import gerenciamentoDeAcademia.servicos.CadastradorDeAluno;
 import gerenciamentoDeAcademia.servicos.ConsultaDeAlunos;
 import gerenciamentoDeAcademia.servicos.DesmatricularAluno;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -23,24 +28,24 @@ public class GerenciarAlunoController {
     ConsultaDeAlunos consultaDeAlunos;
 
     @PostMapping("/matricularAluno")
-    public Aluno aluno(@RequestBody AlunoDto alunoDto) {
-        return cadastradorDeAluno.cadastrar(alunoDto);
+    public ResponseEntity<String> aluno(@RequestBody AlunoDto alunoDto) {
+        cadastradorDeAluno.cadastrar(alunoDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body("Aluno cadastrado com sucesso!");
     }
 
     @DeleteMapping("/desmatricularAluno/{cpf}")
     public ResponseEntity<String> desmatricularAlunoPorCpf(@PathVariable("cpf") String cpf) {
         desmatricularAluno.excluirCadastro(cpf);
-
-        return new ResponseEntity<>("Aluno desmatriculado com sucesso!", HttpStatus.OK);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Aluno desmatriculado com sucesso!");
     }
 
     @GetMapping("/consultarAluno")
-    public List<Aluno> listarAlunos() {
+    public List<AlunoDto> listarAlunos() {
         return consultaDeAlunos.listarAlunos();
     }
 
     @GetMapping("/consultarAluno/{cpf}")
-    public ResponseEntity<Aluno> consultarAlunoPorCpf(@PathVariable("cpf") String cpf) {
+    public ResponseEntity<AlunoDto> consultarAlunoPorCpf(@PathVariable("cpf") String cpf) {
         var aluno = consultaDeAlunos.consultaAlunoPorCpf(cpf);
 
         return aluno != null ? ResponseEntity.ok(aluno) : ResponseEntity.notFound().build();

@@ -1,9 +1,11 @@
 package gerenciamentoDeAcademia.servicos.interfaces;
 
-import gerenciamentoDeAcademia.entidades.Funcionario;
+import gerenciamentoDeAcademia.dto.FuncionarioDto;
 
 import java.util.List;
 
 public interface IConsultaDeFuncionario {
-    List<Funcionario> listarFuncionarios();
+    List<FuncionarioDto> listarFuncionarios();
+
+    FuncionarioDto consultarFuncionarioPorCpf(String cpf);
 }

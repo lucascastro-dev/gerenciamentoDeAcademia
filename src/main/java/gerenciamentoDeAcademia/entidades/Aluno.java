@@ -1,5 +1,6 @@
 package gerenciamentoDeAcademia.entidades;
 
+import gerenciamentoDeAcademia.dto.AlunoDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -43,4 +44,17 @@ public class Aluno {
     @ManyToMany
     @JoinTable(name = "turma_aluno", joinColumns = @JoinColumn(name = "aluno_id"), inverseJoinColumns = @JoinColumn(name = "turma_id"))
     private Set<Turma> turma = new HashSet<>();
+
+    public Aluno(AlunoDto alunoDto) {
+        this.nome = alunoDto.getNome();
+        this.rg = alunoDto.getRg();
+        this.cpf = alunoDto.getCpf();
+        this.dataDeNascimento = alunoDto.getDataDeNascimento();
+        this.endereco = alunoDto.getEndereco();
+        this.telefone = alunoDto.getTelefone();
+        this.valorMensalidade = alunoDto.getValorMensalidade();
+        this.diaVencimentoMensalidade = alunoDto.getDiaVencimentoMensalidade();
+        this.nomeResponsavel = alunoDto.getNomeResponsavel();
+        this.telefoneResponsavel = alunoDto.getTelefoneResponsavel();
+    }
 }

@@ -8,9 +8,5 @@ import java.util.List;
 
 @Repository
 public interface TurmaRepository extends JpaRepository<Turma, Long> {
-    List<Turma> findAll();
-
-    Turma findById(String id);
-
     List<Turma> findByModalidade(String modalidade);
 }

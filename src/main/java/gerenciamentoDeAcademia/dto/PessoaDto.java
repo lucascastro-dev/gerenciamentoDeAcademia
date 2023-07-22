@@ -1,5 +1,6 @@
 package gerenciamentoDeAcademia.dto;
 
+import gerenciamentoDeAcademia.entidades.Funcionario;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

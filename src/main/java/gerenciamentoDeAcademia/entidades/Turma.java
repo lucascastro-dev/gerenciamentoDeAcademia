@@ -1,5 +1,6 @@
 package gerenciamentoDeAcademia.entidades;
 
+import gerenciamentoDeAcademia.dto.TurmaDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,6 +20,7 @@ import javax.persistence.Table;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Data
 @NoArgsConstructor
@@ -46,12 +48,12 @@ public class Turma {
     @JoinTable(name = "turma_aluno", joinColumns = @JoinColumn(name = "turma_id"), inverseJoinColumns = @JoinColumn(name = "aluno_id"))
     private Set<Aluno> alunos = new HashSet<>();
 
-    public Turma(Turma turma) {
-        this.id = turma.getId();
-        this.horario = turma.getHorario();
-        this.dias = turma.getDias();
-        this.modalidade = turma.getModalidade();
-        this.professor = turma.getProfessor();
-        this.alunos = turma.getAlunos();
+    public Turma(TurmaDto turmaDto) {
+        this.horario = turmaDto.getHorario();
+        this.dias = turmaDto.getDias();
+        this.modalidade = turmaDto.getModalidade();
+        this.professor = Funcionario.builder().cpf(turmaDto.getCpfProfessor()).build();
+        this.alunos = turmaDto.getAlunos().stream().map(Aluno::new).collect(Collectors.toSet());
     }
+
 }

@@ -3,7 +3,7 @@ package gerenciamentoDeAcademia.servicos;
 import gerenciamentoDeAcademia.entidades.Turma;
 import gerenciamentoDeAcademia.repositorios.TurmaRepository;
 import gerenciamentoDeAcademia.servicos.interfaces.IConsultaDeTurma;
-import gerenciamentoDeAcademia.utils.ExcecaoDeDominio;
+import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -33,7 +33,7 @@ public class ConsultaDeTurma implements IConsultaDeTurma {
     @Override
     public List<Turma> buscarTurmaPorModalidade(String modalidade) {
         if (modalidade.isEmpty() || modalidade == null)
-            ExcecaoDeDominio.quandoTextoVazioOuNulo(modalidade, "Para consultar é obrigatório informar a modalidade!");
+            ExcecaoDeDominio.quandoNuloOuVazio(modalidade, "Para consultar é obrigatório informar a modalidade!");
 
         return turmaRepository.findByModalidade(modalidade);
     }

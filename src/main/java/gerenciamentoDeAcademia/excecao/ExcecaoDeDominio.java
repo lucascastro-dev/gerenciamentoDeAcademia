@@ -1,5 +1,6 @@
-package gerenciamentoDeAcademia.utils;
+package gerenciamentoDeAcademia.excecao;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
@@ -7,36 +8,25 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 
-public class ExcecaoDeDominio extends RuntimeException {
-
-    private static final long serialVersionUID = 5209733260304982307L;
+public class ExcecaoDeDominio extends ApplicationException {
 
     public ExcecaoDeDominio(String mensagemDeErro) {
-        super(mensagemDeErro);
+        super(mensagemDeErro, HttpStatus.BAD_REQUEST);
     }
 
-    public static void quandoTextoVazioOuNulo(String texto, String mensagemDeErro) {
-        if (StringUtils.isEmpty(texto)) {
+    public static void quandoNuloOuVazio(String texto, String mensagemDeErro) {
+        if (StringUtils.isEmpty(texto) || StringUtils.isEmpty(texto.trim()))
             entaoDisparar(mensagemDeErro);
-        } else if (StringUtils.isEmpty(texto.trim())) {
-            entaoDisparar(mensagemDeErro);
-        }
     }
 
     public static void quandoNuloOuVazio(Integer valor, String mensagemDeErro) {
-        if (StringUtils.isEmpty(valor)) {
+        if (StringUtils.isEmpty(valor) || StringUtils.isEmpty(valor))
             entaoDisparar(mensagemDeErro);
-        } else if (StringUtils.isEmpty(valor)) {
-            entaoDisparar(mensagemDeErro);
-        }
     }
 
     public static void quandoNuloOuVazio(Double valor, String mensagemDeErro) {
-        if (StringUtils.isEmpty(valor)) {
+        if (StringUtils.isEmpty(valor) || StringUtils.isEmpty(valor))
             entaoDisparar(mensagemDeErro);
-        } else if (StringUtils.isEmpty(valor)) {
-            entaoDisparar(mensagemDeErro);
-        }
     }
 
     public static void quandoValorIgualAZero(int valor, String mensagemDeErro) {

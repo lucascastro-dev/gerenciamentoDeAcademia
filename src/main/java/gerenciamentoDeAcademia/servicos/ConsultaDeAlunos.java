@@ -1,14 +1,15 @@
 package gerenciamentoDeAcademia.servicos;
 
-import gerenciamentoDeAcademia.entidades.Aluno;
+import gerenciamentoDeAcademia.dto.AlunoDto;
+import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
 import gerenciamentoDeAcademia.repositorios.AlunoRepository;
 import gerenciamentoDeAcademia.servicos.interfaces.IConsultaDeAlunos;
-import gerenciamentoDeAcademia.utils.ExcecaoDeDominio;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Component
@@ -17,14 +18,14 @@ public class ConsultaDeAlunos implements IConsultaDeAlunos {
     private final AlunoRepository alunoRepository;
 
     @Override
-    public List<Aluno> listarAlunos() {
-        return alunoRepository.findAll();
+    public List<AlunoDto> listarAlunos() {
+        return alunoRepository.findAll().stream().map(AlunoDto::new).collect(Collectors.toList());
     }
 
     @Override
-    public Aluno consultaAlunoPorCpf(String cpf) {
+    public AlunoDto consultaAlunoPorCpf(String cpf) {
         if (cpf.isEmpty() || cpf == null)
-            ExcecaoDeDominio.quandoTextoVazioOuNulo(cpf, "CPF obrigatório para consulta do aluno!");
+            ExcecaoDeDominio.quandoNuloOuVazio(cpf, "CPF obrigatório para consulta do aluno!");
 
         return alunoRepository.findByCpf(cpf);
     }

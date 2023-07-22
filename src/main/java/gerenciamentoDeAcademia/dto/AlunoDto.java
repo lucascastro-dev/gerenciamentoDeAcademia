@@ -1,10 +1,9 @@
 package gerenciamentoDeAcademia.dto;
 
+import gerenciamentoDeAcademia.entidades.Aluno;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -15,11 +14,16 @@ public class AlunoDto extends PessoaDto {
     private String nomeResponsavel;
     private String telefoneResponsavel;
 
-    public AlunoDto(String nome, String rg, String cpf, LocalDate dataDeNascimento, String endereco, String telefone, Double valorMensalidade, Integer diaVencimentoMensalidade, String nomeResponsavel, String telefoneResponsavel) {
-        super(nome, rg, cpf, dataDeNascimento, endereco, telefone);
-        this.valorMensalidade = valorMensalidade;
-        this.diaVencimentoMensalidade = diaVencimentoMensalidade;
-        this.nomeResponsavel = nomeResponsavel;
-        this.telefoneResponsavel = telefoneResponsavel;
+    public AlunoDto(Aluno aluno) {
+        super(aluno.getNome(),
+                aluno.getRg(),
+                aluno.getCpf(),
+                aluno.getDataDeNascimento(),
+                aluno.getEndereco(),
+                aluno.getTelefone());
+        this.valorMensalidade = aluno.getValorMensalidade();
+        this.diaVencimentoMensalidade = aluno.getDiaVencimentoMensalidade();
+        this.nomeResponsavel = aluno.getNomeResponsavel();
+        this.telefoneResponsavel = aluno.getTelefoneResponsavel();
     }
 }

@@ -1,5 +1,6 @@
 package gerenciamentoDeAcademia.entidades;
 
+import gerenciamentoDeAcademia.dto.FuncionarioDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -33,4 +34,16 @@ public class Funcionario {
     private String cargo;
     private String especializacao;
     private Boolean permitirGerenciarFuncoes;
+
+    public Funcionario(FuncionarioDto funcionarioDto) {
+        this.nome = funcionarioDto.getNome();
+        this.rg = funcionarioDto.getRg();
+        this.cpf = funcionarioDto.getCpf();
+        this.dataDeNascimento = funcionarioDto.getDataDeNascimento();
+        this.endereco = funcionarioDto.getEndereco();
+        this.telefone = funcionarioDto.getTelefone();
+        this.cargo = funcionarioDto.getCargo();
+        this.especializacao = funcionarioDto.getEspecializacao();
+        this.permitirGerenciarFuncoes = funcionarioDto.getPermitirGerenciarFuncoes();
+    }
 }
