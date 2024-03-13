@@ -89,6 +89,13 @@
             <artifactId>byte-buddy</artifactId>
             <version>1.14.2</version>
         </dependency>
+        <dependency>
+            <groupId>org.instancio</groupId>
+            <artifactId>instancio-junit</artifactId>
+            <version>4.4.0</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>

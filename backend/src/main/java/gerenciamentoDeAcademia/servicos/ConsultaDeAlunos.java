@@ -24,8 +24,7 @@ public class ConsultaDeAlunos implements IConsultaDeAlunos {
 
     @Override
     public AlunoDto consultaAlunoPorCpf(String cpf) {
-        if (cpf.isEmpty() || cpf == null)
-            ExcecaoDeDominio.quandoNuloOuVazio(cpf, "CPF obrigatório para consulta do aluno!");
+        ExcecaoDeDominio.quandoNuloOuVazio(cpf, "CPF obrigatório para consulta do aluno!");
 
         return alunoRepository.findByCpf(cpf);
     }
