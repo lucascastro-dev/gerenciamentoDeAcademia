@@ -1,11 +1,11 @@
 package gerenciamentoDeAcademia.servicos;
 
 import gerenciamentoDeAcademia.dto.AlunoDto;
-import gerenciamentoDeAcademia.dto.FuncionarioDto;
 import gerenciamentoDeAcademia.dto.TurmaDto;
 import gerenciamentoDeAcademia.entidades.Turma;
 import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
 import gerenciamentoDeAcademia.repositorios.TurmaRepository;
+import gerenciamentoDeAcademia.servicos.aluno.ConsultaDeAlunos;
 import gerenciamentoDeAcademia.servicos.interfaces.IMontadorDeTurma;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;

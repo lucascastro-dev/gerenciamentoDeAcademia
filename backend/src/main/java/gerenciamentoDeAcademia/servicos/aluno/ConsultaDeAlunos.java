@@ -1,4 +1,4 @@
-package gerenciamentoDeAcademia.servicos;
+package gerenciamentoDeAcademia.servicos.aluno;
 
 import gerenciamentoDeAcademia.dto.AlunoDto;
 import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;

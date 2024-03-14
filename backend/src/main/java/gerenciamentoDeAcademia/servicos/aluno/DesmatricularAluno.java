@@ -1,4 +1,4 @@
-package gerenciamentoDeAcademia.servicos;
+package gerenciamentoDeAcademia.servicos.aluno;
 
 import gerenciamentoDeAcademia.entidades.Aluno;
 import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
@@ -18,15 +18,14 @@ public class DesmatricularAluno implements IExcluirCadastroPessoa {
 
     @Override
     public void excluirCadastro(String cpf) {
-        if (cpf.isEmpty() || cpf == null)
-            ExcecaoDeDominio.quandoNuloOuVazio(cpf, "CPF é obrigatório para desmatricular o aluno!");
+        ExcecaoDeDominio.quandoNuloOuVazio(cpf, "CPF é obrigatório para desmatricular o aluno!");
 
         var alunoParaDesmatricular = alunoRepository.findByCpf(cpf);
 
         if (alunoParaDesmatricular != null) {
             alunoRepository.delete(new Aluno(alunoParaDesmatricular));
         } else {
-            ExcecaoDeDominio.quandoNulo(alunoParaDesmatricular.getCpf(), "Aluno não encontrado na base!");
+            ExcecaoDeDominio.quandoNulo(alunoParaDesmatricular, "Aluno não encontrado na base!");
         }
     }
 }

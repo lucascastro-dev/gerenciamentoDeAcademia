@@ -1,9 +1,9 @@
 package gerenciamentoDeAcademia.controller;
 
 import gerenciamentoDeAcademia.dto.AlunoDto;
-import gerenciamentoDeAcademia.servicos.CadastradorDeAluno;
-import gerenciamentoDeAcademia.servicos.ConsultaDeAlunos;
-import gerenciamentoDeAcademia.servicos.DesmatricularAluno;
+import gerenciamentoDeAcademia.servicos.aluno.CadastradorDeAluno;
+import gerenciamentoDeAcademia.servicos.aluno.ConsultaDeAlunos;
+import gerenciamentoDeAcademia.servicos.aluno.DesmatricularAluno;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

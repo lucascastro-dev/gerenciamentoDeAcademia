@@ -1,7 +1,7 @@
 package gerenciamentoDeAcademia.controller;
 
 import gerenciamentoDeAcademia.dto.TurmaDto;
-import gerenciamentoDeAcademia.servicos.ConsultaDeAlunos;
+import gerenciamentoDeAcademia.servicos.aluno.ConsultaDeAlunos;
 import gerenciamentoDeAcademia.servicos.ConsultaDeTurma;
 import gerenciamentoDeAcademia.servicos.MontadorDeTurma;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,10 +1,9 @@
-package gerenciamentoDeAcademia.servicos.Aluno;
+package gerenciamentoDeAcademia.servicos.aluno;
 
 import gerenciamentoDeAcademia.dto.AlunoDto;
 import gerenciamentoDeAcademia.entidades.Aluno;
 import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
 import gerenciamentoDeAcademia.repositorios.AlunoRepository;
-import gerenciamentoDeAcademia.servicos.CadastradorDeAluno;
 import org.instancio.Instancio;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

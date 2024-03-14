@@ -1,10 +1,10 @@
-package gerenciamentoDeAcademia.servicos;
+package gerenciamentoDeAcademia.servicos.aluno;
 
 import gerenciamentoDeAcademia.dto.AlunoDto;
 import gerenciamentoDeAcademia.entidades.Aluno;
+import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
 import gerenciamentoDeAcademia.repositorios.AlunoRepository;
 import gerenciamentoDeAcademia.servicos.interfaces.ICadastradorDeAluno;
-import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -28,6 +28,7 @@ public class CadastradorDeAluno implements ICadastradorDeAluno {
     }
 
     public void validar(AlunoDto alunoDto) {
+        ExcecaoDeDominio.quandoNulo(alunoDto, "Obrigatório preencher dados do aluno");
         ExcecaoDeDominio.quandoNuloOuVazio(alunoDto.getNome(), "Nome é obrigatório!");
         ExcecaoDeDominio.quandoNuloOuVazio(alunoDto.getRg(), "RG é obrigatório!");
         ExcecaoDeDominio.quandoNuloOuVazio(alunoDto.getCpf(), "CPF é obrigatório!");

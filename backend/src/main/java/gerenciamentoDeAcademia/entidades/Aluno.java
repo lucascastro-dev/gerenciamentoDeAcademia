@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.validator.constraints.br.CPF;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -32,6 +33,7 @@ public class Aluno {
     private Long id;
     private String nome;
     private String rg;
+    @CPF(message = "CPF inválido")
     private String cpf;
     private LocalDate dataDeNascimento;
     private String endereco;

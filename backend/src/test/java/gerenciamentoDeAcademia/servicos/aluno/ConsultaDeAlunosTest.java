@@ -1,8 +1,7 @@
-package gerenciamentoDeAcademia.servicos.Aluno;
+package gerenciamentoDeAcademia.servicos.aluno;
 
 import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
 import gerenciamentoDeAcademia.repositorios.AlunoRepository;
-import gerenciamentoDeAcademia.servicos.ConsultaDeAlunos;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
