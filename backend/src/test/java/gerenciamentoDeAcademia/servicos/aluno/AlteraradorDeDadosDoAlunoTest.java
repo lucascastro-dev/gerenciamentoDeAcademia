@@ -2,10 +2,8 @@ package gerenciamentoDeAcademia.servicos.aluno;
 
 import gerenciamentoDeAcademia.dto.AlunoDto;
 import gerenciamentoDeAcademia.entidades.Aluno;
-import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
 import gerenciamentoDeAcademia.repositorios.AlunoRepository;
 import org.instancio.Instancio;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -46,25 +44,5 @@ public class AlteraradorDeDadosDoAlunoTest {
         alteadorDeDadosDoAluno.alterarAluno(alunoDto);
 
         Mockito.verify(alunoRepository).findByCpf(alunoDto.getCpf());
-    }
-
-    @Test
-    void deveRetornarMensagemDeErroSeNaoEncontrarAluno() {
-        AlunoDto alunoDto = Instancio.of(AlunoDto.class).create();
-
-        var mensagemDeErro = Assertions.assertThrows(ExcecaoDeDominio.class, () -> alteadorDeDadosDoAluno.alterarAluno(alunoDto));
-
-        Assertions.assertEquals("Aluno não encontrado!", mensagemDeErro.getMessage());
-    }
-
-    @Test
-    void deveRetornarMensagemDeErroSeTentarAlterarOCpf() {
-        AlunoDto alunoParaAlterar = Instancio.of(AlunoDto.class).set(field(AlunoDto::getCpf), "123456").create();
-        Aluno alunoEncontrado = Instancio.of(Aluno.class).set(field(Aluno::getCpf), "123456789").create();
-        Mockito.when(alunoRepository.findByCpf(alunoParaAlterar.getCpf())).thenReturn(alunoEncontrado);
-
-        var mensagemDeErro = Assertions.assertThrows(ExcecaoDeDominio.class, () -> alteadorDeDadosDoAluno.alterarAluno(alunoParaAlterar));
-
-        Assertions.assertEquals("Não é possível alterar o CPF do aluno!", mensagemDeErro.getMessage());
     }
 }

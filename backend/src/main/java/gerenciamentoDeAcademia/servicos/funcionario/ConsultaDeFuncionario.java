@@ -1,9 +1,12 @@
-package gerenciamentoDeAcademia.servicos;
+package gerenciamentoDeAcademia.servicos.funcionario;
 
 import gerenciamentoDeAcademia.dto.FuncionarioDto;
+import gerenciamentoDeAcademia.entidades.Funcionario;
 import gerenciamentoDeAcademia.repositorios.FuncionarioRepository;
 import gerenciamentoDeAcademia.servicos.interfaces.IConsultaDeFuncionario;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -11,21 +14,23 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@RequiredArgsConstructor
 @Component
 @Service
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class ConsultaDeFuncionario implements IConsultaDeFuncionario {
-    @Autowired
     private final FuncionarioRepository funcionarioRepository;
+    private final ModelMapper modelMapper;
 
     @Override
     public List<FuncionarioDto> listarFuncionarios() {
-        return funcionarioRepository.findAll().stream().map(FuncionarioDto::new).collect(Collectors.toList());
+        List<Funcionario> listaDeFuncionario = funcionarioRepository.findAll();
+
+        return modelMapper.map(listaDeFuncionario, new TypeToken<List<FuncionarioDto>>() {}.getType());
     }
 
     @Override
-    public FuncionarioDto consultarFuncionarioPorCpf(String cpf) {
-        return new FuncionarioDto(funcionarioRepository.findByCpf(cpf));
+    public Funcionario consultarFuncionarioPorCpf(String cpf) {
+        return funcionarioRepository.findByCpf(cpf);
     }
 
     public List<String> listarLogs(Long id) {

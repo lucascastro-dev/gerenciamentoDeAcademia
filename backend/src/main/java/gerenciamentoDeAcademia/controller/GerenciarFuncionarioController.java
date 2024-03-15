@@ -1,10 +1,9 @@
 package gerenciamentoDeAcademia.controller;
 
 import gerenciamentoDeAcademia.dto.FuncionarioDto;
-import gerenciamentoDeAcademia.entidades.Funcionario;
-import gerenciamentoDeAcademia.servicos.CadastradorDeFuncionario;
-import gerenciamentoDeAcademia.servicos.ConsultaDeFuncionario;
-import gerenciamentoDeAcademia.servicos.ExcluirFuncionario;
+import gerenciamentoDeAcademia.servicos.funcionario.CadastradorDeFuncionario;
+import gerenciamentoDeAcademia.servicos.funcionario.ConsultaDeFuncionario;
+import gerenciamentoDeAcademia.servicos.funcionario.ExcluirFuncionario;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

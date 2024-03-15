@@ -29,6 +29,12 @@ public class ExcecaoDeDominio extends ApplicationException {
             entaoDisparar(mensagemDeErro);
     }
 
+    public static void quando(Boolean valor, String mensagemDeErro) {
+        if (valor) {
+            entaoDisparar(mensagemDeErro);
+        }
+    }
+
     public static void quandoValorIgualAZero(int valor, String mensagemDeErro) {
         if (valor == 0)
             entaoDisparar(mensagemDeErro);

@@ -17,12 +17,4 @@ public class PessoaDto {
     private String endereco;
     private String telefone;
 
-    public PessoaDto(String nome, String rg, String cpf, LocalDate dataDeNascimento, String endereco, String telefone) {
-        this.nome = nome;
-        this.rg = rg;
-        this.cpf = cpf;
-        this.dataDeNascimento = dataDeNascimento;
-        this.endereco = endereco;
-        this.telefone = telefone;
-    }
 }

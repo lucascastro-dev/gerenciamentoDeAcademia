@@ -8,5 +8,5 @@ import java.util.List;
 public interface IConsultaDeAlunos {
     List<AlunoDto> listarAlunos();
 
-    AlunoDto consultaAlunoPorCpf(String cpf);
+    Aluno consultaAlunoPorCpf(String cpf);
 }

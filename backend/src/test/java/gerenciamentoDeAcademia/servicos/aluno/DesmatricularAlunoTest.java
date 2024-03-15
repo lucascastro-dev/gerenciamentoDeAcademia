@@ -42,7 +42,7 @@ public class DesmatricularAlunoTest {
     }
 
     @Test
-    void deveRetornarMensagemDeAlunoNaoEncontradoQuandoOCpfNaoForDeAlunoMatriculado() {
+    void deveConsultarSeOAlunoExiste() {
         var mensagemDeErro = Assertions.assertThrows(ExcecaoDeDominio.class, () -> desmatricularAluno.excluirCadastro("1345"));
 
         Assertions.assertEquals("Aluno não encontrado na base!", mensagemDeErro.getMessage());

@@ -10,20 +10,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-@RequiredArgsConstructor
 @Component
 @Service
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class AlteadorDeDadosDoAluno implements IAlteradorDeDadosDoAluno {
-    @Autowired
-    private AlunoRepository alunoRepository;
+
+    private final AlunoRepository alunoRepository;
 
     @Override
     public void alterarAluno(AlunoDto alunoDto) {
         Aluno aluno = alunoRepository.findByCpf(alunoDto.getCpf());
-        ExcecaoDeDominio.quandoNulo(aluno, "Aluno não encontrado!");
 
-        if (aluno.getCpf() != alunoDto.getCpf())
-            throw new ExcecaoDeDominio("Não é possível alterar o CPF do aluno!");
+        ExcecaoDeDominio.quandoNulo(aluno, "Aluno não encontrado!");
 
         aluno.setNome(alunoDto.getNome());
         aluno.setRg(alunoDto.getRg());

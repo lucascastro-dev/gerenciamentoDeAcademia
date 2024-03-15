@@ -1,4 +1,4 @@
-package gerenciamentoDeAcademia.servicos;
+package gerenciamentoDeAcademia.servicos.funcionario;
 
 import gerenciamentoDeAcademia.repositorios.FuncionarioRepository;
 import gerenciamentoDeAcademia.servicos.interfaces.IExcluirCadastroPessoa;

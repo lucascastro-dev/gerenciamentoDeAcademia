@@ -2,8 +2,8 @@ package gerenciamentoDeAcademia.controller;
 
 import gerenciamentoDeAcademia.dto.TurmaDto;
 import gerenciamentoDeAcademia.servicos.aluno.ConsultaDeAlunos;
-import gerenciamentoDeAcademia.servicos.ConsultaDeTurma;
-import gerenciamentoDeAcademia.servicos.MontadorDeTurma;
+import gerenciamentoDeAcademia.servicos.turma.ConsultaDeTurma;
+import gerenciamentoDeAcademia.servicos.turma.MontadorDeTurma;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

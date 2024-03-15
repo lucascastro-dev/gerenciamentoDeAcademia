@@ -1,4 +1,4 @@
-package gerenciamentoDeAcademia.servicos;
+package gerenciamentoDeAcademia.servicos.turma;
 
 import gerenciamentoDeAcademia.entidades.Turma;
 import gerenciamentoDeAcademia.repositorios.TurmaRepository;

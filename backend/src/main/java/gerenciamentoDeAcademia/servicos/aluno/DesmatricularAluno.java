@@ -1,6 +1,5 @@
 package gerenciamentoDeAcademia.servicos.aluno;
 
-import gerenciamentoDeAcademia.entidades.Aluno;
 import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
 import gerenciamentoDeAcademia.repositorios.AlunoRepository;
 import gerenciamentoDeAcademia.servicos.interfaces.IExcluirCadastroPessoa;
@@ -10,22 +9,18 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 @Service
-@RequiredArgsConstructor
 @Component
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class DesmatricularAluno implements IExcluirCadastroPessoa {
-    @Autowired
-    private AlunoRepository alunoRepository;
+    private final AlunoRepository alunoRepository;
 
     @Override
     public void excluirCadastro(String cpf) {
         ExcecaoDeDominio.quandoNuloOuVazio(cpf, "CPF é obrigatório para desmatricular o aluno!");
 
         var alunoParaDesmatricular = alunoRepository.findByCpf(cpf);
+        ExcecaoDeDominio.quandoNulo(alunoParaDesmatricular, "Aluno não encontrado na base!");
 
-        if (alunoParaDesmatricular != null) {
-            alunoRepository.delete(alunoParaDesmatricular);
-        } else {
-            ExcecaoDeDominio.quandoNulo(alunoParaDesmatricular, "Aluno não encontrado na base!");
-        }
+        alunoRepository.delete(alunoParaDesmatricular);
     }
 }

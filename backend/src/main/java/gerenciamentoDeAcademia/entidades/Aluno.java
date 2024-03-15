@@ -1,6 +1,7 @@
 package gerenciamentoDeAcademia.entidades;
 
 import gerenciamentoDeAcademia.dto.AlunoDto;
+import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -47,6 +48,7 @@ public class Aluno {
     private Set<Turma> turma = new HashSet<>();
 
     public Aluno(AlunoDto alunoDto) {
+        validar(alunoDto);
         this.nome = alunoDto.getNome();
         this.rg = alunoDto.getRg();
         this.cpf = alunoDto.getCpf();
@@ -57,5 +59,22 @@ public class Aluno {
         this.diaVencimentoMensalidade = alunoDto.getDiaVencimentoMensalidade();
         this.nomeResponsavel = alunoDto.getNomeResponsavel();
         this.telefoneResponsavel = alunoDto.getTelefoneResponsavel();
+    }
+
+    private void validar(AlunoDto alunoDto) {
+        ExcecaoDeDominio.quandoNulo(alunoDto, "Obrigatório preencher dados do aluno");
+        ExcecaoDeDominio.quandoNuloOuVazio(alunoDto.getNome(), "Nome é obrigatório!");
+        ExcecaoDeDominio.quandoNuloOuVazio(alunoDto.getRg(), "RG é obrigatório!");
+        ExcecaoDeDominio.quandoNuloOuVazio(alunoDto.getCpf(), "CPF é obrigatório!");
+        ExcecaoDeDominio.quandoDataNulaOuVazia(alunoDto.getDataDeNascimento(), "Data de nascimento é obrigatória!");
+        ExcecaoDeDominio.quandoNuloOuVazio(alunoDto.getEndereco(), "Endereço é obrigatório!");
+        ExcecaoDeDominio.quandoNuloOuVazio(alunoDto.getTelefone(), "Telefone é obrigatório!");
+        ExcecaoDeDominio.quandoNuloOuVazio(alunoDto.getValorMensalidade(), "Valor da mensalidade é obrigatório!");
+        ExcecaoDeDominio.quandoNuloOuVazio(alunoDto.getDiaVencimentoMensalidade(), "Dia de vencimento da mensalidade é obrigatório!");
+
+        if ((LocalDate.now().getYear() - alunoDto.getDataDeNascimento().getYear()) < 18) {
+            ExcecaoDeDominio.quandoNuloOuVazio(alunoDto.getNomeResponsavel(), "Nome do responsável é obrigatório!");
+            ExcecaoDeDominio.quandoNuloOuVazio(alunoDto.getTelefoneResponsavel(), "Telefone do responsável é obrigatório!");
+        }
     }
 }

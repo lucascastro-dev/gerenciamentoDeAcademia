@@ -1,11 +1,12 @@
-package gerenciamentoDeAcademia.servicos;
+package gerenciamentoDeAcademia.servicos.turma;
 
-import gerenciamentoDeAcademia.dto.AlunoDto;
 import gerenciamentoDeAcademia.dto.TurmaDto;
+import gerenciamentoDeAcademia.entidades.Aluno;
 import gerenciamentoDeAcademia.entidades.Turma;
 import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
 import gerenciamentoDeAcademia.repositorios.TurmaRepository;
 import gerenciamentoDeAcademia.servicos.aluno.ConsultaDeAlunos;
+import gerenciamentoDeAcademia.servicos.funcionario.ConsultaDeFuncionario;
 import gerenciamentoDeAcademia.servicos.interfaces.IMontadorDeTurma;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,13 +45,13 @@ public class MontadorDeTurma implements IMontadorDeTurma {
         }
     }
 
-    private List<AlunoDto> validarAlunosNaTurma(List<AlunoDto> alunos) {
+    private List<Aluno> validarAlunosNaTurma(List<Aluno> alunos) {
         try {
-            List<AlunoDto> alunosExistentes = new ArrayList<>();
+            List<Aluno> alunosExistentes = new ArrayList<>();
 
-            for (AlunoDto aluno : alunos) {
-                AlunoDto alunoExistente = consultaDeAlunos.consultaAlunoPorCpf(aluno.getCpf());
-                alunosExistentes.add(alunoExistente);
+            for (Aluno aluno : alunos) {
+                Aluno alunoEncontrado = consultaDeAlunos.consultaAlunoPorCpf(aluno.getCpf());
+                alunosExistentes.add(alunoEncontrado);
             }
 
             return alunosExistentes;

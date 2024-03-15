@@ -10,6 +10,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.modelmapper.ModelMapper;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith(SpringExtension.class)
@@ -19,6 +20,8 @@ public class ConsultaDeAlunosTest {
     ConsultaDeAlunos consultaDeAlunos;
     @Mock
     AlunoRepository alunoRepository;
+    @Mock
+    ModelMapper modelMapper;
 
     @Test
     void deveConsultarAlunos(){
@@ -40,22 +43,22 @@ public class ConsultaDeAlunosTest {
 
     @Test
     void deveRetornarMensagemAlunoNaoEncontrado(){
-        var excecao = Assertions.assertThrows(ExcecaoDeDominio.class, () -> consultaDeAlunos.consultaAlunoPorCpf("123456"));
+        var mensagemDeErro = Assertions.assertThrows(ExcecaoDeDominio.class, () -> consultaDeAlunos.consultaAlunoPorCpf("123456"));
 
-        Assertions.assertEquals("Aluno não encontrado na base!", excecao.getMessage());
+        Assertions.assertEquals("Aluno não encontrado na base!", mensagemDeErro.getMessage());
     }
 
     @Test
     void deveRetornarMensagemDeCpfObrigatorioAoConsultarAlunoComCpfNull(){
-        var excecao = Assertions.assertThrows(ExcecaoDeDominio.class, () -> consultaDeAlunos.consultaAlunoPorCpf(null));
+        var mensagemDeErro = Assertions.assertThrows(ExcecaoDeDominio.class, () -> consultaDeAlunos.consultaAlunoPorCpf(null));
 
-        Assertions.assertEquals("CPF obrigatório para consulta do aluno!", excecao.getMessage());
+        Assertions.assertEquals("CPF obrigatório para consulta do aluno!", mensagemDeErro.getMessage());
     }
 
     @Test
     void deveRetornarMensagemDeCpfObrigatorioAoConsultarAlunoComCpfVazio(){
-        var excecao = Assertions.assertThrows(ExcecaoDeDominio.class, () -> consultaDeAlunos.consultaAlunoPorCpf(""));
+        var mensagemDeErro = Assertions.assertThrows(ExcecaoDeDominio.class, () -> consultaDeAlunos.consultaAlunoPorCpf(""));
 
-        Assertions.assertEquals("CPF obrigatório para consulta do aluno!", excecao.getMessage());
+        Assertions.assertEquals("CPF obrigatório para consulta do aluno!", mensagemDeErro.getMessage());
     }
 }

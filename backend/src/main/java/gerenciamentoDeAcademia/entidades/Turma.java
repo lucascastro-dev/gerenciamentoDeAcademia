@@ -20,7 +20,6 @@ import javax.persistence.Table;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Data
 @NoArgsConstructor
@@ -53,7 +52,6 @@ public class Turma {
         this.dias = turmaDto.getDias();
         this.modalidade = turmaDto.getModalidade();
         this.professor = Funcionario.builder().cpf(turmaDto.getCpfProfessor()).build();
-        this.alunos = turmaDto.getAlunos().stream().map(Aluno::new).collect(Collectors.toSet());
     }
 
 }
