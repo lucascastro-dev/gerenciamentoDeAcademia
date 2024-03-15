@@ -1,6 +1,7 @@
 package gerenciamentoDeAcademia.infra.seguranca;
 
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -67,5 +68,10 @@ public class ConfiguracaoDeSeguranca {
         log.debug("Configurações CORS: " + configuration);
 
         return source;
+    }
+
+    @Bean
+    ModelMapper modelMapper() {
+        return new ModelMapper();
     }
 }
