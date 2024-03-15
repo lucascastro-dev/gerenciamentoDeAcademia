@@ -1,6 +1,5 @@
 package gerenciamentoDeAcademia.servicos.aluno;
 
-import gerenciamentoDeAcademia.dto.AlunoDto;
 import gerenciamentoDeAcademia.entidades.Aluno;
 import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
 import gerenciamentoDeAcademia.repositorios.AlunoRepository;
@@ -27,7 +26,7 @@ public class DesmatricularAlunoTest {
     @Test
     void deveDesmatricularUmAluno() {
         String cpf = "123";
-        AlunoDto aluno = Instancio.of(AlunoDto.class).set(field(AlunoDto::getCpf), cpf).create();
+        Aluno aluno = Instancio.of(Aluno.class).set(field(Aluno::getCpf), cpf).create();
         Mockito.when(alunoRepository.findByCpf(cpf)).thenReturn(aluno);
 
         desmatricularAluno.excluirCadastro(cpf);

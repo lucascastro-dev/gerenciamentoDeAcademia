@@ -19,12 +19,22 @@ public class AlteadorDeDadosDoAluno implements IAlteradorDeDadosDoAluno {
 
     @Override
     public Aluno alterarAluno(AlunoDto alunoDto) {
-        AlunoDto alunoEncontrado = alunoRepository.findByCpf(alunoDto.getCpf());
+        Aluno alunoEncontrado = alunoRepository.findByCpf(alunoDto.getCpf());
         ExcecaoDeDominio.quandoNulo(alunoEncontrado, "Aluno não encontrado!");
 
-        if(alunoEncontrado.getCpf() != alunoDto.getCpf())
+        if (alunoEncontrado.getCpf() != alunoDto.getCpf())
             throw new ExcecaoDeDominio("Não é possível alterar o CPF do aluno!");
 
-        return alunoRepository.save(new Aluno(alunoDto));
+        alunoEncontrado.setNome(alunoDto.getNome());
+        alunoEncontrado.setRg(alunoDto.getRg());
+        alunoEncontrado.setDataDeNascimento(alunoDto.getDataDeNascimento());
+        alunoEncontrado.setEndereco(alunoDto.getEndereco());
+        alunoEncontrado.setTelefone(alunoDto.getTelefone());
+        alunoEncontrado.setValorMensalidade(alunoDto.getValorMensalidade());
+        alunoEncontrado.setDiaVencimentoMensalidade(alunoDto.getDiaVencimentoMensalidade());
+        alunoEncontrado.setNomeResponsavel(alunoDto.getNomeResponsavel());
+        alunoEncontrado.setTelefoneResponsavel(alunoDto.getTelefoneResponsavel());
+
+        return alunoRepository.save(alunoEncontrado);
     }
 }

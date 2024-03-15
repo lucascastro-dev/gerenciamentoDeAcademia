@@ -26,18 +26,22 @@ public class AlteraradorDeDadosDoAlunoTest {
 
     @Test
     void deveAlterarOsDadosDeUmAluno() {
-        AlunoDto alunoDto = Instancio.of(AlunoDto.class).set(field(AlunoDto::getCpf), "80430802080").create();
-        Mockito.when(alunoRepository.findByCpf(alunoDto.getCpf())).thenReturn(alunoDto);
+        Aluno alunoExistente = Instancio.of(Aluno.class).set(field(Aluno::getCpf), "80430802080").create();
+        AlunoDto alunoNovo = Instancio.of(AlunoDto.class)
+                .set(field(AlunoDto::getCpf), "80430802080")
+                .set(field(AlunoDto::getNome), "Aluno alterado").create();
+        Mockito.when(alunoRepository.findByCpf(alunoNovo.getCpf())).thenReturn(alunoExistente);
 
-        alteadorDeDadosDoAluno.alterarAluno(alunoDto);
+        alteadorDeDadosDoAluno.alterarAluno(alunoNovo);
 
         Mockito.verify(alunoRepository).save(any(Aluno.class));
     }
 
     @Test
     void deveConsultarSeOAlunoExisteAntesDeAlterar() {
-        AlunoDto alunoDto = Instancio.of(AlunoDto.class).create();
-        Mockito.when(alunoRepository.findByCpf(alunoDto.getCpf())).thenReturn(alunoDto);
+        AlunoDto alunoDto = Instancio.of(AlunoDto.class).set(field(AlunoDto::getCpf), "80430802080").create();
+        Aluno alunoEncontrado = Instancio.of(Aluno.class).set(field(Aluno::getCpf), "80430802080").create();
+        Mockito.when(alunoRepository.findByCpf(alunoDto.getCpf())).thenReturn(alunoEncontrado);
 
         alteadorDeDadosDoAluno.alterarAluno(alunoDto);
 
@@ -56,8 +60,8 @@ public class AlteraradorDeDadosDoAlunoTest {
     @Test
     void deveRetornarMensagemDeErroSeTentarAlterarOCpf() {
         AlunoDto alunoParaAlterar = Instancio.of(AlunoDto.class).set(field(AlunoDto::getCpf), "123456").create();
-        AlunoDto alunoDto = Instancio.of(AlunoDto.class).set(field(AlunoDto::getCpf), "123456789").create();
-        Mockito.when(alunoRepository.findByCpf(alunoParaAlterar.getCpf())).thenReturn(alunoDto);
+        Aluno alunoEncontrado = Instancio.of(Aluno.class).set(field(Aluno::getCpf), "123456789").create();
+        Mockito.when(alunoRepository.findByCpf(alunoParaAlterar.getCpf())).thenReturn(alunoEncontrado);
 
         var mensagemDeErro = Assertions.assertThrows(ExcecaoDeDominio.class, () -> alteadorDeDadosDoAluno.alterarAluno(alunoParaAlterar));
 

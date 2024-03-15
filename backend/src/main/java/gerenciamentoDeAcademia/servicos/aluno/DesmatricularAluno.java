@@ -23,7 +23,7 @@ public class DesmatricularAluno implements IExcluirCadastroPessoa {
         var alunoParaDesmatricular = alunoRepository.findByCpf(cpf);
 
         if (alunoParaDesmatricular != null) {
-            alunoRepository.delete(new Aluno(alunoParaDesmatricular));
+            alunoRepository.delete(alunoParaDesmatricular);
         } else {
             ExcecaoDeDominio.quandoNulo(alunoParaDesmatricular, "Aluno não encontrado na base!");
         }

@@ -7,6 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface AlunoRepository extends JpaRepository<Aluno, Long> {
-
-    AlunoDto findByCpf(String cpf);
+    Aluno findByCpf(String cpf);
 }

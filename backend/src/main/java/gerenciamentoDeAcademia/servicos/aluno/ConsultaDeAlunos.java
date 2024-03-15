@@ -1,6 +1,7 @@
 package gerenciamentoDeAcademia.servicos.aluno;
 
 import gerenciamentoDeAcademia.dto.AlunoDto;
+import gerenciamentoDeAcademia.entidades.Aluno;
 import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
 import gerenciamentoDeAcademia.repositorios.AlunoRepository;
 import gerenciamentoDeAcademia.servicos.interfaces.IConsultaDeAlunos;
@@ -26,6 +27,9 @@ public class ConsultaDeAlunos implements IConsultaDeAlunos {
     public AlunoDto consultaAlunoPorCpf(String cpf) {
         ExcecaoDeDominio.quandoNuloOuVazio(cpf, "CPF obrigatório para consulta do aluno!");
 
-        return alunoRepository.findByCpf(cpf);
+        Aluno alunoEncontrado = alunoRepository.findByCpf(cpf);
+        ExcecaoDeDominio.quandoNulo(alunoEncontrado, "Aluno não encontrado na base!");
+
+        return new AlunoDto(alunoEncontrado);
     }
 }
