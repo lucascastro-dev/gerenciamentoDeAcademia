@@ -18,23 +18,23 @@ public class AlteadorDeDadosDoAluno implements IAlteradorDeDadosDoAluno {
     private AlunoRepository alunoRepository;
 
     @Override
-    public Aluno alterarAluno(AlunoDto alunoDto) {
-        Aluno alunoEncontrado = alunoRepository.findByCpf(alunoDto.getCpf());
-        ExcecaoDeDominio.quandoNulo(alunoEncontrado, "Aluno não encontrado!");
+    public void alterarAluno(AlunoDto alunoDto) {
+        Aluno aluno = alunoRepository.findByCpf(alunoDto.getCpf());
+        ExcecaoDeDominio.quandoNulo(aluno, "Aluno não encontrado!");
 
-        if (alunoEncontrado.getCpf() != alunoDto.getCpf())
+        if (aluno.getCpf() != alunoDto.getCpf())
             throw new ExcecaoDeDominio("Não é possível alterar o CPF do aluno!");
 
-        alunoEncontrado.setNome(alunoDto.getNome());
-        alunoEncontrado.setRg(alunoDto.getRg());
-        alunoEncontrado.setDataDeNascimento(alunoDto.getDataDeNascimento());
-        alunoEncontrado.setEndereco(alunoDto.getEndereco());
-        alunoEncontrado.setTelefone(alunoDto.getTelefone());
-        alunoEncontrado.setValorMensalidade(alunoDto.getValorMensalidade());
-        alunoEncontrado.setDiaVencimentoMensalidade(alunoDto.getDiaVencimentoMensalidade());
-        alunoEncontrado.setNomeResponsavel(alunoDto.getNomeResponsavel());
-        alunoEncontrado.setTelefoneResponsavel(alunoDto.getTelefoneResponsavel());
+        aluno.setNome(alunoDto.getNome());
+        aluno.setRg(alunoDto.getRg());
+        aluno.setDataDeNascimento(alunoDto.getDataDeNascimento());
+        aluno.setEndereco(alunoDto.getEndereco());
+        aluno.setTelefone(alunoDto.getTelefone());
+        aluno.setValorMensalidade(alunoDto.getValorMensalidade());
+        aluno.setDiaVencimentoMensalidade(alunoDto.getDiaVencimentoMensalidade());
+        aluno.setNomeResponsavel(alunoDto.getNomeResponsavel());
+        aluno.setTelefoneResponsavel(alunoDto.getTelefoneResponsavel());
 
-        return alunoRepository.save(alunoEncontrado);
+        alunoRepository.save(aluno);
     }
 }

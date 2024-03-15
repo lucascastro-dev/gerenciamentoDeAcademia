@@ -21,10 +21,10 @@ public class CadastradorDeAluno implements ICadastradorDeAluno {
     private AlunoRepository alunoRepository;
 
     @Override
-    public Aluno cadastrar(AlunoDto alunoDto) {
+    public void cadastrar(AlunoDto alunoDto) {
         validar(alunoDto);
 
-        return alunoRepository.save(new Aluno(alunoDto));
+        alunoRepository.save(new Aluno(alunoDto));
     }
 
     public void validar(AlunoDto alunoDto) {
