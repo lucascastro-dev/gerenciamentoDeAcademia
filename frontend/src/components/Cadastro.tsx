@@ -5,13 +5,13 @@ import AuthService from '../services/AuthService';
 const Cadastro: React.FC = () => {
   const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState('USER');
+  const [role, setRole] = useState('ADMIN');
   const navigate = useNavigate();
 
   const handleCadastro = async () => {
     try {
       await AuthService.cadastrar({ login, password, role });
-      // Após o cadastro bem-sucedido, redirecione para a tela de login ou outra página
+      alert("Cadastro realizado com sucesso!")
       navigate('/login');
     } catch (error) {
       console.error('Erro ao cadastrar:', error);

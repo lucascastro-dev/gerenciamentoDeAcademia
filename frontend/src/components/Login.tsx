@@ -12,12 +12,12 @@ const Login: React.FC = () => {
   const handleLogin = async () => {
     try {
       const token = await AuthService.login(login, password);
-      // Salvar token no armazenamento local ou de sessão conforme necessário
-      // Exemplo: localStorage.setItem('token', token);
-      navigate('/dashboard');
+      console.log("Token gerado: " + token)
+      alert("Login realizado com sucesso!")
+      navigate('/home');
     } catch (error) {
       console.error('Erro de login:', error);
-      // Lidar com erros de login, como exibição de uma mensagem de erro
+      alert(error)
     }
   };
 

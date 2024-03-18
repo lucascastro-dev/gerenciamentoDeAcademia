@@ -3,9 +3,10 @@ import axios from 'axios';
 const BASE_URL = 'http://localhost:8080/auth';
 
 const AuthService = {
-    login: async (login: string, password: string): Promise<string> => {
+    login: async (login: string, password: string) => {
         try {
             const response = await axios.post(`${BASE_URL}/login`, { login, password });
+            console.log(response)
             return response.data.token;
         } catch (error) {
             console.log('Falha na autenticação', error);
