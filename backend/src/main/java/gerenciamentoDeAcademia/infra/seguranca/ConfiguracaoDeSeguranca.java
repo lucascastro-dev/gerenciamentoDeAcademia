@@ -1,5 +1,6 @@
 package gerenciamentoDeAcademia.infra.seguranca;
 
+import gerenciamentoDeAcademia.enums.UserRole;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,10 +43,10 @@ public class ConfiguracaoDeSeguranca {
                 .authorizeHttpRequests()
                 .antMatchers(HttpMethod.POST, "/auth/login").permitAll()
                 .antMatchers(HttpMethod.POST, "/auth/cadastrar").permitAll()
-                .antMatchers(HttpMethod.POST, "/aluno/matricularAluno").hasRole("ADMIN")
-                .antMatchers(HttpMethod.POST, "/funcionario/cadastrarFuncionario").hasRole("ADMIN")
-                .antMatchers(HttpMethod.POST, "/funcionario/cadastrarFuncionario").hasRole("ADMIN")
-                .antMatchers(HttpMethod.POST, "/turma/montarTurma").hasRole("ADMIN")
+                .antMatchers(HttpMethod.POST, "/aluno/matricularAluno").hasRole(UserRole.ADMIN.toString())
+                .antMatchers(HttpMethod.POST, "/funcionario/cadastrarFuncionario").hasRole(UserRole.ADMIN.toString())
+                .antMatchers(HttpMethod.POST, "/funcionario/cadastrarFuncionario").hasRole(UserRole.ADMIN.toString())
+                .antMatchers(HttpMethod.POST, "/turma/montarTurma").hasRole(UserRole.ADMIN.toString())
                 .anyRequest().authenticated().and()
                 .addFilterBefore(filtroSeguranca, UsernamePasswordAuthenticationFilter.class)
                 .build();
