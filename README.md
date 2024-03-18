@@ -23,6 +23,13 @@ Este é um projeto de estudo para a prática de conceitos avançados de desenvol
 - **React:** Biblioteca JavaScript para a construção de interfaces de usuário.
 - **VITE:** Ferramenta de construção rápida para projetos React.
 
+### Práticas e Conceitos Aplicados
+- **Clean Code:** Foco na escrita de código legível, organizado e de fácil manutenção.
+- **DDD (Domain-Driven Design):** Modelagem de domínio baseada em conceitos de negócio.
+- **BDD (Behavior-Driven Development):** Desenvolvimento orientado a comportamento, com cenários descritos em linguagem natural.
+- **TDD (Test-Driven Development):** Desenvolvimento orientado a testes, escrevendo testes antes de implementar a funcionalidade.
+- **JWT Auth:** Autenticação e autorização baseada em tokens JWT (JSON Web Token).
+
 ## Como Executar o Projeto
 
 1. **Clonar o repositório:**
