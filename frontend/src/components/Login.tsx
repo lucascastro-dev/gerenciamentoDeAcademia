@@ -5,13 +5,13 @@ import AuthService from '../services/AuthService';
 import { Link } from 'react-router-dom';
 
 const Login: React.FC = () => {
-  const [username, setUsername] = useState('');
+  const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
   const handleLogin = async () => {
     try {
-      const token = await AuthService.login(username, password);
+      const token = await AuthService.login(login, password);
       // Salvar token no armazenamento local ou de sessão conforme necessário
       // Exemplo: localStorage.setItem('token', token);
       navigate('/dashboard');
@@ -29,8 +29,8 @@ const Login: React.FC = () => {
           Usuário:
           <input
             type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            value={login}
+            onChange={(e) => setLogin(e.target.value)}
             placeholder="Digite seu usuário"
           />
         </label>

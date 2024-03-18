@@ -5,6 +5,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -19,7 +20,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -31,16 +32,21 @@ public class ConfiguracaoDeSeguranca {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-        return http.
-                csrf(csrf -> csrf.disable())
+        return http.cors()
+                .configurationSource(corsConfigurationSource())
+                .and()
+                .csrf().ignoringAntMatchers("/**")
+                .requireCsrfProtectionMatcher(new AntPathRequestMatcher("/**"))
+                .and()
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(new AntPathRequestMatcher("/auth/login", "POST")).permitAll()
-                        .requestMatchers(new AntPathRequestMatcher("/auth/cadastrar", "POST")).permitAll()
-                        .requestMatchers(new AntPathRequestMatcher("/aluno/matricularAluno", "POST")).hasRole("ADMIN")
-                        .requestMatchers(new AntPathRequestMatcher("/funcionario/cadastrarFuncionario", "POST")).hasRole("ADMIN")
-                        .requestMatchers(new AntPathRequestMatcher("/turma/montarTurma", "POST")).hasRole("ADMIN")
-                        .anyRequest().authenticated())
+                .authorizeHttpRequests()
+                .antMatchers(HttpMethod.POST, "/auth/login").permitAll()
+                .antMatchers(HttpMethod.POST, "/auth/cadastrar").permitAll()
+                .antMatchers(HttpMethod.POST, "/aluno/matricularAluno").hasRole("ADMIN")
+                .antMatchers(HttpMethod.POST, "/funcionario/cadastrarFuncionario").hasRole("ADMIN")
+                .antMatchers(HttpMethod.POST, "/funcionario/cadastrarFuncionario").hasRole("ADMIN")
+                .antMatchers(HttpMethod.POST, "/turma/montarTurma").hasRole("ADMIN")
+                .anyRequest().authenticated().and()
                 .addFilterBefore(filtroSeguranca, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
@@ -57,9 +63,10 @@ public class ConfiguracaoDeSeguranca {
 
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration().applyPermitDefaultValues();
-        configuration.setAllowedOrigins(Arrays.asList("*"));
-        configuration.setAllowedMethods(Arrays.asList("POST", "GET", "PUT", "DELETE", "OPTIONS"));
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(List.of("http://localhost:5173/"));
+        configuration.setAllowedMethods(List.of("POST", "GET", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
 
         final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
