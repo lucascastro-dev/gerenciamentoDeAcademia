@@ -1,11 +1,13 @@
 package gerenciamentoDeAcademia.entidades;
 
 import gerenciamentoDeAcademia.dto.FuncionarioDto;
+import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.envers.Audited;
+import org.hibernate.validator.constraints.br.CPF;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -27,6 +29,7 @@ public class Funcionario {
     private Long id;
     private String nome;
     private String rg;
+    @CPF(message = "CPF inválido")
     private String cpf;
     private LocalDate dataDeNascimento;
     private String endereco;
@@ -36,6 +39,7 @@ public class Funcionario {
     private Boolean permitirGerenciarFuncoes;
 
     public Funcionario(FuncionarioDto funcionarioDto) {
+        validar(funcionarioDto);
         this.nome = funcionarioDto.getNome();
         this.rg = funcionarioDto.getRg();
         this.cpf = funcionarioDto.getCpf();
@@ -45,5 +49,18 @@ public class Funcionario {
         this.cargo = funcionarioDto.getCargo();
         this.especializacao = funcionarioDto.getEspecializacao();
         this.permitirGerenciarFuncoes = funcionarioDto.getPermitirGerenciarFuncoes();
+    }
+
+    public void validar(FuncionarioDto funcionarioDto) {
+        ExcecaoDeDominio.quandoNulo(funcionarioDto, "Obrigatório preencher dados do funcionario");
+        ExcecaoDeDominio.quandoNuloOuVazio(funcionarioDto.getNome(), "Nome é obrigatório!");
+        ExcecaoDeDominio.quandoNuloOuVazio(funcionarioDto.getRg(), "RG é obrigatório!");
+        ExcecaoDeDominio.quandoNuloOuVazio(funcionarioDto.getCpf(), "CPF é obrigatório!");
+        ExcecaoDeDominio.quandoDataNulaOuVazia(funcionarioDto.getDataDeNascimento(), "Data de nascimento é obrigatória!");
+        ExcecaoDeDominio.quandoNuloOuVazio(funcionarioDto.getEndereco(), "Endereço é obrigatório!");
+        ExcecaoDeDominio.quandoNuloOuVazio(funcionarioDto.getTelefone(), "Telefone é obrigatório!");
+        ExcecaoDeDominio.quandoNuloOuVazio(funcionarioDto.getCargo(), "Cargo é obrigatório!");
+        if (funcionarioDto.getCargo() != null || funcionarioDto.getCargo().isEmpty())
+            ExcecaoDeDominio.quandoNuloOuVazio(funcionarioDto.getEspecializacao(), "Especialização é obrigatório!");
     }
 }

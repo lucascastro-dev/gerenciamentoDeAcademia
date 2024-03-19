@@ -55,7 +55,7 @@ public class GerenciarAlunoController {
 
     @GetMapping("/consultarAluno")
     @ResponseStatus(HttpStatus.OK)
-    public List<AlunoDto> listarAlunos() {
+    public List<Aluno> listarAlunos() {
         return consultaDeAlunos.listarAlunos();
     }
 

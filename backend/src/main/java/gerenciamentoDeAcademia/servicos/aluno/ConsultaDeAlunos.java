@@ -24,10 +24,8 @@ public class ConsultaDeAlunos implements IConsultaDeAlunos {
     private final ModelMapper modelMapper;
 
     @Override
-    public List<AlunoDto> listarAlunos() {
-        List<Aluno> listaDeAlunos = alunoRepository.findAll();
-
-        return modelMapper.map(listaDeAlunos, new TypeToken<List<AlunoDto>>() {}.getType());
+    public List<Aluno> listarAlunos() {
+        return alunoRepository.findAll();
     }
 
     @Override

@@ -6,7 +6,7 @@ import gerenciamentoDeAcademia.entidades.Aluno;
 import java.util.List;
 
 public interface IConsultaDeAlunos {
-    List<AlunoDto> listarAlunos();
+    List<Aluno> listarAlunos();
 
     Aluno consultaAlunoPorCpf(String cpf);
 }
