@@ -38,6 +38,7 @@ h1 {
 
 button {
   border-radius: 8px;
+  margin-bottom: 15px;
   border: 1px solid transparent;
   padding: 0.6em 1.2em;
   font-size: 1em;
@@ -46,6 +47,31 @@ button {
   background-color: #1a1a1a;
   cursor: pointer;
   transition: border-color 0.25s;
+}
+
+select{
+  border-radius: 8px;
+  border: 1px solid transparent;
+  margin-bottom: 15px;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.25s;
+  background-color: #B9B9B9;
+}
+
+input{
+  border-color: #1a1a1a;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    margin-bottom: 15px;
+    padding: 0.6em 1.2em;
+    font-size: 1em;
+    font-weight: 500;
+    font-family: inherit;
+    transition: border-color 0.25s;
 }
 button:hover {
   border-color: #646cff;
@@ -64,6 +90,6 @@ button:focus-visible {
     color: #747bff;
   }
   button {
-    background-color: #f9f9f9;
+    background-color: #646cff;
   }
 }

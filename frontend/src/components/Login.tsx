@@ -1,32 +1,37 @@
 // src/components/Login.tsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AuthService from '../services/AuthService';
 import { Link } from 'react-router-dom';
+import { AxiosError } from 'axios';
 
 const Login: React.FC = () => {
   const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
+  const [token, setToken] = useState('');
+  const [state, setState] = useState('');
   const navigate = useNavigate();
 
   const handleLogin = async () => {
-    try {
-      const token = await AuthService.login(login, password);
-      console.log("Token gerado: " + token)
-      alert("Login realizado com sucesso!")
+    await AuthService.login(login, password).then((value) => {
+      setToken(value.data);
       navigate('/home');
-    } catch (error) {
-      console.error('Erro de login:', error);
-      alert(error)
-    }
+    }).catch((value: AxiosError) => {
+      setState(value.response ? `${value.response.data}` : `${value}`)
+    });;
   };
+
+  console.log("Token gerado: " + token)
+
+  useEffect(() => {
+    console.log(state);
+  }, [state])
 
   return (
     <div>
       <h2>Login</h2>
       <form>
         <label>
-          Usuário:
           <input
             type="text"
             value={login}
@@ -36,7 +41,6 @@ const Login: React.FC = () => {
         </label>
         <br />
         <label>
-          Senha:
           <input
             type="password"
             value={password}
@@ -49,7 +53,7 @@ const Login: React.FC = () => {
           Login
         </button>
       </form>
-      <Link to="/cadastro">Registrar</Link>
+      <Link to="/arealogada/cadastro">Registrar</Link>
     </div>
   );
 };
