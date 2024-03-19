@@ -1,8 +1,8 @@
 package gerenciamentoDeAcademia.servicos.funcionario;
 
+import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
 import gerenciamentoDeAcademia.repositorios.FuncionarioRepository;
 import gerenciamentoDeAcademia.servicos.interfaces.IExcluirCadastroPessoa;
-import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -18,15 +18,11 @@ public class ExcluirFuncionario implements IExcluirCadastroPessoa {
 
     @Override
     public void excluirCadastro(String cpf) {
-        if (cpf.isEmpty() || cpf == null)
-            ExcecaoDeDominio.quandoNuloOuVazio(cpf, "CPF é obrigatório para excluir funcionário da base!");
+        ExcecaoDeDominio.quandoNuloOuVazio(cpf, "CPF é obrigatório para excluir funcionário da base!");
 
         var funcionarioParaExcluir = funcionarioRepository.findByCpf(cpf);
+        ExcecaoDeDominio.quandoNulo(funcionarioParaExcluir, "Funcionário não encontrado na base!");
 
-        if (funcionarioParaExcluir != null) {
-            funcionarioRepository.delete(funcionarioParaExcluir);
-        } else {
-            ExcecaoDeDominio.quandoNulo(funcionarioParaExcluir.getCpf(), "Funcionário não encontrado na base!");
-        }
+        funcionarioRepository.delete(funcionarioParaExcluir);
     }
 }

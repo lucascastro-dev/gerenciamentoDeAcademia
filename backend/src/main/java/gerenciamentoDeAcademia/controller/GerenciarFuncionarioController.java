@@ -1,6 +1,7 @@
 package gerenciamentoDeAcademia.controller;
 
 import gerenciamentoDeAcademia.dto.FuncionarioDto;
+import gerenciamentoDeAcademia.entidades.Funcionario;
 import gerenciamentoDeAcademia.servicos.funcionario.CadastradorDeFuncionario;
 import gerenciamentoDeAcademia.servicos.funcionario.ConsultaDeFuncionario;
 import gerenciamentoDeAcademia.servicos.funcionario.ExcluirFuncionario;
@@ -42,7 +43,7 @@ public class GerenciarFuncionarioController {
     }
 
     @GetMapping("/consultarFuncionario")
-    public List<FuncionarioDto> listarFuncionarios() {
+    public List<Funcionario> listarFuncionarios() {
         return consultaDeFuncionario.listarFuncionarios();
     }
 

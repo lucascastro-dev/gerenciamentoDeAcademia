@@ -1,12 +1,11 @@
 package gerenciamentoDeAcademia.servicos.funcionario;
 
-import gerenciamentoDeAcademia.dto.FuncionarioDto;
 import gerenciamentoDeAcademia.entidades.Funcionario;
+import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
 import gerenciamentoDeAcademia.repositorios.FuncionarioRepository;
 import gerenciamentoDeAcademia.servicos.interfaces.IConsultaDeFuncionario;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -19,17 +18,16 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class ConsultaDeFuncionario implements IConsultaDeFuncionario {
     private final FuncionarioRepository funcionarioRepository;
-    private final ModelMapper modelMapper;
 
     @Override
-    public List<FuncionarioDto> listarFuncionarios() {
-        List<Funcionario> listaDeFuncionario = funcionarioRepository.findAll();
-
-        return modelMapper.map(listaDeFuncionario, new TypeToken<List<FuncionarioDto>>() {}.getType());
+    public List<Funcionario> listarFuncionarios() {
+        return funcionarioRepository.findAll();
     }
 
     @Override
     public Funcionario consultarFuncionarioPorCpf(String cpf) {
+        ExcecaoDeDominio.quandoNuloOuVazio(cpf, "CPF obrigatório para consultar funcionário!");
+
         return funcionarioRepository.findByCpf(cpf);
     }
 
