@@ -1,6 +1,5 @@
 package gerenciamentoDeAcademia.servicos.funcionario;
 
-import antlr.MismatchedCharException;
 import gerenciamentoDeAcademia.dto.FuncionarioDto;
 import gerenciamentoDeAcademia.entidades.Funcionario;
 import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
@@ -26,9 +25,12 @@ public class AlteradorDeFuncionarioTest {
 
     @Test
     void deveAlterarOsDadosDeUmFuncionario() {
+        Funcionario funcionarioExistente = Instancio.of(Funcionario.class)
+                .set(field(Funcionario::getCpf), "80430802080").create();
         FuncionarioDto funcionarioNovo = Instancio.of(FuncionarioDto.class)
                 .set(field(FuncionarioDto::getCpf), "80430802080")
                 .set(field(FuncionarioDto::getNome), "Nome alterado").create();
+        Mockito.when(funcionarioRepository.findByCpf(funcionarioNovo.getCpf())).thenReturn(funcionarioExistente);
 
         alteradorDeFuncionario.alterarFuncionario(funcionarioNovo);
 
