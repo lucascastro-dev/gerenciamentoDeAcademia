@@ -1,4 +1,4 @@
-package gerenciamentoDeAcademia.servicos.funcionario;
+package gerenciamentoDeAcademia.servicos.interfaces;
 
 import gerenciamentoDeAcademia.dto.FuncionarioDto;
 

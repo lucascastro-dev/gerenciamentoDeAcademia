@@ -4,6 +4,7 @@ import gerenciamentoDeAcademia.dto.FuncionarioDto;
 import gerenciamentoDeAcademia.entidades.Funcionario;
 import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
 import gerenciamentoDeAcademia.repositorios.FuncionarioRepository;
+import gerenciamentoDeAcademia.servicos.interfaces.IAlteradorDeFuncionario;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
