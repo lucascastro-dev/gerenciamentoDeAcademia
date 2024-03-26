@@ -1,6 +1,7 @@
 package gerenciamentoDeAcademia.entidades;
 
 import gerenciamentoDeAcademia.dto.TurmaDto;
+import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -48,10 +49,18 @@ public class Turma {
     private Set<Aluno> alunos = new HashSet<>();
 
     public Turma(TurmaDto turmaDto) {
+        validar(turmaDto);
         this.horario = turmaDto.getHorario();
         this.dias = turmaDto.getDias();
         this.modalidade = turmaDto.getModalidade();
         this.professor = Funcionario.builder().cpf(turmaDto.getCpfProfessor()).build();
+    }
+
+    private void validar(TurmaDto turmaDto) {
+        ExcecaoDeDominio.quandoNuloOuVazio(turmaDto.getHorario(), "Horário da turma é obrigatório!");
+        ExcecaoDeDominio.quandoListaNulaOuVazia(turmaDto.getDias(), "Dias de aula são obrigatórios!");
+        ExcecaoDeDominio.quandoNuloOuVazio(turmaDto.getModalidade(), "Especificação da turma é obrigatória!");
+        ExcecaoDeDominio.quandoNulo(turmaDto.getCpfProfessor(), "Professor para a turma é obrigatória!");
     }
 
 }

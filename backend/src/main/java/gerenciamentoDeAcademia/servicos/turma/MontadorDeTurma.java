@@ -4,9 +4,9 @@ import gerenciamentoDeAcademia.dto.TurmaDto;
 import gerenciamentoDeAcademia.entidades.Aluno;
 import gerenciamentoDeAcademia.entidades.Turma;
 import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
+import gerenciamentoDeAcademia.repositorios.AlunoRepository;
+import gerenciamentoDeAcademia.repositorios.FuncionarioRepository;
 import gerenciamentoDeAcademia.repositorios.TurmaRepository;
-import gerenciamentoDeAcademia.servicos.aluno.ConsultaDeAlunos;
-import gerenciamentoDeAcademia.servicos.funcionario.ConsultaDeFuncionario;
 import gerenciamentoDeAcademia.servicos.interfaces.IMontadorDeTurma;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,47 +24,31 @@ public class MontadorDeTurma implements IMontadorDeTurma {
     @Autowired
     private TurmaRepository turmaRepository;
     @Autowired
-    private ConsultaDeFuncionario consultaDeFuncionario;
+    private FuncionarioRepository funcionarioRepository;
     @Autowired
-    private ConsultaDeAlunos consultaDeAlunos;
+    private AlunoRepository alunoRepository;
 
     @Override
     public Turma montar(TurmaDto turmaDto) {
-        validar(turmaDto);
-        turmaDto.setAlunos(validarAlunosNaTurma(turmaDto.getAlunos()));
         validarProfessor(turmaDto.getCpfProfessor());
+        turmaDto.setAlunos(validarAlunosNaTurma(turmaDto.getAlunos()));
 
         return turmaRepository.save(new Turma(turmaDto));
     }
 
     private void validarProfessor(String cpfProfessor) {
-        try {
-            consultaDeFuncionario.consultarFuncionarioPorCpf(cpfProfessor);
-        } catch (NullPointerException e) {
-            throw new ExcecaoDeDominio("Funcionario não encontrado");
-        }
+        ExcecaoDeDominio.quandoNulo(funcionarioRepository.findByCpf(cpfProfessor), "Funcionario não encontrado");
     }
 
     private List<Aluno> validarAlunosNaTurma(List<Aluno> alunos) {
-        try {
-            List<Aluno> alunosExistentes = new ArrayList<>();
+        List<Aluno> alunosExistentes = new ArrayList<>();
 
-            for (Aluno aluno : alunos) {
-                Aluno alunoEncontrado = consultaDeAlunos.consultaAlunoPorCpf(aluno.getCpf());
-                alunosExistentes.add(alunoEncontrado);
-            }
-
-            return alunosExistentes;
-
-        } catch (NullPointerException e) {
-            throw new RuntimeException("Aluno não encontrado");
+        for (Aluno aluno : alunos) {
+            Aluno alunoEncontrado = alunoRepository.findByCpf(aluno.getCpf());
+            ExcecaoDeDominio.quandoNulo(alunoEncontrado, "Aluno não encontrado");
+            alunosExistentes.add(alunoEncontrado);
         }
-    }
 
-    public void validar(TurmaDto turmaDto) {
-        ExcecaoDeDominio.quandoNuloOuVazio(turmaDto.getHorario(), "Horário da turma é obrigatório!");
-        ExcecaoDeDominio.quandoListaNulaOuVazia(turmaDto.getDias(), "Dias de aula são obrigatórios!");
-        ExcecaoDeDominio.quandoNuloOuVazio(turmaDto.getModalidade(), "Especificação da turma é obrigatória!");
-        ExcecaoDeDominio.quandoNulo(turmaDto.getCpfProfessor(), "Professor para a turma é obrigatória!");
+        return alunosExistentes;
     }
 }
