@@ -57,10 +57,9 @@ public class Turma {
     }
 
     private void validar(TurmaDto turmaDto) {
-        ExcecaoDeDominio.quandoNuloOuVazio(turmaDto.getHorario(), "Horário da turma é obrigatório!");
-        ExcecaoDeDominio.quandoListaNulaOuVazia(turmaDto.getDias(), "Dias de aula são obrigatórios!");
-        ExcecaoDeDominio.quandoNuloOuVazio(turmaDto.getModalidade(), "Especificação da turma é obrigatória!");
-        ExcecaoDeDominio.quandoNulo(turmaDto.getCpfProfessor(), "Professor para a turma é obrigatória!");
+        ExcecaoDeDominio.quandoNuloOuVazio(turmaDto.getHorario(), "Horário da turma é obrigatório");
+        ExcecaoDeDominio.quandoListaNulaOuVazia(turmaDto.getDias(), "Dias de aula são obrigatórios");
+        ExcecaoDeDominio.quandoNuloOuVazio(turmaDto.getModalidade(), "Modalidade da turma é obrigatória");
     }
 
 }

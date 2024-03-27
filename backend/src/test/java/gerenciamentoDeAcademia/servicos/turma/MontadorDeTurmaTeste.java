@@ -10,6 +10,7 @@ import gerenciamentoDeAcademia.repositorios.FuncionarioRepository;
 import gerenciamentoDeAcademia.repositorios.TurmaRepository;
 import org.instancio.Instancio;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -32,14 +33,23 @@ public class MontadorDeTurmaTeste {
     @Mock
     FuncionarioRepository funcionarioRepository;
 
+    private TurmaDto turmaDto;
+    private Aluno aluno;
+    private Funcionario funcionario;
+    private String cpfValido = "36305895023";
+
+    @BeforeEach
+    void init() {
+        turmaDto = Instancio.of(TurmaDto.class).create();
+        aluno = Instancio.of(Aluno.class).set(field(Aluno::getCpf), cpfValido).create();
+        funcionario = Instancio.of(Funcionario.class).set(field(Funcionario::getCpf), cpfValido).create();
+
+        Mockito.when(alunoRepository.findByCpf(anyString())).thenReturn(aluno);
+        Mockito.when(funcionarioRepository.findByCpf(anyString())).thenReturn(funcionario);
+    }
+
     @Test
     void deveMontarUmaTurmaComSucesso() {
-        TurmaDto turmaDto = Instancio.of(TurmaDto.class).create();
-        Aluno aluno = Instancio.of(Aluno.class).set(field(Aluno::getCpf), "36305895023").create();
-        Mockito.when(alunoRepository.findByCpf(anyString())).thenReturn(aluno);
-        Funcionario funcionario = Instancio.of(Funcionario.class).set(field(Funcionario::getCpf), "36305895023").create();
-        Mockito.when(funcionarioRepository.findByCpf(anyString())).thenReturn(funcionario);
-
         montadorDeTurma.montar(turmaDto);
 
         Mockito.verify(turmaRepository).save(Mockito.any(Turma.class));
@@ -47,7 +57,6 @@ public class MontadorDeTurmaTeste {
 
     @Test
     void deveRetornarMensagemDeErroQuandoFuncionarioPraCadastrarNaTurmaNaoForEncontradoNaBase() {
-        TurmaDto turmaDto = Instancio.of(TurmaDto.class).create();
         Mockito.when(funcionarioRepository.findByCpf(anyString())).thenReturn(null);
 
         var mensagemDeErro = Assertions.assertThrows(ExcecaoDeDominio.class, () -> montadorDeTurma.montar(turmaDto));
@@ -57,12 +66,37 @@ public class MontadorDeTurmaTeste {
 
     @Test
     void deveRetornarMensagemDeErroQuandoAlunoPraCadastrarNaTurmaNaoForEncontradoNaBase() {
-        TurmaDto turmaDto = Instancio.of(TurmaDto.class).create();
-        Funcionario funcionario = Instancio.of(Funcionario.class).set(field(Funcionario::getCpf), "36305895023").create();
-        Mockito.when(funcionarioRepository.findByCpf(anyString())).thenReturn(funcionario);
+        Mockito.when(alunoRepository.findByCpf(anyString())).thenReturn(null);
 
         var mensagemDeErro = Assertions.assertThrows(ExcecaoDeDominio.class, () -> montadorDeTurma.montar(turmaDto));
 
         Assertions.assertEquals("Aluno não encontrado", mensagemDeErro.getMessage());
+    }
+
+    @Test
+    void deveRetornarMensagemDeErroQuandoNaoInformarModalidadeDaTurma() {
+        TurmaDto turmaDto = Instancio.of(TurmaDto.class).set(field(TurmaDto::getModalidade), null).create();
+
+        var mensagemDeErro = Assertions.assertThrows(ExcecaoDeDominio.class, () -> montadorDeTurma.montar(turmaDto));
+
+        Assertions.assertEquals("Modalidade da turma é obrigatória", mensagemDeErro.getMessage());
+    }
+
+    @Test
+    void deveRetornarMensagemDeErroQuandoNaoInformarHorarioDaTurma() {
+        TurmaDto turmaDto = Instancio.of(TurmaDto.class).set(field(TurmaDto::getHorario), null).create();
+
+        var mensagemDeErro = Assertions.assertThrows(ExcecaoDeDominio.class, () -> montadorDeTurma.montar(turmaDto));
+
+        Assertions.assertEquals("Horário da turma é obrigatório", mensagemDeErro.getMessage());
+    }
+
+    @Test
+    void deveRetornarMensagemDeErroQuandoNaoInformarDiasDaTurma() {
+        TurmaDto turmaDto = Instancio.of(TurmaDto.class).set(field(TurmaDto::getDias), null).create();
+
+        var mensagemDeErro = Assertions.assertThrows(ExcecaoDeDominio.class, () -> montadorDeTurma.montar(turmaDto));
+
+        Assertions.assertEquals("Dias de aula são obrigatórios", mensagemDeErro.getMessage());
     }
 }
