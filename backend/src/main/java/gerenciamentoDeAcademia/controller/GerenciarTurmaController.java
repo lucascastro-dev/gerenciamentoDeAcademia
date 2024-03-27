@@ -1,6 +1,7 @@
 package gerenciamentoDeAcademia.controller;
 
 import gerenciamentoDeAcademia.dto.TurmaDto;
+import gerenciamentoDeAcademia.entidades.Turma;
 import gerenciamentoDeAcademia.servicos.aluno.ConsultaDeAlunos;
 import gerenciamentoDeAcademia.servicos.turma.ConsultaDeTurma;
 import gerenciamentoDeAcademia.servicos.turma.MontadorDeTurma;
@@ -16,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin("*")
@@ -37,8 +37,8 @@ public class GerenciarTurmaController {
     }
 
     @GetMapping("/listarTurmas")
-    public List<TurmaDto> listarTurma() {
-        return consultaDeTurma.listarTurmas().stream().map(TurmaDto::new).collect(Collectors.toList());
+    public List<Turma> listarTurma() {
+        return consultaDeTurma.listarTurmas();
     }
 
     @GetMapping("/consultarTurmaCodigo/{id}")
