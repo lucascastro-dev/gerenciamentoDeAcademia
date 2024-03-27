@@ -4,16 +4,19 @@ import gerenciamentoDeAcademia.dto.TurmaDto;
 import gerenciamentoDeAcademia.entidades.Turma;
 import gerenciamentoDeAcademia.servicos.aluno.ConsultaDeAlunos;
 import gerenciamentoDeAcademia.servicos.turma.ConsultaDeTurma;
+import gerenciamentoDeAcademia.servicos.turma.ExluirTurma;
 import gerenciamentoDeAcademia.servicos.turma.MontadorDeTurma;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -28,12 +31,20 @@ public class GerenciarTurmaController {
     @Autowired
     ConsultaDeTurma consultaDeTurma;
     @Autowired
+    ExluirTurma exluirTurma;
+    @Autowired
     ConsultaDeAlunos consultaDeAlunos;
 
     @PostMapping("/montarTurma")
-    public ResponseEntity<String> turmaMontada(@RequestBody TurmaDto turmaDto) {
+    @ResponseStatus(HttpStatus.CREATED)
+    public void turmaMontada(@RequestBody TurmaDto turmaDto) {
         montadorDeTurma.montar(turmaDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Turma cadastrada com sucesso!");
+    }
+
+    @DeleteMapping("/excluirTurma/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void excluirTurma(@PathVariable("id") Long id) {
+        exluirTurma.excluir(id);
     }
 
     @GetMapping("/listarTurmas")
