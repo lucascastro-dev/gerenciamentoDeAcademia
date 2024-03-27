@@ -14,7 +14,7 @@ const Cadastro: React.FC = () => {
     await AuthService.cadastrar({ login, password, role })
       .then((value) => {
         setState(value.data)
-        navigate('/login');
+        navigate('/arealogada/login');
       })
       .catch((value: AxiosError) => {
         setState(value.response ? `${value.response.data}` : `${value}`)
