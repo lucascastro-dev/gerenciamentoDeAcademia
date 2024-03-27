@@ -22,7 +22,7 @@ import static org.instancio.Select.field;
 import static org.mockito.ArgumentMatchers.anyString;
 
 @ExtendWith(SpringExtension.class)
-public class MontadorDeTurmaTeste {
+public class MontadorDeTurmaTest {
 
     @InjectMocks
     MontadorDeTurma montadorDeTurma;
