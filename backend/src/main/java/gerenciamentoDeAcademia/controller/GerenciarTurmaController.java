@@ -2,7 +2,7 @@ package gerenciamentoDeAcademia.controller;
 
 import gerenciamentoDeAcademia.dto.TurmaDto;
 import gerenciamentoDeAcademia.entidades.Turma;
-import gerenciamentoDeAcademia.servicos.aluno.ConsultaDeAlunos;
+import gerenciamentoDeAcademia.servicos.turma.AlteradorDeTurma;
 import gerenciamentoDeAcademia.servicos.turma.ConsultaDeTurma;
 import gerenciamentoDeAcademia.servicos.turma.ExluirTurma;
 import gerenciamentoDeAcademia.servicos.turma.MontadorDeTurma;
@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -33,11 +34,11 @@ public class GerenciarTurmaController {
     @Autowired
     ExluirTurma exluirTurma;
     @Autowired
-    ConsultaDeAlunos consultaDeAlunos;
+    AlteradorDeTurma alteradorDeTurma;
 
     @PostMapping("/montarTurma")
     @ResponseStatus(HttpStatus.CREATED)
-    public void turmaMontada(@RequestBody TurmaDto turmaDto) {
+    public void montarTurma(@RequestBody TurmaDto turmaDto) {
         montadorDeTurma.montar(turmaDto);
     }
 
@@ -45,6 +46,24 @@ public class GerenciarTurmaController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void excluirTurma(@PathVariable("id") Long id) {
         exluirTurma.excluir(id);
+    }
+
+    @PutMapping("/turma/Alterar")
+    @ResponseStatus(HttpStatus.OK)
+    public void alterarTurma(@RequestBody Turma turma) {
+        alteradorDeTurma.alterarTurma(turma);
+    }
+
+    @PutMapping("/turma/adicionarAluno")
+    @ResponseStatus(HttpStatus.OK)
+    public void adicionarAlunoNaTurma(@RequestBody Turma turma) {
+        alteradorDeTurma.adicionarAlunoNaTurma(turma);
+    }
+
+    @DeleteMapping("/turmas/removerAluno")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void removerAlunoDaTurma(@RequestBody Turma turma) {
+        alteradorDeTurma.removerAlunoNaTurma(turma);
     }
 
     @GetMapping("/listarTurmas")
@@ -63,54 +82,4 @@ public class GerenciarTurmaController {
         var turma = consultaDeTurma.buscarTurmaPorModalidade(modalidade);
         return turma != null ? ResponseEntity.ok(turma) : ResponseEntity.notFound().build();
     }
-
-//    @PutMapping("/turma/{id}/adicionarAluno")
-//    public ResponseEntity adicionarAlunoNaTurma(@PathVariable Long id, @RequestParam String cpf) {
-//        Optional<Turma> optionalTurma = consultaDeTurma.buscarTurmaPorId(id);
-//
-//        if (optionalTurma.isPresent()) {
-//            Turma turma = optionalTurma.get();
-//
-//            Optional<AlunoDto> optionalAluno = Optional.ofNullable(consultaDeAlunos.consultaAlunoPorCpf(cpf));
-//
-//            if (optionalAluno.isPresent()) {
-//                AlunoDto alunoExistente = optionalAluno.get();
-//
-//                turma.getAlunos().add(alunoExistente);
-//
-//                Turma turmaAtualizada = montadorDeTurma.montar(turma);
-//
-//                return ResponseEntity.ok(turmaAtualizada);
-//            } else {
-//                return ResponseEntity.notFound().build();
-//            }
-//        } else {
-//            return ResponseEntity.notFound().build();
-//        }
-//    }
-//
-//    @DeleteMapping("/turmas/{id}/removerAluno")
-//    public ResponseEntity removerAlunoDaTurma(@PathVariable Long id, @RequestParam String cpf) {
-//        Optional<Turma> optionalTurma = consultaDeTurma.buscarTurmaPorId(id);
-//
-//        if (optionalTurma.isPresent()) {
-//            Turma turma = optionalTurma.get();
-//
-//            Optional<AlunoDto> optionalAluno = Optional.ofNullable(consultaDeAlunos.consultaAlunoPorCpf(cpf));
-//
-//            if (optionalAluno.isPresent()) {
-//                AlunoDto alunoExistente = optionalAluno.get();
-//
-//                turma.getAlunos().remove(alunoExistente);
-//
-//                Turma turmaAtualizada = montadorDeTurma.montar(turma);
-//
-//                return ResponseEntity.ok(turmaAtualizada);
-//            } else {
-//                return ResponseEntity.notFound().build();
-//            }
-//        } else {
-//            return ResponseEntity.notFound().build();
-//        }
-//    }
 }

@@ -2,8 +2,6 @@ package gerenciamentoDeAcademia.entidades;
 
 import gerenciamentoDeAcademia.dto.TurmaDto;
 import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -24,8 +22,6 @@ import java.util.Set;
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
-@Builder
 @Entity
 @Table(name = "tb_turma")
 public class Turma {
