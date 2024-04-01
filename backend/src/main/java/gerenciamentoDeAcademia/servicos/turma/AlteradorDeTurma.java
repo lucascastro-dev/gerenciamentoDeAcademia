@@ -47,6 +47,8 @@ public class AlteradorDeTurma implements IAlteradorDeTurma {
 
         for (Aluno aluno : turmaParaAlterar.getAlunos()) {
             ExcecaoDeDominio.quandoNulo(alunoRepository.findByCpf(aluno.getCpf()), "Aluno não encontrado na base");
+            ExcecaoDeDominio.quando(turma.get().getAlunos().contains(aluno), String.format("Aluno %s já matriculado na turma", aluno.getNome()));
+
             turma.get().getAlunos().add(aluno);
         }
 
@@ -60,6 +62,8 @@ public class AlteradorDeTurma implements IAlteradorDeTurma {
 
         for (Aluno aluno : turmaParaAlterar.getAlunos()) {
             ExcecaoDeDominio.quandoNulo(alunoRepository.findByCpf(aluno.getCpf()), "Aluno não encontrado na base");
+            ExcecaoDeDominio.quando(!turma.get().getAlunos().contains(aluno), "Aluno não matriculado na turma");
+
             turma.get().getAlunos().remove(aluno);
         }
 

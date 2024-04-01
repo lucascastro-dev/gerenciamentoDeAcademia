@@ -148,6 +148,9 @@ public class AlteradorDeTurmaTest {
 
     @Test
     void deveConsultarAlunoNaBaseEnquantoTiverAlunosAoRemover() {
+        turma.getAlunos().add(aluno1);
+        turma.getAlunos().add(aluno2);
+
         alteradorDeTurma.removerAlunoNaTurma(turmaParaAlterar);
 
         Mockito.verify(alunoRepository).findByCpf(aluno1.getCpf());
@@ -161,5 +164,21 @@ public class AlteradorDeTurmaTest {
         var mensagemDeErro = Assertions.assertThrows(ExcecaoDeDominio.class, () -> alteradorDeTurma.removerAlunoNaTurma(turmaParaAlterar));
 
         Assertions.assertEquals("Aluno não encontrado na base", mensagemDeErro.getMessage());
+    }
+
+    @Test
+    void deveRetornarMensagemDeErroSeAlunoJaMatriculadoNaTurmaAoAdicionarAluno() {
+        turma.getAlunos().add(aluno1);
+
+        var mensagemDeErro = Assertions.assertThrows(ExcecaoDeDominio.class, () -> alteradorDeTurma.adicionarAlunoNaTurma(turmaParaAlterar));
+
+        Assertions.assertEquals(String.format("Aluno %s já matriculado na turma", aluno1.getNome()), mensagemDeErro.getMessage());
+    }
+
+    @Test
+    void deveRetornarMensagemDeErroSeAlunoNaoMatriculadoNaTurmaAoRemoverAluno() {
+        var mensagemDeErro = Assertions.assertThrows(ExcecaoDeDominio.class, () -> alteradorDeTurma.removerAlunoNaTurma(turmaParaAlterar));
+
+        Assertions.assertEquals("Aluno não matriculado na turma", mensagemDeErro.getMessage());
     }
 }

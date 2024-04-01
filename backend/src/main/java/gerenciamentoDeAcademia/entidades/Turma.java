@@ -21,8 +21,8 @@ import java.util.List;
 import java.util.Set;
 
 @Data
-@NoArgsConstructor
 @Entity
+@NoArgsConstructor
 @Table(name = "tb_turma")
 public class Turma {
     @Id
