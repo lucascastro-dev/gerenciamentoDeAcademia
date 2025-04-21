@@ -2,11 +2,8 @@ package gerenciamentoDeAcademia.entidades;
 
 import gerenciamentoDeAcademia.dto.AlunoDto;
 import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.hibernate.validator.constraints.br.CPF;
 
 import javax.persistence.Entity;
@@ -21,11 +18,9 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Data
 @Entity
+@NoArgsConstructor
 @Table(name = "tb_aluno")
 public class Aluno {
     @Id
