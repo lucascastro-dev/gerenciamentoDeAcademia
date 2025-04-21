@@ -1,13 +1,17 @@
 package gerenciamentoDeAcademia.controller;
 
+import gerenciamentoDeAcademia.dto.DadosCertificadoDto;
 import gerenciamentoDeAcademia.servicos.GeradorDeCertificados;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
+@RequestMapping("/certificado")
 @CrossOrigin("*")
 public class GeradorDeCertificadoController {
     private final GeradorDeCertificados geradorDeCertificado;
@@ -16,11 +20,9 @@ public class GeradorDeCertificadoController {
         this.geradorDeCertificado = geradorDeCertificado;
     }
 
-    @PostMapping("/upload")
-    public void handleFileUpload(@RequestParam("file") MultipartFile file,
+    @PostMapping("/gerarCertificadoJudo")
+    public void handleFileUpload(@RequestBody DadosCertificadoDto dadosCertificado,
                                  @RequestParam("background") MultipartFile background) {
-
-        geradorDeCertificado.processarImagemDeFundo(background);
-        geradorDeCertificado.processarArquivoExcel(file);
+        geradorDeCertificado.gerarCertificado(background, dadosCertificado);
     }
 }
