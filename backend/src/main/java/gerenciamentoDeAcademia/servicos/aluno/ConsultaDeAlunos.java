@@ -21,7 +21,6 @@ import java.util.stream.Collectors;
 public class ConsultaDeAlunos implements IConsultaDeAlunos {
 
     private final AlunoRepository alunoRepository;
-    private final ModelMapper modelMapper;
 
     @Override
     public List<Aluno> listarAlunos() {
