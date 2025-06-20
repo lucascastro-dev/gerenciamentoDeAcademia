@@ -20,8 +20,8 @@ import java.time.format.DateTimeFormatter;
 public class GeradorDeCertificados implements IGeradorDeCertificados {
     private static final String CAMINHO_BASE = "C:/certificado";
     private static final String FORMATO_DATA = "dd/MM/yyyy";
-    private static final Font FONTE_PADRAO = new Font("Brush Script MT", Font.ITALIC, 600);
-    private static final Font FONTE_DATA = new Font("Arial", Font.ITALIC, 250);
+    private static final Font FONTE_PADRAO = new Font("Brush Script MT", Font.ITALIC, 130);
+    private static final Font FONTE_DATA = new Font("Arial", Font.ITALIC, 70);
 
     @Override
     public void gerarCertificado(DadosCertificadoDto dadosCertificado) {
@@ -36,7 +36,6 @@ public class GeradorDeCertificados implements IGeradorDeCertificados {
         dadosCertificado.getAlunos().forEach(aluno -> {
             BufferedImage imagemCertificado = copiarImagem(imagemAlta);
             adicionarInformacoesAluno(imagemCertificado, aluno.getNome(), aluno.getFaixa(), dadosCertificado.getDataEvento());
-            incluirDesenhoDaCorFaixa(imagemCertificado, aluno.getFaixa());
             salvarCertificado(imagemCertificado, caminhoPastaProfessor, aluno.getNome());
         });
     }
@@ -51,22 +50,24 @@ public class GeradorDeCertificados implements IGeradorDeCertificados {
     }
 
     private BufferedImage processarImagemBase(DadosCertificadoDto dadosCertificado) {
-        BufferedImage imagemBase = carregarImagemBase();
-        if (dadosCertificado.getPersonalizado()) {
-            imagemBase = adicionarLogoPersonalizada(imagemBase, dadosCertificado.getProjeto());
-        }
+        BufferedImage imagemBase = carregarImagemBase(dadosCertificado);
         adicionarDataEvento(imagemBase, dadosCertificado.getDataEvento());
         return imagemBase;
     }
 
-    private BufferedImage carregarImagemBase() {
+    private BufferedImage carregarImagemBase(DadosCertificadoDto dadosCertificado) {
+        BufferedImage imagemBase;
+
         try {
-            // Carregar a imagem base em alta resolução
-            BufferedImage imagemBase = ImageIO.read(new File(CAMINHO_BASE + "/default.jpg"));
+            if (dadosCertificado.getPersonalizado()) {
+                imagemBase = ImageIO.read(new File(CAMINHO_BASE.concat("/").concat(dadosCertificado.getProjeto().concat(".jpg"))));
+            } else {
+                imagemBase = ImageIO.read(new File(CAMINHO_BASE + "/default.jpg"));
+            }
+
             if (imagemBase == null) {
                 throw new IOException("Imagem base não encontrada ou inválida.");
             }
-            // Certifique-se de que a imagem base tem alta resolução para impressão
             if (imagemBase.getWidth() < 3508 || imagemBase.getHeight() < 2480) {
                 throw new RuntimeException("A imagem base não tem resolução suficiente para impressão.");
             }
@@ -76,26 +77,18 @@ public class GeradorDeCertificados implements IGeradorDeCertificados {
         }
     }
 
-
-    private BufferedImage adicionarLogoPersonalizada(BufferedImage imagem, String projeto) {
-        try {
-            BufferedImage logo = ImageIO.read(new File(CAMINHO_BASE + "/projetos" + projeto + ".png"));
-            Graphics2D g2d = imagem.createGraphics();
-            configurarQualidadeGrafica(g2d);
-            g2d.drawImage(logo, 100, 100, null); // Coordenadas podem ser ajustadas conforme necessário
-            g2d.dispose();
-            return imagem;
-        } catch (IOException e) {
-            throw new RuntimeException("Erro ao adicionar a logo personalizada.", e);
-        }
-    }
-
     private void adicionarDataEvento(BufferedImage imagem, LocalDate dataEvento) {
         Graphics2D g2d = imagem.createGraphics();
         configurarQualidadeGrafica(g2d);
         g2d.setFont(FONTE_DATA);
         g2d.setColor(Color.BLACK);
-        g2d.drawString("Rio de Janeiro, ".concat(dataEvento.format(DateTimeFormatter.ofPattern(FORMATO_DATA))), 6210, 7770);
+        String textoData = "Rio de Janeiro, " + dataEvento.format(DateTimeFormatter.ofPattern(FORMATO_DATA));
+        FontMetrics metrics = g2d.getFontMetrics();
+        int larguraTexto = metrics.stringWidth(textoData);
+        int xData = (imagem.getWidth() - larguraTexto) / 2;
+        int yData = (int) (16 * 300 / 2.54);
+
+        g2d.drawString(textoData, xData, yData);
         g2d.dispose();
     }
 
@@ -110,31 +103,25 @@ public class GeradorDeCertificados implements IGeradorDeCertificados {
     private void adicionarInformacoesAluno(BufferedImage imagem, String nome, String faixa, LocalDate dataEvento) {
         Graphics2D g2d = imagem.createGraphics();
         configurarQualidadeGrafica(g2d);
+
         g2d.setFont(FONTE_PADRAO);
         g2d.setColor(Color.BLACK);
-        g2d.drawString(nome, 6160, 4230);
-        g2d.drawString("Faixa " + faixa, 5200, 5425);
+
+        int xNome = (int) (10.66 * 300 / 2.54);
+        int yNome = (int) (8.69 * 300 / 2.54);
+        g2d.drawString(nome, xNome, yNome);
+
+        Font fonteFaixa = new Font(FONTE_PADRAO.getName(), Font.PLAIN, 160);
+        g2d.setFont(fonteFaixa);
+        FontMetrics metrics = g2d.getFontMetrics(fonteFaixa);
+        String textoFaixa = "Faixa " + faixa;
+
+        int larguraTexto = metrics.stringWidth(textoFaixa);
+        int xFaixa = (imagem.getWidth() - larguraTexto) / 2;
+        int yFaixa = (int) (11.08 * 300 / 2.54);
+        g2d.drawString(textoFaixa, xFaixa, yFaixa);
+
         g2d.dispose();
-    }
-
-    private void incluirDesenhoDaCorFaixa(BufferedImage imagemCertificadoPadrao, String faixa) {
-        String caminhoImagemFaixa = CAMINHO_BASE.concat("/faixas/" + faixa + ".png");
-        try {
-            BufferedImage imagemFaixa = ImageIO.read(new File(caminhoImagemFaixa));
-            Graphics2D g2d = imagemCertificadoPadrao.createGraphics();
-            configurarQualidadeGrafica(g2d);
-
-            // Ajuste as coordenadas (x, y) e o tamanho da faixa conforme necessário
-            int x = 11580; // lateral
-            int y = 1510; // horizontal
-            int largura = 1695;
-            int altura = 1250;
-
-            g2d.drawImage(imagemFaixa, x, y, largura, altura, null);
-            g2d.dispose();
-        } catch (IOException e) {
-            throw new RuntimeException("Erro ao carregar a imagem da faixa: " + caminhoImagemFaixa, e);
-        }
     }
 
     private void configurarQualidadeGrafica(Graphics2D g2d) {
