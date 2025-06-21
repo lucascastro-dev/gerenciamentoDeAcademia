@@ -1,5 +1,6 @@
 package gerenciamentoDeAcademia.servicos;
 
+import gerenciamentoDeAcademia.dto.AlunoDto;
 import gerenciamentoDeAcademia.dto.DadosCertificadoDto;
 import gerenciamentoDeAcademia.servicos.interfaces.IGeradorDeCertificados;
 import org.springframework.stereotype.Service;
@@ -13,8 +14,14 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class GeradorDeCertificados implements IGeradorDeCertificados {
@@ -38,6 +45,8 @@ public class GeradorDeCertificados implements IGeradorDeCertificados {
             adicionarInformacoesAluno(imagemCertificado, aluno.getNome(), aluno.getFaixa(), dadosCertificado.getDataEvento());
             salvarCertificado(imagemCertificado, caminhoPastaProfessor, aluno.getNome());
         });
+
+        gerarResumoDeFaixas(dadosCertificado.getAlunos(), caminhoPastaProfessor);
     }
 
     private String criarDiretorioProfessor(String nomeProfessor) {
@@ -173,5 +182,34 @@ public class GeradorDeCertificados implements IGeradorDeCertificados {
         g2d.dispose();
 
         return imagemAltaResolucao;
+    }
+
+    private void gerarResumoDeFaixas(List<AlunoDto> alunos, String caminhoPasta) {
+        Map<String, Map<String, Integer>> resumo = new HashMap<>();
+
+        alunos.forEach(aluno -> {
+            String faixa = aluno.getFaixa();
+            String tamanho = aluno.getTamanhoFaixa();
+
+            resumo.computeIfAbsent(faixa, k -> new HashMap<>())
+                    .merge(tamanho, 1, Integer::sum);
+        });
+
+        StringBuilder conteudo = new StringBuilder();
+        resumo.forEach((faixa, tamanhos) -> {
+            conteudo.append(faixa).append(":\n");
+            tamanhos.forEach((tamanho, quantidade) ->
+                    conteudo.append(tamanho).append(" - ").append(quantidade).append(" unidades\n")
+            );
+            conteudo.append("\n");
+        });
+
+        Path caminhoArquivo = Path.of(caminhoPasta, "pedido_faixas.txt");
+
+        try {
+            Files.writeString(caminhoArquivo, conteudo.toString(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+        } catch (IOException e) {
+            throw new RuntimeException("Erro ao salvar o resumo de faixas.", e);
+        }
     }
 }
