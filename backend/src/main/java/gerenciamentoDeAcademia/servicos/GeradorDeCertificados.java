@@ -1,6 +1,5 @@
 package gerenciamentoDeAcademia.servicos;
 
-import gerenciamentoDeAcademia.dto.AlunoDto;
 import gerenciamentoDeAcademia.dto.DadosCertificadoDto;
 import gerenciamentoDeAcademia.servicos.interfaces.IGeradorDeCertificados;
 import org.springframework.stereotype.Service;
@@ -20,7 +19,6 @@ import java.nio.file.StandardOpenOption;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Service
@@ -46,7 +44,7 @@ public class GeradorDeCertificados implements IGeradorDeCertificados {
             salvarCertificado(imagemCertificado, caminhoPastaProfessor, aluno.getNome());
         });
 
-        gerarResumoDeFaixas(dadosCertificado.getAlunos(), caminhoPastaProfessor);
+        gerarResumoDeFaixas(dadosCertificado, caminhoPastaProfessor);
     }
 
     private String criarDiretorioProfessor(String nomeProfessor) {
@@ -184,10 +182,10 @@ public class GeradorDeCertificados implements IGeradorDeCertificados {
         return imagemAltaResolucao;
     }
 
-    private void gerarResumoDeFaixas(List<AlunoDto> alunos, String caminhoPasta) {
+    private void gerarResumoDeFaixas(DadosCertificadoDto dadosCertificado, String caminhoPasta) {
         Map<String, Map<String, Integer>> resumo = new HashMap<>();
 
-        alunos.forEach(aluno -> {
+        dadosCertificado.getAlunos().forEach(aluno -> {
             String faixa = aluno.getFaixa();
             String tamanho = aluno.getTamanhoFaixa();
 
@@ -204,7 +202,15 @@ public class GeradorDeCertificados implements IGeradorDeCertificados {
             conteudo.append("\n");
         });
 
-        Path caminhoArquivo = Path.of(caminhoPasta, "pedido_faixas.txt");
+        Path caminhoArquivo;
+
+        if (dadosCertificado.getPersonalizado()) {
+            caminhoArquivo = Path.of(caminhoPasta,
+                    "pedido_faixas_".concat(dadosCertificado.getProfessor()).concat("_").concat(dadosCertificado.getProjeto()).concat(".txt"));
+        } else {
+            caminhoArquivo = Path.of(caminhoPasta,
+                    "pedido_faixas_".concat(dadosCertificado.getProfessor()).concat(".txt"));
+        }
 
         try {
             Files.writeString(caminhoArquivo, conteudo.toString(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
