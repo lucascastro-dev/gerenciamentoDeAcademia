@@ -27,6 +27,7 @@ public class GeradorDeCertificados implements IGeradorDeCertificados {
     private static final String FORMATO_DATA = "dd/MM/yyyy";
     private static final Font FONTE_PADRAO = new Font("Brush Script MT", Font.ITALIC, 130);
     private static final Font FONTE_DATA = new Font("Arial", Font.ITALIC, 70);
+    private static final Font FONT_TEXT = new Font("Times New Roman", Font.PLAIN, 105);
 
     @Override
     public void gerarCertificado(DadosCertificadoDto dadosCertificado) {
@@ -40,7 +41,7 @@ public class GeradorDeCertificados implements IGeradorDeCertificados {
 
         dadosCertificado.getAlunos().forEach(aluno -> {
             BufferedImage imagemCertificado = copiarImagem(imagemAlta);
-            adicionarInformacoesAluno(imagemCertificado, aluno.getNome(), aluno.getFaixa(), dadosCertificado.getDataEvento());
+            adicionarInformacoesAluno(imagemCertificado, aluno.getNome(), aluno.getFaixa());
             salvarCertificado(imagemCertificado, caminhoPastaProfessor, aluno.getNome());
         });
 
@@ -107,16 +108,40 @@ public class GeradorDeCertificados implements IGeradorDeCertificados {
         return copia;
     }
 
-    private void adicionarInformacoesAluno(BufferedImage imagem, String nome, String faixa, LocalDate dataEvento) {
+    private void adicionarInformacoesAluno(BufferedImage imagem, String nome, String faixa) {
         Graphics2D g2d = imagem.createGraphics();
         configurarQualidadeGrafica(g2d);
-
-        g2d.setFont(FONTE_PADRAO);
         g2d.setColor(Color.BLACK);
 
-        int xNome = (int) (10.66 * 300 / 2.54);
-        int yNome = (int) (8.69 * 300 / 2.54);
-        g2d.drawString(nome, xNome, yNome);
+        int xMin = (int) (3 * 300 / 2.54);
+        int xMax = (int) (27 * 300 / 2.54);
+        int larguraDisponivel = xMax - xMin;
+
+        g2d.setFont(FONT_TEXT);
+        FontMetrics metricsTextoInicial = g2d.getFontMetrics(FONT_TEXT);
+        String textoInicial = "Certificamos que";
+        int larguraTextoInicial = metricsTextoInicial.stringWidth(textoInicial);
+
+        g2d.setFont(FONTE_PADRAO);
+        FontMetrics metricsNome = g2d.getFontMetrics(FONTE_PADRAO);
+        int larguraNome = metricsNome.stringWidth(nome);
+
+        int larguraTotal = larguraTextoInicial + larguraNome + 25;
+        if (larguraTotal > larguraDisponivel) {
+            throw new IllegalArgumentException("Texto excede os limites horizontais permitidos.");
+        }
+
+        int xInicial = xMin + (larguraDisponivel - larguraTotal) / 2;
+        int xNome = xInicial + larguraTextoInicial + 25;
+
+        int ajusteVertical = (int) (1.8 * 300 / 2.54);
+        int yCentral = (imagem.getHeight() / 2) - ajusteVertical;
+
+        g2d.setFont(FONT_TEXT);
+        g2d.drawString(textoInicial, xInicial, yCentral);
+
+        g2d.setFont(FONTE_PADRAO);
+        g2d.drawString(nome, xNome, yCentral);
 
         Font fonteFaixa = new Font(FONTE_PADRAO.getName(), Font.PLAIN, 160);
         g2d.setFont(fonteFaixa);
