@@ -212,7 +212,7 @@ public class GeradorDeCertificados implements IGeradorDeCertificados {
 
         dadosCertificado.getAlunos().forEach(aluno -> {
             String faixa = aluno.getFaixa();
-            String tamanho = aluno.getTamanhoFaixa();
+            String tamanho = aluno.getMedida();
 
             resumo.computeIfAbsent(faixa, k -> new HashMap<>())
                     .merge(tamanho, 1, Integer::sum);

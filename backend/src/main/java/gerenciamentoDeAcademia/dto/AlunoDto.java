@@ -13,5 +13,5 @@ public class AlunoDto extends PessoaDto {
     private String nomeResponsavel;
     private String telefoneResponsavel;
     private String faixa;
-    private String tamanhoFaixa;
+    private String medida;
 }
