@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 
 import "./index.css";
 import Login from "./components/Login";
@@ -16,7 +16,9 @@ root.render(
   <React.StrictMode>
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Login />} />
+        <Route path="/" element={<Navigate to="/arealogada/login" replace />} />
+
+
         <Route path="arealogada" element={<Layout />}>
           <Route path="login" element={<Login />} />
           <Route path="cadastro" element={<Cadastro />} />
