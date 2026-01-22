@@ -4,7 +4,6 @@ import gerenciamentoDeAcademia.dto.AcademiaDto;
 import gerenciamentoDeAcademia.servicos.academia.GerenciadorDeAcademia;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,7 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-@CrossOrigin("*")
 @RequestMapping("academia")
 public class GerenciarAcademiaController {
 
@@ -42,6 +40,13 @@ public class GerenciarAcademiaController {
     @ResponseStatus(HttpStatus.OK)
     public void atualizarDadosAcademia(@RequestBody AcademiaDto academiaDto) {
         gerenciadorDeAcademia.atualizarDados(academiaDto);
+    }
+
+    @PutMapping("/solicitarPrimeiroAcesso/{cpf}/{cnpj}")
+    @ResponseStatus(HttpStatus.OK)
+    public void solicitarPrimeiroAcesso(@PathVariable("cpf") String cpf,
+                                        @PathVariable("cnpj") String cnpj) {
+        gerenciadorDeAcademia.solicitarPrimeiroAcesso(cpf, cnpj);
     }
 
     @GetMapping("/consultarAcademiaCnpj/{cnpjAcademia}")

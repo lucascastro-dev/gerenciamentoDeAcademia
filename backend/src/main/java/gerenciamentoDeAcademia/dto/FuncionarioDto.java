@@ -20,6 +20,7 @@ public class FuncionarioDto extends PessoaDto {
         this.setDataDeNascimento(funcionario.getDataDeNascimento());
         this.setEndereco(funcionario.getEndereco());
         this.setTelefone(funcionario.getTelefone());
+        this.setSenha(funcionario.getSenha());
 
         this.cargo = funcionario.getCargo();
         this.especializacao = funcionario.getEspecializacao();

@@ -37,6 +37,7 @@ public class Funcionario {
     private String cargo;
     private String especializacao;
     private Boolean permitirGerenciarFuncoes;
+    private String senha;
 
     public Funcionario(FuncionarioDto funcionarioDto) {
         validar(funcionarioDto);
@@ -49,6 +50,7 @@ public class Funcionario {
         this.cargo = funcionarioDto.getCargo();
         this.especializacao = funcionarioDto.getEspecializacao();
         this.permitirGerenciarFuncoes = funcionarioDto.getPermitirGerenciarFuncoes();
+        this.senha = funcionarioDto.getSenha();
     }
 
     private void validar(FuncionarioDto funcionarioDto) {
