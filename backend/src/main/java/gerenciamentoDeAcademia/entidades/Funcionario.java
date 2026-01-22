@@ -51,7 +51,7 @@ public class Funcionario {
         this.permitirGerenciarFuncoes = funcionarioDto.getPermitirGerenciarFuncoes();
     }
 
-    public void validar(FuncionarioDto funcionarioDto) {
+    private void validar(FuncionarioDto funcionarioDto) {
         ExcecaoDeDominio.quandoNulo(funcionarioDto, "Obrigatório preencher dados do funcionario");
         ExcecaoDeDominio.quandoNuloOuVazio(funcionarioDto.getNome(), "Nome é obrigatório!");
         ExcecaoDeDominio.quandoNuloOuVazio(funcionarioDto.getRg(), "RG é obrigatório!");
