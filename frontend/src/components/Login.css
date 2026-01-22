@@ -63,3 +63,10 @@ button:disabled {
 .login-container a:hover {
   text-decoration: underline;
 }
+
+.header {
+  color: #007bff;
+   margin-top: 15px;
+  font-size: xx-large;
+  text-align: center;
+}

@@ -7,6 +7,7 @@ import "./index.css";
 import Login from "./components/Login";
 import { Layout } from "./components/Layout";
 import Cadastro from "./components/Cadastro";
+import SolicitarAcesso from "./components/SolicitarAcesso";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
@@ -22,6 +23,7 @@ root.render(
         <Route path="arealogada" element={<Layout />}>
           <Route path="login" element={<Login />} />
           <Route path="cadastro" element={<Cadastro />} />
+          <Route path="solicitarAcesso" element={<SolicitarAcesso />} />
         </Route>
       </Routes>
     </BrowserRouter>

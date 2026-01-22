@@ -13,14 +13,28 @@ const Cadastro: React.FC = () => {
   const [role, setRole] = useState('');
   const [nome, setNome] = useState('');
   const [rg, setRg] = useState('');
-  const [dataNascimento, setNascimento] = useState('');
+  const [dataDeNascimento, setNascimento] = useState('');
   const [cargo, setCargo] = useState('');
   const [especializacao, setEspecializacao] = useState('');
   const [state, setState] = useState('');
   const navigate = useNavigate();
 
-  const handleCadastro = async () => {
-    await AuthService.cadastrar({ login, password, role })
+  const handleCadastroEmpresa = async () => {
+    let cnpj = login;
+    await AuthService.cadastrarEmpresa({ razaoSocial, cnpj, cadastroAtivo: false, endereco, telefone })
+      .then((value) => {
+        setState(value.data)
+        navigate('/arealogada/login');
+      })
+      .catch((value: AxiosError) => {
+        setState(value.response ? `${value.response.data}` : `${value}`)
+      });
+  };
+
+  const handleCadastroPessoa = async () => {
+    let cpf = login;
+    let senha = password;
+    await AuthService.cadastrarPessoa({ nome, cpf, rg, dataDeNascimento, endereco, telefone, cargo, especializacao, permitirGerenciarFuncoes: false, senha })
       .then((value) => {
         setState(value.data)
         navigate('/arealogada/login');
@@ -33,9 +47,9 @@ const Cadastro: React.FC = () => {
 
   const isFormValid =
     role === "ADMIN"
-      ? login !== "" && password !== "" && razaoSocial !== "" && endereco !== "" && telefone !== ""
+      ? login !== "" && razaoSocial !== "" && endereco !== "" && telefone !== ""
       : role === "USER"
-        ? login !== "" && password !== "" && nome !== "" && rg !== "" && dataNascimento !== "" && cargo !== "" && especializacao !== "" && endereco !== "" && telefone !== ""
+        ? login !== "" && password !== "" && nome !== "" && rg !== "" && dataDeNascimento !== "" && cargo !== "" && especializacao !== "" && endereco !== "" && telefone !== ""
         : false;
 
   useEffect(() => {
@@ -100,7 +114,7 @@ const Cadastro: React.FC = () => {
           <input
             placeholder="Data de Nascimento"
             type="date"
-            value={dataNascimento}
+            value={dataDeNascimento}
             onChange={(e) => setNascimento(e.target.value)}
           />
         )}
@@ -111,15 +125,6 @@ const Cadastro: React.FC = () => {
             type="text"
             value={cargo}
             onChange={(e) => setCargo(e.target.value)}
-          />
-        )}
-
-        {role === "USER" && (
-          <input
-            placeholder="Especialização"
-            type="text"
-            value={especializacao}
-            onChange={(e) => setEspecializacao(e.target.value)}
           />
         )}
 
@@ -148,7 +153,7 @@ const Cadastro: React.FC = () => {
             onChange={(e) => setTelefone(e.target.value)}
           />)}
 
-        {login !== "" && (
+        {login !== "" && role === "USER" && (
           <input
             placeholder="Senha"
             type="password"
@@ -158,7 +163,7 @@ const Cadastro: React.FC = () => {
 
         <button
           type="button"
-          onClick={handleCadastro}
+          onClick={role === "USER" ? handleCadastroPessoa : handleCadastroEmpresa}
           disabled={!isFormValid}
         >
           Cadastrar

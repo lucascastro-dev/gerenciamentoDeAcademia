@@ -33,7 +33,11 @@ const isFormValid =
   }, [state])
 
   return (
-    <div className="login-container">
+    <div>
+      <div className='header'>
+        Gestão de Academias Inteligente
+      </div>
+      <div className="login-container">
       <h2>Login</h2>
       <form>
         <input
@@ -59,7 +63,8 @@ const isFormValid =
         </button>
       </form>
       <Link to="/arealogada/cadastro">Registrar</Link>
-    </div>
+      <Link to="/arealogada/solicitarAcesso">Realizar primeiro acesso</Link>
+    </div></div>
   );
 
 };
