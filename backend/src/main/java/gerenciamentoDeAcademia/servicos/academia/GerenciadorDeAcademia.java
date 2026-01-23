@@ -3,10 +3,13 @@ package gerenciamentoDeAcademia.servicos.academia;
 import gerenciamentoDeAcademia.dto.AcademiaDto;
 import gerenciamentoDeAcademia.entidades.Academia;
 import gerenciamentoDeAcademia.entidades.Funcionario;
+import gerenciamentoDeAcademia.entidades.Usuario;
+import gerenciamentoDeAcademia.enums.UserRole;
 import gerenciamentoDeAcademia.excecao.ApplicationException;
 import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
 import gerenciamentoDeAcademia.repositorios.AcademiaRepository;
 import gerenciamentoDeAcademia.repositorios.FuncionarioRepository;
+import gerenciamentoDeAcademia.repositorios.UsuarioRepository;
 import gerenciamentoDeAcademia.servicos.interfaces.IGerenciadorDeAcademia;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +27,7 @@ public class GerenciadorDeAcademia implements IGerenciadorDeAcademia {
 
     private final AcademiaRepository academiaRepository;
     private final FuncionarioRepository funcionarioRepository;
+    private final UsuarioRepository usuarioRepository;
 
     @Override
     public void cadastrar(AcademiaDto academiaDto) {
@@ -99,6 +103,7 @@ public class GerenciadorDeAcademia implements IGerenciadorDeAcademia {
         academia.validarVinculo(funcionario);
         funcionario.ativar();
         funcionarioRepository.save(funcionario);
+        usuarioRepository.save(new Usuario(funcionario.getCpf(), funcionario.getSenha(), UserRole.USER));
 
         academia.atualizarStatusPendencias();
         academiaRepository.save(academia);
