@@ -20,4 +20,6 @@ public interface IGerenciadorDeAcademia {
     void ativarFuncionario(String cpf, String cnpj);
 
     void inativarFuncionario(String cpf, String cnpj);
+
+    boolean verificarVinculo(String cpf, String vinculo);
 }

@@ -10,7 +10,7 @@ const Cadastro: React.FC = () => {
   const [razaoSocial, setRazaoSocial] = useState('');
   const [endereco, setEndereco] = useState('');
   const [telefone, setTelefone] = useState('');
-  const [role, setRole] = useState('USER');
+  const [role, setRole] = useState('ADMIN');
   const [nome, setNome] = useState('');
   const [rg, setRg] = useState('');
   const [dataDeNascimento, setNascimento] = useState('');

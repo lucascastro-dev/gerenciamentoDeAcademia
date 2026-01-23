@@ -54,6 +54,7 @@ public class Funcionario {
         this.especializacao = funcionarioDto.getEspecializacao();
         this.permitirGerenciarFuncoes = funcionarioDto.getPermitirGerenciarFuncoes();
         this.senha = funcionarioDto.getSenha();
+        this.cadastroAtivo = false;
     }
 
     private void validar(FuncionarioDto funcionarioDto) {

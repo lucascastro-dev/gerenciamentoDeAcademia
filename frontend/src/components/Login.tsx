@@ -7,7 +7,7 @@ import "./Login.css";
 const Login: React.FC = () => {
   const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
-  const [codAcademia, setCodAcademia] = useState('');
+  const [vinculo, setVinculo] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -25,13 +25,19 @@ const Login: React.FC = () => {
     return value;
   };
 
+  const sanitizeCpf = (value: string) => {
+  return /^\d/.test(value) ? value.replace(/\D/g, "") : value;
+};
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setErrorMsg(null);
 
+    const cleanLogin = sanitizeCpf(login);
+
     try {
-      const response = await HttpService.login(login, password);
+      const response = await HttpService.login(cleanLogin, password, vinculo);
       navigate('/home');
     } catch (err) {
       const axiosError = err as AxiosError;
@@ -50,7 +56,7 @@ const Login: React.FC = () => {
     }
   };
 
-  const isFormValid = login.length > 0 && password.length > 0 && codAcademia.length > 0 && !loading;
+  const isFormValid = login.length > 0 && password.length > 0 && vinculo.length > 0 && !loading;
 
   return (
     <div className="main-wrapper">
@@ -63,8 +69,8 @@ const Login: React.FC = () => {
           <input
             type="text"
             placeholder="Código da academia"
-            value={codAcademia}
-            onChange={(e) => setCodAcademia(e.target.value)}
+            value={vinculo}
+            onChange={(e) => setVinculo(e.target.value)}
           />
 
           <input
@@ -88,6 +94,7 @@ const Login: React.FC = () => {
 
         <div className="links-container">
           <Link to="/arealogada/cadastro">Registrar</Link>
+          <Link to="/arealogada/esqueciSenha">Esqueci minha senha</Link>
           <Link to="/arealogada/solicitarAcesso">Realizar primeiro acesso</Link>
         </div>
       </div>

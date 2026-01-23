@@ -1,6 +1,0 @@
-INSERT INTO tb_funcionario(nome,rg,cpf,data_de_nascimento,endereco,telefone,cargo,especializacao) VALUES ('Lucas','000000001','10000000001','1994-11-30','Rua Jururu','(21) 9000-0001','Professor','Judô');
-INSERT INTO tb_funcionario(nome,rg,cpf,data_de_nascimento,endereco,telefone,cargo,especializacao) VALUES ('Marcelo','000000002','10000000002','1992-05-27','Rua Camaleão','(21) 9000-0002','Professor','Jiu-Jitsu');
-INSERT INTO tb_funcionario(nome,rg,cpf,data_de_nascimento,endereco,telefone,cargo,especializacao) VALUES ('Junior','000000003','10000000003','1999-12-12','Rua Clovis','(21) 9000-0003','Professor','Karatê');
-INSERT INTO tb_funcionario(nome,rg,cpf,data_de_nascimento,endereco,telefone,cargo,especializacao) VALUES ('Marcos','000000004','10000000004','1995-12-19','Rua Floral','(21) 9000-0004','Estagiário','Judô');
-INSERT INTO tb_funcionario(nome,rg,cpf,data_de_nascimento,endereco,telefone,cargo,especializacao) VALUES ('Flavia','000000005','10000000005','2001-01-01','Rua Carambolas','(21) 9000-0005','Externo','ASG');
-INSERT INTO tb_funcionario(nome,rg,cpf,data_de_nascimento,endereco,telefone,cargo,especializacao) VALUES ('Maria','000000006','10000000006','1994-02-20','Rua Vermelha','(21) 9000-0006','Professor','Balé');

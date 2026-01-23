@@ -14,6 +14,7 @@ import gerenciamentoDeAcademia.servicos.interfaces.IGerenciadorDeAcademia;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -24,6 +25,9 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class GerenciadorDeAcademia implements IGerenciadorDeAcademia {
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     private final AcademiaRepository academiaRepository;
     private final FuncionarioRepository funcionarioRepository;
@@ -103,7 +107,8 @@ public class GerenciadorDeAcademia implements IGerenciadorDeAcademia {
         academia.validarVinculo(funcionario);
         funcionario.ativar();
         funcionarioRepository.save(funcionario);
-        usuarioRepository.save(new Usuario(funcionario.getCpf(), funcionario.getSenha(), UserRole.USER));
+        String senhaCriptografada = passwordEncoder.encode(funcionario.getSenha());
+        usuarioRepository.save(new Usuario(funcionario.getCpf(), senhaCriptografada, UserRole.USER));
 
         academia.atualizarStatusPendencias();
         academiaRepository.save(academia);
@@ -117,6 +122,11 @@ public class GerenciadorDeAcademia implements IGerenciadorDeAcademia {
         academia.validarVinculo(funcionario);
         funcionario.inativar();
         funcionarioRepository.save(funcionario);
+    }
+
+    @Override
+    public boolean verificarVinculo(String cpf, String vinculo) {
+        return academiaRepository.existsByCnpjAndFuncionarioCpf(vinculo, cpf);
     }
 
     private Academia buscarAcademia(String cnpj) {
