@@ -1,57 +1,70 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import HttpService from '../services/HttpService';
 import { AxiosError } from 'axios';
-import "./Login.css"
+import "./Login.css";
 
 const SolicitarAcesso: React.FC = () => {
   const [cnpj, setCnpj] = useState('');
   const [cpf, setCpf] = useState('');
-  const [state, setState] = useState('');
+  const [loading, setLoading] = useState(false);
+  
+  const [modal, setModal] = useState<{ show: boolean, message: string, isSuccess: boolean }>({
+    show: false,
+    message: '',
+    isSuccess: false
+  });
+
   const navigate = useNavigate();
 
+  const maskCPF = (v: string) => v.replace(/\D/g, "").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d{1,2})$/, "$1-$2").slice(0, 14);
+  const maskCNPJ = (v: string) => v.toUpperCase().replace(/[^A-Z0-9]/g, "").replace(/^([A-Z0-9]{2})([A-Z0-9])/, "$1.$2").replace(/^([A-Z0-9]{2})\.([A-Z0-9]{3})([A-Z0-9])/, "$1.$2.$3").replace(/\.([A-Z0-9]{3})([A-Z0-9])/, ".$1/$2").replace(/([A-Z0-9]{4})([A-Z0-9])/, "$1-$2").slice(0, 18);
+
+  const sanitize = (v: string) => v.replace(/[./-]/g, "");
+
+  const getErrorMessage = (err: any) => {
+    const axiosError = err as AxiosError;
+    const data = axiosError.response?.data;
+    if (typeof data === 'string') return data;
+    if (data && typeof data === 'object') return (data as any).message || (data as any).error || "Erro na solicitação.";
+    return "Erro de conexão com o servidor.";
+  };
+
   const handleSolicitarPrimeiroAcesso = async () => {
-    await HttpService.vincularFuncionario({ cnpj, cpf })
-      .then((value) => {
-        setState(value.data)
-        navigate('/arealogada/login');
-      })
-      .catch((value: AxiosError) => {
-        setState(value.response ? `${value.response.data}` : `${value}`)
+    setLoading(true);
+    try {
+      await HttpService.vincularFuncionario({ 
+        cnpj: sanitize(cnpj), 
+        cpf: sanitize(cpf) 
       });
+      
+      setModal({ 
+        show: true, 
+        message: "Vínculo solicitado a academia com sucesso, em breve você receberá as instruções no seu e-mail!", 
+        isSuccess: true 
+      });
+    } catch (err) {
+      setModal({ 
+        show: true, 
+        message: getErrorMessage(err), 
+        isSuccess: false 
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
-    const maskCPF = (value: string) => {
-    return value
-      .replace(/\D/g, "")
-      .replace(/(\d{3})(\d)/, "$1.$2")
-      .replace(/(\d{3})(\d)/, "$1.$2")
-      .replace(/(\d{3})(\d{1,2})$/, "$1-$2")
-      .slice(0, 14);
+  const closeModal = () => {
+    if (modal.isSuccess) navigate('/arealogada/login');
+    setModal({ ...modal, show: false });
   };
 
-  const maskCNPJ = (value: string) => {
-    return value
-      .toUpperCase()
-      .replace(/[^A-Z0-9]/g, "")
-      .replace(/^([A-Z0-9]{2})([A-Z0-9])/, "$1.$2")
-      .replace(/^([A-Z0-9]{2})\.([A-Z0-9]{3})([A-Z0-9])/, "$1.$2.$3")
-      .replace(/\.([A-Z0-9]{3})([A-Z0-9])/, ".$1/$2")
-      .replace(/([A-Z0-9]{4})([A-Z0-9])/, "$1-$2")
-      .slice(0, 18);
-  };
-
-  const isFormValid =
-    cpf !== "" && cnpj !== "" ? true : false;
-
-  useEffect(() => {
-    console.log(state);
-  }, [state])
+  const isFormValid = cpf.length >= 14 && cnpj.length >= 14 && !loading;
 
   return (
     <div className="login-container">
       <h2>Solicitar primeiro acesso</h2>
-      <form>
+      <form onSubmit={(e) => e.preventDefault()}>
         <input
           placeholder="CNPJ Academia"
           type="text"
@@ -70,14 +83,30 @@ const SolicitarAcesso: React.FC = () => {
           onClick={handleSolicitarPrimeiroAcesso}
           disabled={!isFormValid}
         >
-          Solicitar
+          {loading ? "Enviando..." : "Solicitar"}
         </button>
-
       </form>
 
       <Link to="/arealogada/login">Voltar</Link>
+
+      {modal.show && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3 style={{ color: modal.isSuccess ? '#2e7d32' : '#d32f2f' }}>
+              {modal.isSuccess ? 'Sucesso!' : 'Erro'}
+            </h3>
+            <p>{modal.message}</p>
+            <button 
+              className={modal.isSuccess ? 'btn-success' : 'btn-error'} 
+              onClick={closeModal}
+            >
+              {modal.isSuccess ? 'Fechar' : 'Tentar novamente'}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
-}
+};
 
 export default SolicitarAcesso;

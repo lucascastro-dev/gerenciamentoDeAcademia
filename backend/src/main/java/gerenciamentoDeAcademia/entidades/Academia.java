@@ -28,6 +28,7 @@ public class Academia {
     private Boolean cadastroAtivo;
     private String endereco;
     private String telefone;
+    private Boolean possuiCadastrosParaAprovar;
 
     @ManyToMany
     @JoinTable(name = "academia_funcionario", joinColumns = @JoinColumn(name = "academia_id"), inverseJoinColumns = @JoinColumn(name = "funcionario_id"))

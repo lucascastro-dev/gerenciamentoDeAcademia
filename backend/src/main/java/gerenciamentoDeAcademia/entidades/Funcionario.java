@@ -38,6 +38,7 @@ public class Funcionario {
     private String especializacao;
     private Boolean permitirGerenciarFuncoes;
     private String senha;
+    private Boolean cadastroAtivo;
 
     public Funcionario(FuncionarioDto funcionarioDto) {
         validar(funcionarioDto);

@@ -29,21 +29,23 @@ const Cadastro: React.FC = () => {
   const maskCNPJ = (v: string) => v.toUpperCase().replace(/[^A-Z0-9]/g, "").replace(/^([A-Z0-9]{2})([A-Z0-9])/, "$1.$2").replace(/^([A-Z0-9]{2})\.([A-Z0-9]{3})([A-Z0-9])/, "$1.$2.$3").replace(/\.([A-Z0-9]{3})([A-Z0-9])/, ".$1/$2").replace(/([A-Z0-9]{4})([A-Z0-9])/, "$1-$2").slice(0, 18);
   const maskPhone = (v: string) => v.replace(/\D/g, "").replace(/^(\d{2})(\d)/g, "($1) $2").replace(/(\d)(\d{4})$/, "$1-$2").slice(0, 15);
   const isPasswordValid = (p: string) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(p);
+  const onlyNumbers = (v: string) => v.replace(/\D/g, "");
+  const sanitizeCNPJ = (v: string) => v.replace(/[./-]/g, "");
 
-  const isFormValid = role === "ADMIN" 
+  const isFormValid = role === "ADMIN"
     ? login !== "" && razaoSocial !== "" && endereco !== "" && telefone !== ""
     : login !== "" && isPasswordValid(password) && nome !== "" && rg !== "" && dataDeNascimento !== "" && cargo !== "" && especializacao !== "" && endereco !== "" && telefone !== "";
 
   const getErrorMessage = (err: any) => {
     const axiosError = err as AxiosError;
-    
+
     console.log(axiosError.response?.data)
 
     if (axiosError.response?.data) {
       const data = axiosError.response.data;
-      
+
       if (typeof data === 'string') return data;
-      
+
       if (typeof data === 'object') {
         const anyData = data as any;
         return anyData.message || anyData.error || "Erro ao processar requisição.";
@@ -70,9 +72,34 @@ const Cadastro: React.FC = () => {
     }
   };
 
-  const handleCadastroEmpresa = () => handleFinish(HttpService.cadastrarEmpresa({ razaoSocial, cnpj: login, cadastroAtivo: false, endereco, telefone }));
-  const handleCadastroPessoa = () => handleFinish(HttpService.cadastrarPessoa({ nome, cpf: login, rg, dataDeNascimento, endereco, telefone, cargo, especializacao, permitirGerenciarFuncoes: false, senha: password }));
+  const handleCadastroEmpresa = () => {
+    handleFinish(
+      HttpService.cadastrarEmpresa({
+        razaoSocial,
+        cnpj: sanitizeCNPJ(login),
+        cadastroAtivo: false,
+        endereco,
+        telefone: onlyNumbers(telefone),
+      })
+    );
+  };
 
+  const handleCadastroPessoa = () => {
+    handleFinish(
+      HttpService.cadastrarPessoa({
+        nome,
+        cpf: onlyNumbers(login),
+        rg,
+        dataDeNascimento,
+        endereco,
+        telefone: onlyNumbers(telefone),
+        cargo,
+        especializacao,
+        permitirGerenciarFuncoes: false,
+        senha: password,
+      })
+    );
+  };
   const closeModal = () => {
     if (modal.isSuccess) navigate('/arealogada/login');
     setModal({ ...modal, show: false });
@@ -125,7 +152,7 @@ const Cadastro: React.FC = () => {
             <h3 style={{ color: modal.isSuccess ? '#2e7d32' : '#d32f2f' }}>{modal.isSuccess ? 'Sucesso!' : 'Erro inesperado!'}</h3>
             <p>{modal.message}</p>
             <button className={modal.isSuccess ? 'btn-success' : 'btn-error'} onClick={closeModal}>
-              {modal.isSuccess ? 'Ir para o Login' : 'Tentar novamente'}
+              {modal.isSuccess ? 'Fechar' : 'Tentar novamente'}
             </button>
           </div>
         </div>

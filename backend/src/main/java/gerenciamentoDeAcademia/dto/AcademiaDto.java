@@ -22,6 +22,7 @@ public class AcademiaDto {
     private String endereco;
     private String telefone;
     private List<FuncionarioDto> funcionarios = new ArrayList<>();
+    private Boolean possuiCadastroPendentes;
 
     public AcademiaDto(Academia academia) {
         this.registroAcademia = academia.getId();
@@ -30,6 +31,7 @@ public class AcademiaDto {
         this.cadastroAtivo = academia.getCadastroAtivo();
         this.endereco = academia.getEndereco();
         this.telefone = academia.getTelefone();
+        this.possuiCadastroPendentes = academia.getPossuiCadastrosParaAprovar();
 
         this.funcionarios = Optional.ofNullable(academia.getFuncionarios())
                 .orElse(Collections.emptySet())

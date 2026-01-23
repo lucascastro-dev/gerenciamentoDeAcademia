@@ -12,6 +12,7 @@ public class FuncionarioDto extends PessoaDto {
     private String cargo;
     private String especializacao;
     private Boolean permitirGerenciarFuncoes;
+    private Boolean cadastroAtivo;
 
     public FuncionarioDto(Funcionario funcionario) {
         this.setNome(funcionario.getNome());
@@ -25,5 +26,6 @@ public class FuncionarioDto extends PessoaDto {
         this.cargo = funcionario.getCargo();
         this.especializacao = funcionario.getEspecializacao();
         this.permitirGerenciarFuncoes = funcionario.getPermitirGerenciarFuncoes();
+        this.cadastroAtivo = funcionario.getCadastroAtivo();
     }
 }

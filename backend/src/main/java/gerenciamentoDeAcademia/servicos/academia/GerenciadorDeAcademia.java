@@ -84,6 +84,7 @@ public class GerenciadorDeAcademia implements IGerenciadorDeAcademia {
         ExcecaoDeDominio.quandoNulo(academia, "Academia não encontrada");
         Funcionario funcionario = funcionarioRepository.findByCpf(cpf);
         ExcecaoDeDominio.quandoNulo(funcionario, "Funcionário não encontrado");
+        academia.setPossuiCadastrosParaAprovar(true);
         academia.getFuncionarios().add(funcionario);
         academiaRepository.save(academia);
     }
