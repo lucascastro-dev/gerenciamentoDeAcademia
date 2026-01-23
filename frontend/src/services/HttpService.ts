@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const BASE_URL = 'http://localhost:8080/srv-gerenciaracademia';
 
-const AuthService = {
+const HttpService = {
     login: (login: string, password: string) => {
         return axios.post(`${BASE_URL}/login`, { login, password });
     },
@@ -20,4 +20,4 @@ const AuthService = {
     },
 };
 
-export default AuthService;
+export default HttpService;

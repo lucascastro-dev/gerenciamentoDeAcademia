@@ -10,4 +10,7 @@ public class ApplicationException extends RuntimeException {
         this.status = status;
     }
 
+    public HttpStatus getStatus() {
+        return status;
+    }
 }
