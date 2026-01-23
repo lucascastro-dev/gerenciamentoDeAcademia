@@ -1,8 +1,10 @@
 package gerenciamentoDeAcademia.entidades;
 
 import gerenciamentoDeAcademia.dto.AcademiaDto;
+import gerenciamentoDeAcademia.excecao.ApplicationException;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.http.HttpStatus;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -40,5 +42,17 @@ public class Academia {
         this.cadastroAtivo = academiaDto.getCadastroAtivo();
         this.endereco = academiaDto.getEndereco();
         this.telefone = academiaDto.getTelefone();
+    }
+
+    public void validarVinculo(Funcionario funcionario) {
+        if (!this.getFuncionarios().contains(funcionario)) {
+            throw new ApplicationException("Funcionário não cadastrado nesta academia", HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    public void atualizarStatusPendencias() {
+        boolean pendente = this.funcionarios.stream()
+                .anyMatch(f -> f.getCadastroAtivo() == null || !f.getCadastroAtivo());
+        this.setPossuiCadastrosParaAprovar(pendente);
     }
 }

@@ -49,6 +49,13 @@ public class GerenciarAcademiaController {
         gerenciadorDeAcademia.solicitarPrimeiroAcesso(cpf, cnpj);
     }
 
+    @PostMapping("/ativarFuncionario/{cpf}")
+    @ResponseStatus(HttpStatus.OK)
+    public void ativarFuncionario(@PathVariable("cpf") String cpf,
+                                  @PathVariable("cnpj") String cnpj) {
+        gerenciadorDeAcademia.ativarFuncionario(cpf, cnpj);
+    }
+
     @GetMapping("/consultarAcademiaCnpj/{cnpjAcademia}")
     @ResponseStatus(HttpStatus.OK)
     public AcademiaDto consultarAcademiaPorCnpj(@PathVariable("cnpjAcademia") String cnpjAcademia) {

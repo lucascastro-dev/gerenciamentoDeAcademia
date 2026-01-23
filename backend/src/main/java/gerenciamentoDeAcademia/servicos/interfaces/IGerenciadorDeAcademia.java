@@ -16,4 +16,6 @@ public interface IGerenciadorDeAcademia {
     List<AcademiaDto> consultarTodasAcademias();
 
     void solicitarPrimeiroAcesso(String cpf, String cnpj);
+
+    void ativarFuncionario(String cpf, String cnpj);
 }

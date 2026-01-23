@@ -1,6 +1,7 @@
 package gerenciamentoDeAcademia.entidades;
 
 import gerenciamentoDeAcademia.dto.FuncionarioDto;
+import gerenciamentoDeAcademia.excecao.ApplicationException;
 import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.envers.Audited;
 import org.hibernate.validator.constraints.br.CPF;
+import org.springframework.http.HttpStatus;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -65,5 +67,12 @@ public class Funcionario {
         ExcecaoDeDominio.quandoNuloOuVazio(funcionarioDto.getCargo(), "Cargo é obrigatório!");
         if (funcionarioDto.getCargo() != null || funcionarioDto.getCargo().isEmpty())
             ExcecaoDeDominio.quandoNuloOuVazio(funcionarioDto.getEspecializacao(), "Especialização é obrigatório!");
+    }
+
+    public void ativar() {
+        if (Boolean.TRUE.equals(this.cadastroAtivo)) {
+            throw new ApplicationException("Funcionário já possui cadastro ativo", HttpStatus.BAD_REQUEST);
+        }
+        this.cadastroAtivo = true;
     }
 }
