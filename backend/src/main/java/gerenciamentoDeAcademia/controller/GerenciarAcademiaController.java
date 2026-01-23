@@ -49,11 +49,18 @@ public class GerenciarAcademiaController {
         gerenciadorDeAcademia.solicitarPrimeiroAcesso(cpf, cnpj);
     }
 
-    @PostMapping("/ativarFuncionario/{cpf}")
+    @PostMapping("/ativarFuncionario/{cpf}/{cnpj}")
     @ResponseStatus(HttpStatus.OK)
     public void ativarFuncionario(@PathVariable("cpf") String cpf,
                                   @PathVariable("cnpj") String cnpj) {
         gerenciadorDeAcademia.ativarFuncionario(cpf, cnpj);
+    }
+
+    @PostMapping("/inativarFuncionario/{cpf}/{cnpj}")
+    @ResponseStatus(HttpStatus.OK)
+    public void inativarFuncionario(@PathVariable("cpf") String cpf,
+                                  @PathVariable("cnpj") String cnpj) {
+        gerenciadorDeAcademia.inativarFuncionario(cpf, cnpj);
     }
 
     @GetMapping("/consultarAcademiaCnpj/{cnpjAcademia}")

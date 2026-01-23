@@ -18,4 +18,6 @@ public interface IGerenciadorDeAcademia {
     void solicitarPrimeiroAcesso(String cpf, String cnpj);
 
     void ativarFuncionario(String cpf, String cnpj);
+
+    void inativarFuncionario(String cpf, String cnpj);
 }

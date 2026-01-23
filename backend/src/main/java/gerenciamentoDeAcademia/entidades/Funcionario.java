@@ -75,4 +75,11 @@ public class Funcionario {
         }
         this.cadastroAtivo = true;
     }
+
+    public void inativar() {
+        if (Boolean.FALSE.equals(this.cadastroAtivo)) {
+            throw new ApplicationException("Funcionário já está inativo", HttpStatus.BAD_REQUEST);
+        }
+        this.cadastroAtivo = false;
+    }
 }

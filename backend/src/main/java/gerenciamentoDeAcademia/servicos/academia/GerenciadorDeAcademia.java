@@ -109,6 +109,16 @@ public class GerenciadorDeAcademia implements IGerenciadorDeAcademia {
         academiaRepository.save(academia);
     }
 
+    @Override
+    public void inativarFuncionario(String cpf, String cnpj) {
+        Academia academia = buscarAcademia(cnpj);
+        Funcionario funcionario = buscarFuncionario(cpf);
+
+        academia.validarVinculo(funcionario);
+        funcionario.inativar();
+        funcionarioRepository.save(funcionario);
+    }
+
     private Academia buscarAcademia(String cnpj) {
         return Optional.ofNullable(academiaRepository.findByCnpj(cnpj))
                 .orElseThrow(() -> new ApplicationException("Academia não encontrada", HttpStatus.NOT_FOUND));
