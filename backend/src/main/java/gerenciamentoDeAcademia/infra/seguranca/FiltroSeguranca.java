@@ -23,15 +23,23 @@ public class FiltroSeguranca extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        var token = this.recoverToken(request);
+        try {
+            var token = this.recoverToken(request);
 
-        if (token != null) {
-            var login = tokenService.validarToken(token);
-            UserDetails usuario = usuarioRepository.findByLogin(login);
+            if (token != null) {
+                var login = tokenService.validarToken(token);
 
-            var autenticacao = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
+                if (login != null && !login.isBlank()) {
+                    UserDetails usuario = usuarioRepository.findByLogin(login);
 
-            SecurityContextHolder.getContext().setAuthentication(autenticacao);
+                    if (usuario != null) {
+                        var autenticacao = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
+                        SecurityContextHolder.getContext().setAuthentication(autenticacao);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Erro no filtro de segurança: " + e.getMessage());
         }
 
         filterChain.doFilter(request, response);

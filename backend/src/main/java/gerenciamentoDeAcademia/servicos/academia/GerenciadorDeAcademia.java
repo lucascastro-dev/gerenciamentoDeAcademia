@@ -103,12 +103,22 @@ public class GerenciadorDeAcademia implements IGerenciadorDeAcademia {
     public void ativarFuncionario(String cpf, String cnpj) {
         Academia academia = buscarAcademia(cnpj);
         Funcionario funcionario = buscarFuncionario(cpf);
-
         academia.validarVinculo(funcionario);
+
+        if (usuarioRepository.existsByLogin(cpf)) {
+            throw new ExcecaoDeDominio("Este funcionário já possui um usuário ativo.");
+        }
+
         funcionario.ativar();
         funcionarioRepository.save(funcionario);
+
         String senhaCriptografada = passwordEncoder.encode(funcionario.getSenha());
-        usuarioRepository.save(new Usuario(funcionario.getCpf(), senhaCriptografada, UserRole.USER));
+        Usuario novoUsuario = Usuario.builder()
+                .login(funcionario.getCpf())
+                .password(senhaCriptografada)
+                .role(UserRole.USER)
+                .build();
+        usuarioRepository.save(novoUsuario);
 
         academia.atualizarStatusPendencias();
         academiaRepository.save(academia);
@@ -126,7 +136,7 @@ public class GerenciadorDeAcademia implements IGerenciadorDeAcademia {
 
     @Override
     public boolean verificarVinculo(String cpf, String vinculo) {
-        return academiaRepository.existsByCnpjAndFuncionarioCpf(vinculo, cpf);
+        return academiaRepository.existsByCnpjAndFuncionarioCpf(Long.parseLong(vinculo), cpf);
     }
 
     private Academia buscarAcademia(String cnpj) {

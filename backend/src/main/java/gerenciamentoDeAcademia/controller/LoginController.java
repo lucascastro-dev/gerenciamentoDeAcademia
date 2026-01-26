@@ -40,7 +40,9 @@ public class LoginController {
 
             return ResponseEntity.ok(new LoginRetornoDto(token));
         } catch (BadCredentialsException e) {
-            return ResponseEntity.status(401).body("Usuário ou senha inválidos");
+            return ResponseEntity.status(401).body("Credenciais inválidas");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Erro interno: " + e.getMessage());
         }
     }
 }

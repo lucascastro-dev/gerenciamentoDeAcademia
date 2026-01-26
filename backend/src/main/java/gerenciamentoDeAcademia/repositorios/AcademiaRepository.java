@@ -10,6 +10,6 @@ import org.springframework.stereotype.Repository;
 public interface AcademiaRepository extends JpaRepository<Academia, Long> {
     Academia findByCnpj(String cnpjAcademia);
 
-    @Query("SELECT COUNT(a) > 0 FROM Academia a JOIN a.funcionarios f WHERE a.cnpj = :vinculo AND f.cpf = :cpf")
-    boolean existsByCnpjAndFuncionarioCpf(@Param("vinculo") String vinculo, @Param("cpf") String cpf);
+    @Query("SELECT COUNT(a) > 0 FROM Academia a JOIN a.funcionarios f WHERE a.id = :vinculo AND f.cpf = :cpf")
+    boolean existsByCnpjAndFuncionarioCpf(@Param("vinculo") Long vinculo, @Param("cpf") String cpf);
 }
