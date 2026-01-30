@@ -26,4 +26,25 @@ public class CadastradorDeFuncionario implements ICadastradorDeFuncionario {
 
         funcionarioRepository.save(new Funcionario(funcionarioDto));
     }
+
+    @Override
+    public void editar(FuncionarioDto funcionarioDto) {
+        var funcionario = funcionarioRepository.findByCpf(funcionarioDto.getCpf());
+        if (funcionario == null) {
+            throw new ApplicationException("Funcionário não existe!", HttpStatus.BAD_REQUEST);
+        }
+
+        funcionarioRepository.save(Funcionario.builder()
+                .id(funcionario.getId())
+                .nome(funcionarioDto.getNome())
+                .rg(funcionarioDto.getRg())
+                .dataDeNascimento(funcionarioDto.getDataDeNascimento())
+                .endereco(funcionarioDto.getEndereco())
+                .telefone(funcionarioDto.getTelefone())
+                .cargo(funcionarioDto.getCargo())
+                .especializacao(funcionarioDto.getEspecializacao())
+                .permitirGerenciarFuncoes(funcionarioDto.getPermitirGerenciarFuncoes())
+                .cadastroAtivo(funcionarioDto.getCadastroAtivo())
+                .build());
+    }
 }

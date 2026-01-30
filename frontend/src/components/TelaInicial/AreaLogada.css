@@ -1,0 +1,37 @@
+.formEdit {
+    margin-right: 15px !important;
+}
+
+.switch--shadow + label {
+  padding: 2px;
+  width: 50px;
+  height: 25px;
+  background-color: #dddddd;
+  border-radius: 60px;
+  display: inline-block;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.switch--shadow + label:after {
+  content: "";
+  display: block;
+  width: 21px;
+  height: 21px;
+  border-radius: 50%;
+  background: #fff;
+  transition: all 0.3s ease;
+}
+
+.switch--shadow:checked + label {
+  background-color: #4CAF50;
+}
+
+.switch--shadow:checked + label:after {
+  margin-left: 25px;
+}
+
+.switch {
+  display: none;
+}

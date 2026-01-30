@@ -13,3 +13,5 @@ VALUES (1, 'Lucas', '15179950783', 'Professor', '123456', false);
 
 -- 4. Cria o Vínculo (Obrigatório para o JOIN funcionar)
 INSERT INTO academia_funcionario(academia_id, funcionario_id) VALUES (1, 1);
+
+ALTER TABLE tb_funcionario ALTER COLUMN id RESTART WITH (SELECT MAX(id) + 1 FROM tb_funcionario);

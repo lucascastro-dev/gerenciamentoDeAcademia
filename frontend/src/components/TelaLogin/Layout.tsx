@@ -21,10 +21,7 @@ const ContainerApplication = styled.div`
 `;
 
 const SingleSpaApplicationMenuLeft = styled.aside`
-  //border-top-right-radius: 1rem;
-  //border-bottom-right-radius: 1rem;
   box-shadow: 0 0 0.8rem #0000000f;
-  /* background-color: #1d1b22; */
   background-color: #343746;
 
   grid-column: span 2;
@@ -91,7 +88,7 @@ const SingleSpaApplicationApps = styled.main`
   }
 `;
 
-export const Layout: React.FC = () => {
+export const LayoutLogin: React.FC = () => {
   return (
     <>
         <ContainerApplication>

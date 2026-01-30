@@ -47,18 +47,7 @@ const TelaInicial: FC = () => {
    return (
       <TelaInicialWrapper>
          <h1>Bem-vindo à Gestão de Academias Inteligente</h1>
-
-         <div className="info-box">
-            <p><strong>Funcionário:</strong> {usuario?.nome}</p>
-            <p><strong>Academia:</strong> {academia?.razaoSocial} (Cod: {vinculo})</p>
-         </div>
-
-         <button onClick={() => {
-            localStorage.clear();
-            window.location.href = '/';
-         }}>
-            Sair / Logout
-         </button>
+         Implementar dashboard
       </TelaInicialWrapper>
    );
 };

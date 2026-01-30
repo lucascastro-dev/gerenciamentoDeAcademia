@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -31,9 +32,15 @@ public class GerenciarFuncionarioController {
     ConsultaDeFuncionario consultaDeFuncionario;
 
     @PostMapping("/cadastrarFuncionario")
-    public ResponseEntity<String> funcionario(@RequestBody FuncionarioDto funcionarioDto) {
+    public ResponseEntity<String> cadastrarFuncionario(@RequestBody FuncionarioDto funcionarioDto) {
         cadastradorDeFuncionario.cadastrar(funcionarioDto);
         return ResponseEntity.status(HttpStatus.CREATED).body("Funcionario cadastrado com sucesso!");
+    }
+
+    @PutMapping("/editarFuncionario")
+    public ResponseEntity<String> editarFuncionario(@RequestBody FuncionarioDto funcionarioDto) {
+        cadastradorDeFuncionario.editar(funcionarioDto);
+        return ResponseEntity.status(HttpStatus.OK).body("Funcionario editado com sucesso!");
     }
 
     @DeleteMapping("/excluirFuncionario/{cpf}")
