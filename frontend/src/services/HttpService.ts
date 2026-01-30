@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = 'http://localhost:8080/srv-gerenciaracademia';
+const BASE_URL = 'http://localhost:8000/srv-gerenciaracademia';
 
 const HttpService = {
     login: (login: string, password: string, vinculo: string) => {
@@ -18,6 +18,22 @@ const HttpService = {
     vincularFuncionario: (data: { cnpj: string, cpf: string }) => {
         return axios.put(`${BASE_URL}/academia/solicitarPrimeiroAcesso/${data.cpf}/${data.cnpj}`, data);
     },
+
+    consultarAcademia: (codAcademia: string | number, token: string) => {
+        return axios.get(`${BASE_URL}/academia/consultarAcademiaId/${codAcademia}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+
+    consultarFuncionarioPorCpf: (cpf: string, token: string) => {
+        return axios.get(`${BASE_URL}/funcionario/consultarPorCpf/${cpf}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    }
 };
 
 export default HttpService;

@@ -1,7 +1,7 @@
 import { AxiosError } from 'axios';
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import HttpService from '../services/HttpService';
+import HttpService from '../../services/HttpService';
 import "./Login.css";
 
 const Cadastro: React.FC = () => {
@@ -101,7 +101,7 @@ const Cadastro: React.FC = () => {
     );
   };
   const closeModal = () => {
-    if (modal.isSuccess) navigate('/arealogada/login');
+    if (modal.isSuccess) navigate('/areapublica/login');
     setModal({ ...modal, show: false });
   };
 
@@ -144,7 +144,7 @@ const Cadastro: React.FC = () => {
           {loading ? "Processando..." : "Cadastrar"}
         </button>
       </form>
-      <Link to="/arealogada/login">Voltar</Link>
+      <Link to="/areapublica/login">Voltar</Link>
 
       {modal.show && (
         <div className="modal-overlay">

@@ -139,6 +139,13 @@ public class GerenciadorDeAcademia implements IGerenciadorDeAcademia {
         return academiaRepository.existsByCnpjAndFuncionarioCpf(Long.parseLong(vinculo), cpf);
     }
 
+    @Override
+    public AcademiaDto consultarAcademiaId(Long codAcademia) {
+        return academiaRepository.findById(codAcademia)
+                .map(AcademiaDto::new)
+                .orElseThrow(() -> new ApplicationException("Academia não encontrada", HttpStatus.NOT_FOUND));
+    }
+
     private Academia buscarAcademia(String cnpj) {
         return Optional.ofNullable(academiaRepository.findByCnpj(cnpj))
                 .orElseThrow(() -> new ApplicationException("Academia não encontrada", HttpStatus.NOT_FOUND));

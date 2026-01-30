@@ -22,4 +22,6 @@ public interface IGerenciadorDeAcademia {
     void inativarFuncionario(String cpf, String cnpj);
 
     boolean verificarVinculo(String cpf, String vinculo);
+
+    AcademiaDto consultarAcademiaId(Long codAcademia);
 }

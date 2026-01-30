@@ -59,7 +59,7 @@ public class GerenciarAcademiaController {
     @PostMapping("/inativarFuncionario/{cpf}/{cnpj}")
     @ResponseStatus(HttpStatus.OK)
     public void inativarFuncionario(@PathVariable("cpf") String cpf,
-                                  @PathVariable("cnpj") String cnpj) {
+                                    @PathVariable("cnpj") String cnpj) {
         gerenciadorDeAcademia.inativarFuncionario(cpf, cnpj);
     }
 
@@ -67,6 +67,12 @@ public class GerenciarAcademiaController {
     @ResponseStatus(HttpStatus.OK)
     public AcademiaDto consultarAcademiaPorCnpj(@PathVariable("cnpjAcademia") String cnpjAcademia) {
         return gerenciadorDeAcademia.consultarAcademiaCnpj(cnpjAcademia);
+    }
+
+    @GetMapping("/consultarAcademiaId/{codAcademia}")
+    @ResponseStatus(HttpStatus.OK)
+    public AcademiaDto consultarAcademiaPorId(@PathVariable("codAcademia") Long codAcademia) {
+        return gerenciadorDeAcademia.consultarAcademiaId(codAcademia);
     }
 
     @GetMapping("/consultarTodasAcademias")

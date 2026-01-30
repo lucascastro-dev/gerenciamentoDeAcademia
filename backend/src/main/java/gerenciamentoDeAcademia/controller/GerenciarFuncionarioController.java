@@ -42,6 +42,11 @@ public class GerenciarFuncionarioController {
         return new ResponseEntity<>("Funcionário excluído com sucesso!", HttpStatus.OK);
     }
 
+    @GetMapping("/consultarPorCpf/{cpf}")
+    public Funcionario consultarPorCpf(@PathVariable("cpf") String cpf) {
+        return consultaDeFuncionario.consultarFuncionarioPorCpf(cpf);
+    }
+
     @GetMapping("/consultarFuncionario")
     public List<Funcionario> listarFuncionarios() {
         return consultaDeFuncionario.listarFuncionarios();

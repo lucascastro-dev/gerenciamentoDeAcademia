@@ -1,7 +1,7 @@
 import { AxiosError } from 'axios';
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import HttpService from '../services/HttpService';
+import HttpService from '../../services/HttpService';
 import "./Login.css";
 
 const Login: React.FC = () => {
@@ -38,7 +38,14 @@ const Login: React.FC = () => {
 
     try {
       const response = await HttpService.login(cleanLogin, password, vinculo);
-      navigate('/home');
+      
+      const { token } = response.data;
+
+      localStorage.setItem('@App:token', token);
+      localStorage.setItem('@App:cpf', cleanLogin);
+      localStorage.setItem('@App:vinculo', vinculo);
+
+      navigate('/arealogada/home');
     } catch (err) {
       const axiosError = err as AxiosError;
 
@@ -93,9 +100,9 @@ const Login: React.FC = () => {
         </form>
 
         <div className="links-container">
-          <Link to="/arealogada/cadastro">Registrar</Link>
-          <Link to="/arealogada/esqueciSenha">Esqueci minha senha</Link>
-          <Link to="/arealogada/solicitarAcesso">Realizar primeiro acesso</Link>
+          <Link to="/areapublica/cadastro">Registrar</Link>
+          <Link to="/areapublica/esqueciSenha">Esqueci minha senha</Link>
+          <Link to="/areapublica/solicitarAcesso">Realizar primeiro acesso</Link>
         </div>
       </div>
 

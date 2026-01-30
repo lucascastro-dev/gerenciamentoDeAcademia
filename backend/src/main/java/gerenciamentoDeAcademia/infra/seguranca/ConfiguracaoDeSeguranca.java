@@ -36,7 +36,7 @@ public class ConfiguracaoDeSeguranca {
                         .antMatchers("/**/login").permitAll()
                         .antMatchers("/**/registrarAcademia").permitAll()
                         .antMatchers("/**/ativarFuncionario/**").permitAll()
-                        .antMatchers("/**/arealogada/**").permitAll()
+                        .antMatchers("/**/areapublica/**").permitAll()
 
                         .antMatchers("/**/funcionario/**").permitAll()
                         .antMatchers("/**/academia/**").permitAll()
