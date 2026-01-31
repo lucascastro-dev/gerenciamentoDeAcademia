@@ -32,6 +32,53 @@
   margin-left: 25px;
 }
 
-.switch {
-  display: none;
+/* wrapper do switch */
+.switch-wrapper {
+  position: relative;
+  width: 44px;
+  height: 24px;
+}
+
+/* esconde o checkbox real */
+.switch-wrapper input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* trilho */
+.slider {
+  position: absolute;
+  inset: 0;
+  background-color: #dcdcdc;
+  border-radius: 999px;
+  transition: background-color 0.3s ease;
+}
+
+/* bolinha */
+.slider::before {
+  content: "";
+  position: absolute;
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  top: 3px;
+  background-color: white;
+  border-radius: 50%;
+  transition: transform 0.3s ease;
+}
+
+/* ligado */
+.switch-wrapper input:checked + .slider {
+  background-color: #4CAF50;
+}
+
+.switch-wrapper input:checked + .slider::before {
+  transform: translateX(20px);
+}
+
+/* desabilitado */
+.switch-wrapper input:disabled + .slider {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

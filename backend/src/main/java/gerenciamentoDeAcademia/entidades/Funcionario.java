@@ -70,6 +70,18 @@ public class Funcionario {
             ExcecaoDeDominio.quandoNuloOuVazio(funcionarioDto.getEspecializacao(), "Especialização é obrigatório!");
     }
 
+    public void atualizar(FuncionarioDto funcionarioDto) {
+        this.nome = funcionarioDto.getNome();
+        this.rg = funcionarioDto.getRg();
+        this.dataDeNascimento = funcionarioDto.getDataDeNascimento();
+        this.endereco = funcionarioDto.getEndereco();
+        this.telefone = funcionarioDto.getTelefone();
+        this.cargo = funcionarioDto.getCargo();
+        this.especializacao = funcionarioDto.getEspecializacao();
+        this.permitirGerenciarFuncoes = funcionarioDto.getPermitirGerenciarFuncoes();
+        this.cadastroAtivo = funcionarioDto.getCadastroAtivo();
+    }
+
     public void ativar() {
         if (Boolean.TRUE.equals(this.cadastroAtivo)) {
             throw new ApplicationException("Funcionário já possui cadastro ativo", HttpStatus.BAD_REQUEST);

@@ -34,13 +34,14 @@ root.render(
           <Route path="arealogada" element={<LayoutHome />}>
             <Route index element={<Navigate to="home" replace />} />
             <Route path="home" element={<TelaInicial />} />
-
             <Route path="academias" element={<div>Tela de Academias</div>} />
             <Route path="funcionarios" element={<GerenciarFuncionario/>} />
             <Route path="alunos" element={<div>Tela de Alunos</div>} />
             <Route path="turmas" element={<div>Tela de Turmas</div>} />
             <Route path="certificados" element={<div>Gerador de Certificados</div>} />
             <Route path="financeiro" element={<div>Financeiro</div>} />
+            <Route path="gestaoCadastro" element={<div>Gestão Cadastro</div>} />
+            <Route path="gestaoAcademia" element={<div>Gestão Academia</div>} />
           </Route>
         </Route>
 

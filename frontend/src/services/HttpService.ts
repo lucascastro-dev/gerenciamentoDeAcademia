@@ -33,7 +33,15 @@ const HttpService = {
                 Authorization: `Bearer ${token}`
             }
         });
-    }
+    },
+
+    editarPessoa: (data: { nome: string, cpf: string, rg: string, dataDeNascimento: string, endereco: string, telefone: string, cargo: string, especializacao: string, permitirGerenciarFuncoes: boolean }, token: string) => {
+        return axios.put(`${BASE_URL}/funcionario/editarFuncionario`, data, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
 };
 
 export default HttpService;

@@ -184,13 +184,15 @@ export const LayoutHome: React.FC = () => {
           {/* <img src="/logo-sua.png" alt="Logo" style={{ maxWidth: '100%' }} /> */}
         </div>
         <MenuLink to="home">Início</MenuLink>
-        {usuario?.cargo === 'Mestre' &&
-        <MenuLink to="academias">Gerenciar Academias</MenuLink>}
-        {/* {usuario?.permitirGerenciarFuncoes && */}
-        <MenuLink to="funcionarios">Gerenciar Funcionarios</MenuLink>
+        {/* {usuario?.cargo === 'Mestre' && */}
+        <MenuLink to="academias">Gerenciar Academias</MenuLink>
+        {usuario?.permitirGerenciarFuncoes &&
+        <MenuLink to="funcionarios">Gerenciar Funcionarios</MenuLink>}
         <MenuLink to="alunos">Gerenciar Alunos</MenuLink>
         <MenuLink to="turmas">Gerenciar Turmas</MenuLink>
         <MenuLink to="certificados">Gerador de Certificados</MenuLink>
+        <MenuLink to="gestaoCadastro">Ativar/Inativar Cadastros</MenuLink>
+        <MenuLink to="gestaoAcademia">Ativar/Inativar Academias</MenuLink>
         {usuario?.permitirGerenciarFuncoes &&
         <MenuLink to="financeiro">Financeiro</MenuLink>}
       </Sidebar>

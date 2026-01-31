@@ -105,8 +105,8 @@ public class GerenciadorDeAcademia implements IGerenciadorDeAcademia {
         Funcionario funcionario = buscarFuncionario(cpf);
         academia.validarVinculo(funcionario);
 
-        if (usuarioRepository.existsByLogin(cpf)) {
-            throw new ExcecaoDeDominio("Este funcionário já possui um usuário ativo.");
+        if (usuarioRepository.existsByLogin(cpf) && funcionario.getCadastroAtivo()) {
+            throw new ExcecaoDeDominio("Este funcionário já possui um cadastro ativo.");
         }
 
         funcionario.ativar();
