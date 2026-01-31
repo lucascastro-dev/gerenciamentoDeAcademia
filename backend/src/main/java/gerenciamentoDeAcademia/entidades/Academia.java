@@ -55,4 +55,11 @@ public class Academia {
                 .anyMatch(f -> f.getCadastroAtivo() == null || !f.getCadastroAtivo());
         this.setPossuiCadastrosParaAprovar(pendente);
     }
+
+    public void atualizarCadastro(AcademiaDto academiaDto) {
+        this.razaoSocial = academiaDto.getRazaoSocial();
+        this.endereco = academiaDto.getEndereco();
+        this.telefone = academiaDto.getTelefone();
+        this.cadastroAtivo = academiaDto.getCadastroAtivo();
+    }
 }

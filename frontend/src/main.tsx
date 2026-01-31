@@ -12,6 +12,7 @@ import SolicitarAcesso from "./components/TelaLogin/SolicitarAcesso";
 import "./index.css";
 import ProtectedRoute from "./ProtectedRoute";
 import GerenciarFuncionario from "./components/TelaInicial/GerenciarFuncionario";
+import GerenciarAcademia from "./components/TelaInicial/GerenciarAcademia";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
@@ -34,7 +35,7 @@ root.render(
           <Route path="arealogada" element={<LayoutHome />}>
             <Route index element={<Navigate to="home" replace />} />
             <Route path="home" element={<TelaInicial />} />
-            <Route path="academias" element={<div>Tela de Academias</div>} />
+            <Route path="academias" element={<GerenciarAcademia/>} />
             <Route path="funcionarios" element={<GerenciarFuncionario/>} />
             <Route path="alunos" element={<div>Tela de Alunos</div>} />
             <Route path="turmas" element={<div>Tela de Turmas</div>} />

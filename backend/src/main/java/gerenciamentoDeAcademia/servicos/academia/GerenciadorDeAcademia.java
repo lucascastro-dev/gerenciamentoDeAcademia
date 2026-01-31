@@ -56,19 +56,12 @@ public class GerenciadorDeAcademia implements IGerenciadorDeAcademia {
     }
 
     @Override
+    @Transactional
     public void atualizarDados(AcademiaDto academiaDto) {
         Academia academia = Optional.ofNullable(academiaRepository.findByCnpj(academiaDto.getCnpj()))
                 .orElseThrow(() -> new ExcecaoDeDominio("Academia não encontrada"));
 
-        if (academia.getFuncionarios() != null && !academia.getFuncionarios().isEmpty()) {
-            academia.getFuncionarios().forEach(funcionario -> {
-                Funcionario funcionarioEncontrado = funcionarioRepository.findByCpf(funcionario.getCpf());
-                ExcecaoDeDominio.quandoNulo(funcionarioEncontrado,
-                        "Funcionário não encontrado para vincular à academia, faça o registro do funcionário!");
-            });
-        }
-
-        academiaRepository.save(academia);
+        academia.atualizarCadastro(academiaDto);
     }
 
     @Override

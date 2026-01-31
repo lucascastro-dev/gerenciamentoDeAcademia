@@ -3,16 +3,11 @@ import React, { useState } from 'react';
 import HttpService from '../../services/HttpService';
 import "./AreaLogada.css";
 
-const GerenciarFuncionario: React.FC = () => {
-  const [cpf, setCpf] = useState('');
+const GerenciarAcademia: React.FC = () => {
+  const [cnpj, setCnpj] = useState('');
   const [endereco, setEndereco] = useState('');
   const [telefone, setTelefone] = useState('');
-  const [nome, setNome] = useState('');
-  const [rg, setRg] = useState('');
-  const [dataDeNascimento, setNascimento] = useState('');
-  const [cargo, setCargo] = useState('');
-  const [especializacao, setEspecializacao] = useState('');
-  const [permitirGerenciarFuncoes, setGerenciarFuncoes] = useState(false);
+  const [razaoSocial, setRazaoSocial] = useState('');
   const [cadastroAtivo, setCadastroAtivo] = useState(false);
 
   const [loading, setLoading] = useState(false);
@@ -28,13 +23,7 @@ const GerenciarFuncionario: React.FC = () => {
     isSuccess: false,
   });
 
-  const maskCPF = (v: string) =>
-    v
-      .replace(/\D/g, "")
-      .replace(/(\d{3})(\d)/, "$1.$2")
-      .replace(/(\d{3})(\d)/, "$1.$2")
-      .replace(/(\d{3})(\d{1,2})$/, "$1-$2")
-      .slice(0, 14);
+  const maskCNPJ = (v: string) => v.toUpperCase().replace(/[^A-Z0-9]/g, "").replace(/^([A-Z0-9]{2})([A-Z0-9])/, "$1.$2").replace(/^([A-Z0-9]{2})\.([A-Z0-9]{3})([A-Z0-9])/, "$1.$2.$3").replace(/\.([A-Z0-9]{3})([A-Z0-9])/, ".$1/$2").replace(/([A-Z0-9]{4})([A-Z0-9])/, "$1-$2").slice(0, 18);
 
   const maskPhone = (v: string) =>
     v
@@ -55,14 +44,8 @@ const GerenciarFuncionario: React.FC = () => {
   };
 
   const resetForm = () => {
-    setNome('');
-    setRg('');
-    setNascimento('');
-    setCargo('');
-    setEspecializacao('');
-    setEndereco('');
+    setRazaoSocial('');
     setTelefone('');
-    setGerenciarFuncoes(false);
     setCadastroAtivo(false);
     setIsEditable(false);
   };
@@ -83,28 +66,23 @@ const GerenciarFuncionario: React.FC = () => {
     resetForm();
 
     try {
-      const res = await HttpService.consultarFuncionarioPorCpf(
-        onlyNumbers(cpf),
+      const res = await HttpService.consultarAcademiaPorCnpj(
+        onlyNumbers(cnpj),
         token
       );
 
       const data = res.data;
 
-      setNome(data.nome ?? '');
-      setRg(data.rg ?? '');
-      setNascimento(data.dataDeNascimento ?? '');
-      setCargo(data.cargo ?? '');
-      setEspecializacao(data.especializacao ?? '');
+      setRazaoSocial(data.razaoSocial ?? '');
       setEndereco(data.endereco ?? '');
       setTelefone(data.telefone ?? '');
-      setGerenciarFuncoes(data.permitirGerenciarFuncoes ?? false);
       setCadastroAtivo(data.cadastroAtivo ?? false);
 
       setIsEditable(true);
     } catch (err) {
       setModal({
         show: true,
-        message: "Funcionário não encontrado ou erro na busca.",
+        message: "Academia não encontrada ou erro na busca.",
         isSuccess: false,
       });
     } finally {
@@ -118,19 +96,14 @@ const GerenciarFuncionario: React.FC = () => {
     try {
       const token: any = localStorage.getItem('@App:token');
       const payload: any = {
-        nome,
-        cpf: onlyNumbers(cpf),
-        rg,
-        dataDeNascimento,
+        razaoSocial: razaoSocial,
+        cnpj: onlyNumbers(cnpj),
         endereco,
         telefone: onlyNumbers(telefone),
-        cargo,
-        especializacao,
-        permitirGerenciarFuncoes,
         cadastroAtivo,
       };
 
-      await HttpService.editarPessoa(payload, token);
+      await HttpService.editarAcademia(payload, token);
 
       setModal({
         show: true,
@@ -154,18 +127,18 @@ const GerenciarFuncionario: React.FC = () => {
 
   return (
     <div>
-      <h2>Gerenciar Funcionários</h2>
+      <h2>Gerenciar Academias</h2>
 
       <div className="search-section">
         <input style={{marginRight: '15px'}}
-          placeholder="Digite o CPF para buscar"
-          value={cpf}
-          onChange={(e) => setCpf(maskCPF(e.target.value))}
+          placeholder="Digite o CNPJ para buscar"
+          value={cnpj}
+          onChange={(e) => setCnpj(maskCNPJ(e.target.value))}
         />
         <button
           type="button"
           onClick={handleConsultarPessoa}
-          disabled={loading || cpf.length < 14}
+          disabled={loading || cnpj.length < 14}
         >
           {loading ? "Buscando..." : "Consultar"}
         </button>
@@ -178,48 +151,16 @@ const GerenciarFuncionario: React.FC = () => {
           className="formEdit"
           disabled={!isEditable}
           style={{ width: '92%' }}
-          placeholder="Nome"
-          value={nome}
-          onChange={(e) => setNome(e.target.value)}
+          placeholder="Razão Social"
+          value={razaoSocial}
+          onChange={(e) => setRazaoSocial(e.target.value)}
         />
 
         <input
           className="formEdit"
           disabled
-          placeholder="CPF (Não editável)"
-          value={cpf}
-        />
-
-        <input
-          className="formEdit"
-          disabled={!isEditable}
-          placeholder="RG"
-          value={rg}
-          onChange={(e) => setRg(e.target.value)}
-        />
-
-        <input
-          className="formEdit"
-          disabled={!isEditable}
-          type="date"
-          value={dataDeNascimento}
-          onChange={(e) => setNascimento(e.target.value)}
-        />
-
-        <input
-          className="formEdit"
-          disabled={!isEditable}
-          placeholder="Cargo"
-          value={cargo}
-          onChange={(e) => setCargo(e.target.value)}
-        />
-
-        <input
-          className="formEdit"
-          disabled={!isEditable}
-          placeholder="Especialização"
-          value={especializacao}
-          onChange={(e) => setEspecializacao(e.target.value)}
+          placeholder="CNPJ (Não editável)"
+          value={cnpj}
         />
 
         <input
@@ -240,24 +181,6 @@ const GerenciarFuncionario: React.FC = () => {
           onChange={(e) => setTelefone(maskPhone(e.target.value))}
         />
 
-        <div style={{ marginLeft: '10px' }} className="switch-row">
-          <label htmlFor="gerenciar-funcoes" className="switch-label">
-            <span>Permite gerenciar funcionalidades?</span>
-
-            <div className="switch-wrapper">
-              <input
-                id="gerenciar-funcoes"
-                className="switch switch--shadow"
-                type="checkbox"
-                checked={permitirGerenciarFuncoes}
-                onChange={(e) => setGerenciarFuncoes(e.target.checked)}
-                disabled={!isEditable}
-              />
-              <span className="slider"></span>
-            </div>
-          </label>
-        </div>
-        <p />
         <div style={{ marginLeft: '10px' }} className="switch-row">
           <label htmlFor="cadastro-ativo" className="switch-label">
             <span>Cadastro ativo</span>
@@ -304,4 +227,4 @@ const GerenciarFuncionario: React.FC = () => {
   );
 };
 
-export default GerenciarFuncionario;
+export default GerenciarAcademia;

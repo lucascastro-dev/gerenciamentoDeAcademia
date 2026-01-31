@@ -42,6 +42,22 @@ const HttpService = {
             }
         });
     },
+
+    consultarAcademiaPorCnpj: (cnpj: string, token: string) => {
+        return axios.get(`${BASE_URL}/academia/consultarAcademiaCnpj/${cnpj}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    },
+
+    editarAcademia: (data: { razaoSocial: string, cnpj: string, endereco: string, telefone: string, cadastroAtivo: boolean }, token: string) => {
+        return axios.put(`${BASE_URL}/academia/atualizarDadosAcademia`, data, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    }
 };
 
 export default HttpService;
