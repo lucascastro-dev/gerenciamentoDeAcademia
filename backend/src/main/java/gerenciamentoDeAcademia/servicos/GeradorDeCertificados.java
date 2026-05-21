@@ -2,6 +2,7 @@ package gerenciamentoDeAcademia.servicos;
 
 import gerenciamentoDeAcademia.dto.DadosCertificadoDto;
 import gerenciamentoDeAcademia.servicos.interfaces.IGeradorDeCertificados;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 import javax.imageio.IIOImage;
@@ -13,6 +14,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -24,10 +26,13 @@ import java.util.Map;
 @Service
 public class GeradorDeCertificados implements IGeradorDeCertificados {
 
-    private final String caminhoBase;
+    private static final String PASTA_TEMPLATES_CLASSPATH = "certificados/";
 
-    public GeradorDeCertificados(@org.springframework.beans.factory.annotation.Value("${app.certificado.base-path}") String caminhoBase) {
-        this.caminhoBase = caminhoBase;
+    /** Pasta no disco onde os certificados gerados são salvos (por professor). */
+    private final String caminhoSaida;
+
+    public GeradorDeCertificados(@org.springframework.beans.factory.annotation.Value("${app.certificado.base-path}") String caminhoSaida) {
+        this.caminhoSaida = caminhoSaida;
     }
     private static final String FORMATO_DATA = "dd/MM/yyyy";
     private static final Font FONTE_PADRAO = new Font("Brush Script MT", Font.ITALIC, 130);
@@ -54,7 +59,7 @@ public class GeradorDeCertificados implements IGeradorDeCertificados {
     }
 
     private String criarDiretorioProfessor(String nomeProfessor) {
-        String caminhoPasta = caminhoBase + "/" + nomeProfessor;
+        String caminhoPasta = caminhoSaida + File.separator + nomeProfessor;
         File diretorio = new File(caminhoPasta);
         if (!diretorio.exists() && !diretorio.mkdirs()) {
             throw new RuntimeException("Erro ao criar o diretório: " + caminhoPasta);
@@ -69,24 +74,29 @@ public class GeradorDeCertificados implements IGeradorDeCertificados {
     }
 
     private BufferedImage carregarImagemBase(DadosCertificadoDto dadosCertificado) {
-        BufferedImage imagemBase;
+        String nomeArquivo = Boolean.TRUE.equals(dadosCertificado.getPersonalizado())
+                ? dadosCertificado.getProjeto() + ".jpg"
+                : "default.jpg";
+        String recursoClasspath = PASTA_TEMPLATES_CLASSPATH + nomeArquivo;
 
         try {
-            if (dadosCertificado.getPersonalizado()) {
-                imagemBase = ImageIO.read(new File(caminhoBase.concat("/").concat(dadosCertificado.getProjeto().concat(".jpg"))));
-            } else {
-                imagemBase = ImageIO.read(new File(caminhoBase + "/default.jpg"));
+            ClassPathResource resource = new ClassPathResource(recursoClasspath);
+            if (!resource.exists()) {
+                throw new IOException("Template não encontrado no classpath: " + recursoClasspath);
             }
-
-            if (imagemBase == null) {
-                throw new IOException("Imagem base não encontrada ou inválida.");
+            try (InputStream input = resource.getInputStream()) {
+                BufferedImage imagemBase = ImageIO.read(input);
+                if (imagemBase == null) {
+                    throw new IOException("Imagem base inválida: " + recursoClasspath);
+                }
+                if (imagemBase.getWidth() < 3508 || imagemBase.getHeight() < 2480) {
+                    throw new RuntimeException("A imagem base não tem resolução suficiente para impressão.");
+                }
+                return imagemBase;
             }
-            if (imagemBase.getWidth() < 3508 || imagemBase.getHeight() < 2480) {
-                throw new RuntimeException("A imagem base não tem resolução suficiente para impressão.");
-            }
-            return imagemBase;
         } catch (IOException e) {
-            throw new RuntimeException("Erro ao carregar a imagem base do certificado.", e);
+            throw new RuntimeException(
+                    "Erro ao carregar a imagem base do certificado (" + recursoClasspath + ").", e);
         }
     }
 

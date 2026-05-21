@@ -57,3 +57,6 @@ dist-ssr
 
 .env
 !.env.example
+
+# Certificados gerados pelo backend (templates em src/main/resources/certificados)
+backend/certificados/
