@@ -1,52 +1,97 @@
-# Projeto Gerenciamento de Academia
+# Projeto Gerenciamento de Academia / Instituição de Ensino
 
-Este é um projeto de estudo para a prática de conceitos avançados de desenvolvimento de software utilizando Java 17, Maven, JPA (H2), Spring Boot para o backend e React com VITE para o frontend. O objetivo principal é criar uma aplicação para gerenciar uma academia, aplicando diferentes técnicas e práticas de programação aprendidas.
+Sistema para gestão de academias e escolas: alunos, funcionários, turmas, certificados, permissões por perfil e auditoria.
 
-## Funcionalidades
+## Stack
 
-- **Gestão de Alunos:** Permite o cadastro, atualização, remoção e consulta de informações dos alunos.
-- **Gestão de Funcionários:** Permite o registro, edição, exclusão e visualização de informações dos funcionários da academia.
-- **Gestão de Turmas Coletivas:** Oferece recursos para o montagem de turma nova, inserir alunos em turmas existentes e consulta de turmas coletivas oferecidas pela academia.
+| Camada | Tecnologias |
+|--------|-------------|
+| Backend | Java 17, Spring Boot 2.7, JPA, JWT, PostgreSQL / H2 |
+| Frontend | React 18, TypeScript, Vite, React Router |
+| Infra | Docker Compose (PostgreSQL + API + frontend) |
 
-## Tecnologias Utilizadas
+## Execução rápida (Docker — PostgreSQL)
 
-### Backend
+```bash
+cp .env.example .env
+docker compose up -d --build
+```
 
-- **Java 17:** Linguagem de programação principal.
-- **Maven:** Gerenciamento de dependências e construção do projeto.
-- **JPA (H2):** Framework de persistência para o banco de dados em memória H2.
-- **Spring Boot:** Framework para desenvolvimento de aplicações web e API REST.
-- **Testes Unitários com JUnit e Mockito:** Ferramentas para testar o código de forma automatizada e isolada.
+- API: http://localhost:8000/srv-gerenciaracademia  
+- Frontend: http://localhost:5173  
+- Swagger: http://localhost:8000/srv-gerenciaracademia/swagger-ui.html  
 
-### Frontend
+### Usuário master (criado automaticamente no profile `docker`)
 
-- **React:** Biblioteca JavaScript para a construção de interfaces de usuário.
-- **VITE:** Ferramenta de construção rápida para projetos React.
+| Campo | Valor padrão |
+|-------|----------------|
+| CPF (login) | `00000000191` |
+| Senha | `Master@2024!` |
+| Código academia | ID `1` (após seed) |
 
-## Práticas e Conceitos Aplicados
-- **Clean Code:** Foco na escrita de código legível, organizado e de fácil manutenção.
-- **DDD (Domain-Driven Design):** Modelagem de domínio baseada em conceitos de negócio.
-- **BDD (Behavior-Driven Development):** Desenvolvimento orientado a comportamento, com cenários descritos em linguagem natural.
-- **TDD (Test-Driven Development):** Desenvolvimento orientado a testes, escrevendo testes antes de implementar a funcionalidade.
-- **JWT Auth:** Autenticação e autorização baseada em tokens JWT (JSON Web Token).
+Altere credenciais em `.env` (`APP_MASTER_CPF`, `APP_MASTER_PASSWORD`).
 
-## Como Executar o Projeto
+## Desenvolvimento local (PostgreSQL persistente)
 
-1. **Clonar o repositório:**
-git clone https://github.com/lucascastro-dev/gerenciamentoDeAcademia.git
+1. Crie o arquivo de ambiente (senha alinhada com o backend):
 
+```bash
+cp .env.example .env
+```
 
-2. **Backend:**
-- Navegue até o diretório `backend`.
-- Execute o comando `mvn spring-boot:run` para iniciar o servidor backend.
-- O servidor estará acessível em `http://localhost:8080`.
+2. Suba o banco:
 
-3. **Frontend:**
-- Navegue até o diretório `frontend`.
-- Execute o comando `npm install` para instalar as dependências.
-- Execute o comando `npm run dev` para iniciar o servidor de desenvolvimento.
-- O aplicativo estará disponível em `http://localhost:5173`.
+```bash
+docker compose up postgres -d
+```
 
-## Contribuições
+**Backend** (profile `local` é o padrão — `ddl-auto=update`)
 
-Contribuições são bem-vindas! Se você tem sugestões de melhorias, correções de bugs ou novas funcionalidades, fique à vontade para abrir uma issue ou enviar um pull request.
+```bash
+cd backend
+mvn spring-boot:run
+```
+
+### Erro `password authentication failed for user academia_app`
+
+O PostgreSQL grava a senha **na primeira criação do volume**. Se você mudou a senha depois, o container sobe mas a senha interna continua a antiga.
+
+**Solução (apaga dados locais do banco):**
+
+```bash
+docker compose down -v
+docker compose up postgres -d
+```
+
+Depois rode o backend de novo. Senha padrão: `academia_dev_secret` (usuário `academia_app`).
+
+### Porta do PostgreSQL
+
+O projeto usa a porta **5435** no host (veja `POSTGRES_HOST_PORT` no `.env`), para não conflitar com outros Postgres no Docker (5432, 5433, 5434). Se precisar mudar, altere `.env` e `application-local.properties` juntos.
+
+Para H2 em memória (testes rápidos): `set SPRING_PROFILES_ACTIVE=h2` (Windows) ou `SPRING_PROFILES_ACTIVE=h2 mvn spring-boot:run`
+
+**Frontend**
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+## Perfis de funcionário e segurança
+
+Tipos: `DIRETOR`, `TI`, `ADMINISTRADOR` (master — acesso total), `FINANCEIRO`, `RH`, `RECEPCIONISTA`, `PROFESSOR`, `ESTAGIARIO`, `SERVICOS_GERAIS`, `TERCEIRIZADO`.
+
+Permissões granulares via JWT + `@PreAuthorize`. Ações críticas registradas em `tb_auditoria`.
+
+## Roadmap
+
+Ver [docs/ROADMAP.md](docs/ROADMAP.md) para funcionalidades planejadas (financeiro completo, portal do aluno, multi-tenant, etc.).
+
+## Testes backend
+
+```bash
+cd backend
+mvn test
+```

@@ -1,0 +1,55 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: academia-postgres
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: gerenciamento_academia
+      POSTGRES_USER: academia_app
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-academia_dev_secret}
+    ports:
+      - "${POSTGRES_HOST_PORT:-5435}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U academia_app -d gerenciamento_academia"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: academia-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production-min-32-chars!!}
+      APP_MASTER_CPF: ${APP_MASTER_CPF:-00000000191}
+      APP_MASTER_PASSWORD: ${APP_MASTER_PASSWORD:-Master@2024!}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-academia_dev_secret}
+    ports:
+      - "8000:8000"
+    volumes:
+      - certificados_data:/app/certificados
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: academia-frontend
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+    environment:
+      VITE_API_URL: http://localhost:8000/srv-gerenciaracademia
+
+volumes:
+  postgres_data:
+  certificados_data:
