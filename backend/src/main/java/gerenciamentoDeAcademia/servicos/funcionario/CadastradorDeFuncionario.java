@@ -3,7 +3,9 @@ package gerenciamentoDeAcademia.servicos.funcionario;
 import gerenciamentoDeAcademia.dto.FuncionarioDto;
 import gerenciamentoDeAcademia.entidades.Funcionario;
 import gerenciamentoDeAcademia.excecao.ApplicationException;
+import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
 import gerenciamentoDeAcademia.repositorios.FuncionarioRepository;
+import gerenciamentoDeAcademia.servicos.auditoria.ServicoAuditoria;
 import gerenciamentoDeAcademia.servicos.interfaces.ICadastradorDeFuncionario;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,14 +21,55 @@ import javax.transaction.Transactional;
 public class CadastradorDeFuncionario implements ICadastradorDeFuncionario {
 
     private final FuncionarioRepository funcionarioRepository;
+    private final ServicoAuditoria servicoAuditoria;
 
     @Override
     public void cadastrar(FuncionarioDto funcionarioDto) {
+        ExcecaoDeDominio.quandoNulo(funcionarioDto, "Obrigatório preencher dados do funcionario");
         if (funcionarioRepository.findByCpf(funcionarioDto.getCpf()) != null) {
             throw new ApplicationException("Funcionário já cadastrado!", HttpStatus.BAD_REQUEST);
         }
 
-        funcionarioRepository.save(new Funcionario(funcionarioDto));
+        Funcionario salvo = funcionarioRepository.save(new Funcionario(funcionarioDto));
+        servicoAuditoria.registrar("CADASTRO", "FUNCIONARIO", salvo.getCpf(),
+                "Novo funcionário: " + salvo.getNome() + " (" + salvo.getTipoFuncionario() + ")");
+    }
+
+    @Override
+    public void cadastrarPreCadastro(FuncionarioDto funcionarioDto) {
+        ExcecaoDeDominio.quandoNulo(funcionarioDto, "Obrigatório preencher dados");
+        if (funcionarioRepository.findByCpf(funcionarioDto.getCpf()) != null) {
+            throw new ApplicationException("CPF já cadastrado. Aguarde a ativação pelo RH ou faça login se já foi ativado.",
+                    HttpStatus.BAD_REQUEST);
+        }
+        ExcecaoDeDominio.quandoNuloOuVazio(funcionarioDto.getNome(), "Nome é obrigatório!");
+        ExcecaoDeDominio.quandoNuloOuVazio(funcionarioDto.getCpf(), "CPF é obrigatório!");
+        ExcecaoDeDominio.quandoNuloOuVazio(funcionarioDto.getSenha(), "Senha é obrigatória!");
+
+        Funcionario salvo = funcionarioRepository.save(Funcionario.builder()
+                .nome(funcionarioDto.getNome())
+                .rg(funcionarioDto.getRg())
+                .cpf(funcionarioDto.getCpf().replaceAll("\\D", ""))
+                .dataDeNascimento(funcionarioDto.getDataDeNascimento())
+                .endereco(funcionarioDto.getEndereco())
+                .telefone(funcionarioDto.getTelefone())
+                .senha(funcionarioDto.getSenha())
+                .cadastroAtivo(false)
+                .permitirGerenciarFuncoes(false)
+                .build());
+        servicoAuditoria.registrar("PRE_CADASTRO", "FUNCIONARIO", salvo.getCpf(),
+                "Pré-cadastro aguardando ativação pelo RH: " + salvo.getNome());
+    }
+
+    @Override
+    @Transactional
+    public void atualizarMeuPerfil(Funcionario funcionario, FuncionarioDto funcionarioDto) {
+        ExcecaoDeDominio.quandoNulo(funcionario, "Funcionário não encontrado");
+        ExcecaoDeDominio.quandoNulo(funcionarioDto, "Dados obrigatórios");
+        funcionario.atualizarDadosPessoais(funcionarioDto);
+        funcionarioRepository.save(funcionario);
+        servicoAuditoria.registrar("ALTERACAO", "FUNCIONARIO", funcionario.getCpf(),
+                "Perfil atualizado pelo próprio usuário");
     }
 
     @Override
@@ -38,5 +81,7 @@ public class CadastradorDeFuncionario implements ICadastradorDeFuncionario {
         }
 
         funcionario.atualizar(funcionarioDto);
+        servicoAuditoria.registrar("ALTERACAO", "FUNCIONARIO", funcionario.getCpf(),
+                "Dados atualizados para " + funcionario.getNome());
     }
 }

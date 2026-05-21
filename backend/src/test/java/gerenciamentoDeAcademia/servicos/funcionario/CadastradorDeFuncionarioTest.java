@@ -2,8 +2,10 @@ package gerenciamentoDeAcademia.servicos.funcionario;
 
 import gerenciamentoDeAcademia.dto.FuncionarioDto;
 import gerenciamentoDeAcademia.entidades.Funcionario;
+import gerenciamentoDeAcademia.enums.TipoFuncionario;
 import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
 import gerenciamentoDeAcademia.repositorios.FuncionarioRepository;
+import gerenciamentoDeAcademia.servicos.auditoria.ServicoAuditoria;
 import org.instancio.Instancio;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -23,14 +25,27 @@ public class CadastradorDeFuncionarioTest {
     CadastradorDeFuncionario cadastradorDeFuncionario;
     @Mock
     FuncionarioRepository funcionarioRepository;
+    @Mock
+    ServicoAuditoria servicoAuditoria;
+
+    private FuncionarioDto dtoValido() {
+        return Instancio.of(FuncionarioDto.class)
+                .set(field(FuncionarioDto::getTipoFuncionario), TipoFuncionario.PROFESSOR)
+                .set(field(FuncionarioDto::getEspecializacao), "Judô")
+                .create();
+    }
 
     @Test
     void deveCadastrarUmFuncionario() {
-        FuncionarioDto funcionarioDto = Instancio.of(FuncionarioDto.class).create();
+        FuncionarioDto funcionarioDto = dtoValido();
+        Mockito.when(funcionarioRepository.save(any(Funcionario.class)))
+                .thenAnswer(inv -> inv.getArgument(0));
 
         cadastradorDeFuncionario.cadastrar(funcionarioDto);
 
         Mockito.verify(funcionarioRepository).save(any(Funcionario.class));
+        Mockito.verify(servicoAuditoria).registrar(Mockito.anyString(), Mockito.eq("FUNCIONARIO"),
+                Mockito.anyString(), Mockito.anyString());
     }
 
     @Test
@@ -43,6 +58,7 @@ public class CadastradorDeFuncionarioTest {
     @Test
     void deveRetornarMensagemDeErroAoCadastrarFuncionarioComNomeNulo() {
         FuncionarioDto funcionarioDto = Instancio.of(FuncionarioDto.class).set(field(FuncionarioDto::getNome), null).create();
+        funcionarioDto.setTipoFuncionario(TipoFuncionario.PROFESSOR);
 
         var mensagemDeErro = Assertions.assertThrows(ExcecaoDeDominio.class, () -> cadastradorDeFuncionario.cadastrar(funcionarioDto));
 
@@ -95,20 +111,26 @@ public class CadastradorDeFuncionarioTest {
     }
 
     @Test
-    void deveRetornarMensagemDeErroAoCadastrarFuncionarioComCargoNulo() {
-        FuncionarioDto funcionarioDto = Instancio.of(FuncionarioDto.class).set(field(FuncionarioDto::getCargo), null).create();
+    void deveRetornarMensagemDeErroAoCadastrarFuncionarioComTipoNulo() {
+        FuncionarioDto funcionarioDto = Instancio.of(FuncionarioDto.class)
+                .set(field(FuncionarioDto::getTipoFuncionario), null)
+                .set(field(FuncionarioDto::getCargo), null)
+                .create();
 
         var mensagemDeErro = Assertions.assertThrows(ExcecaoDeDominio.class, () -> cadastradorDeFuncionario.cadastrar(funcionarioDto));
 
-        Assertions.assertEquals("Cargo é obrigatório!", mensagemDeErro.getMessage());
+        Assertions.assertEquals("Tipo de funcionário é obrigatório!", mensagemDeErro.getMessage());
     }
 
     @Test
-    void deveRetornarMensagemDeErroAoCadastrarFuncionarioComEspecializacaoNulo() {
-        FuncionarioDto funcionarioDto = Instancio.of(FuncionarioDto.class).set(field(FuncionarioDto::getEspecializacao), null).create();
+    void deveRetornarMensagemDeErroAoCadastrarProfessorSemEspecializacao() {
+        FuncionarioDto funcionarioDto = Instancio.of(FuncionarioDto.class)
+                .set(field(FuncionarioDto::getTipoFuncionario), TipoFuncionario.PROFESSOR)
+                .set(field(FuncionarioDto::getEspecializacao), null)
+                .create();
 
         var mensagemDeErro = Assertions.assertThrows(ExcecaoDeDominio.class, () -> cadastradorDeFuncionario.cadastrar(funcionarioDto));
 
-        Assertions.assertEquals("Especialização é obrigatório!", mensagemDeErro.getMessage());
+        Assertions.assertEquals("Especialização é obrigatória para professores!", mensagemDeErro.getMessage());
     }
 }

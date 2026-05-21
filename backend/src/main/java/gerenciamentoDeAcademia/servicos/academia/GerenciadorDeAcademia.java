@@ -1,6 +1,9 @@
 package gerenciamentoDeAcademia.servicos.academia;
 
 import gerenciamentoDeAcademia.dto.AcademiaDto;
+import gerenciamentoDeAcademia.dto.AtivacaoFuncionarioDto;
+import gerenciamentoDeAcademia.enums.AreaTerceirizado;
+import gerenciamentoDeAcademia.enums.TipoFuncionario;
 import gerenciamentoDeAcademia.entidades.Academia;
 import gerenciamentoDeAcademia.entidades.Funcionario;
 import gerenciamentoDeAcademia.entidades.Usuario;
@@ -81,13 +84,68 @@ public class GerenciadorDeAcademia implements IGerenciadorDeAcademia {
     }
 
     @Override
-    public void solicitarPrimeiroAcesso(String cpf, String cnpj) {
-        Academia academia = academiaRepository.findByCnpj(cnpj);
-        ExcecaoDeDominio.quandoNulo(academia, "Academia não encontrada");
+    public void solicitarPrimeiroAcesso(String cpf) {
         Funcionario funcionario = funcionarioRepository.findByCpf(cpf);
-        ExcecaoDeDominio.quandoNulo(funcionario, "Funcionário não encontrado");
-        academia.setPossuiCadastrosParaAprovar(true);
-        academia.getFuncionarios().add(funcionario);
+        ExcecaoDeDominio.quandoNulo(funcionario, "CPF não encontrado. Faça o pré-cadastro ou fale com o RH.");
+        ExcecaoDeDominio.quando(Boolean.TRUE.equals(funcionario.getCadastroAtivo()),
+                "Seu cadastro já está ativo. Use a tela de login.");
+    }
+
+    @Override
+    @Transactional
+    public void ativarFuncionarioNaInstituicao(Long instituicaoId, String cpf, AtivacaoFuncionarioDto dados) {
+        Academia academia = academiaRepository.findById(instituicaoId)
+                .orElseThrow(() -> new ExcecaoDeDominio("Instituição não encontrada"));
+        Funcionario funcionario = buscarFuncionario(cpf);
+        aplicarFuncaoNaInstituicao(funcionario, dados);
+        if (!academia.getFuncionarios().contains(funcionario)) {
+            academia.getFuncionarios().add(funcionario);
+        }
+        ativarFuncionarioInterno(academia, funcionario);
+    }
+
+    private void aplicarFuncaoNaInstituicao(Funcionario funcionario, AtivacaoFuncionarioDto dados) {
+        ExcecaoDeDominio.quandoNulo(dados, "Informe a função do colaborador na instituição.");
+        ExcecaoDeDominio.quandoNulo(dados.getTipoFuncionario(), "Tipo de funcionário é obrigatório na ativação.");
+        if (dados.getTipoFuncionario() == TipoFuncionario.DIRETOR) {
+            throw new ExcecaoDeDominio("Perfil Diretor não pode ser atribuído por esta tela.");
+        }
+        if (dados.getTipoFuncionario() == TipoFuncionario.TERCEIRIZADO) {
+            ExcecaoDeDominio.quandoNulo(dados.getAreaTerceirizado(),
+                    "Informe a área do terceirizado (RH, professor substituto ou TI).");
+            funcionario.setAreaTerceirizado(dados.getAreaTerceirizado());
+        } else {
+            funcionario.setAreaTerceirizado(null);
+        }
+        if (dados.getTipoFuncionario() == TipoFuncionario.PROFESSOR) {
+            ExcecaoDeDominio.quandoNuloOuVazio(dados.getEspecializacao(),
+                    "Especialização é obrigatória para professores.");
+            funcionario.setEspecializacao(dados.getEspecializacao());
+        }
+        funcionario.setTipoFuncionario(dados.getTipoFuncionario());
+        funcionario.setCargo(dados.getTipoFuncionario().getDescricao());
+        funcionarioRepository.save(funcionario);
+    }
+
+    private void ativarFuncionarioInterno(Academia academia, Funcionario funcionario) {
+        String cpf = funcionario.getCpf();
+        if (usuarioRepository.existsByLogin(cpf) && Boolean.TRUE.equals(funcionario.getCadastroAtivo())) {
+            throw new ExcecaoDeDominio("Este colaborador já possui cadastro ativo.");
+        }
+        funcionario.ativar();
+        funcionarioRepository.save(funcionario);
+
+        if (!usuarioRepository.existsByLogin(cpf)) {
+            String senhaCriptografada = passwordEncoder.encode(funcionario.getSenha());
+            UserRole role = funcionario.isUsuarioMaster() ? UserRole.ADMIN : UserRole.USER;
+            usuarioRepository.save(Usuario.builder()
+                    .login(cpf)
+                    .password(senhaCriptografada)
+                    .role(role)
+                    .build());
+        }
+
+        academia.atualizarStatusPendencias();
         academiaRepository.save(academia);
     }
 
@@ -96,35 +154,28 @@ public class GerenciadorDeAcademia implements IGerenciadorDeAcademia {
     public void ativarFuncionario(String cpf, String cnpj) {
         Academia academia = buscarAcademia(cnpj);
         Funcionario funcionario = buscarFuncionario(cpf);
-        academia.validarVinculo(funcionario);
-
-        if (usuarioRepository.existsByLogin(cpf) && funcionario.getCadastroAtivo()) {
-            throw new ExcecaoDeDominio("Este funcionário já possui um cadastro ativo.");
+        if (!academia.getFuncionarios().contains(funcionario)) {
+            academia.getFuncionarios().add(funcionario);
         }
-
-        funcionario.ativar();
-        funcionarioRepository.save(funcionario);
-
-        String senhaCriptografada = passwordEncoder.encode(funcionario.getSenha());
-        Usuario novoUsuario = Usuario.builder()
-                .login(funcionario.getCpf())
-                .password(senhaCriptografada)
-                .role(UserRole.USER)
-                .build();
-        usuarioRepository.save(novoUsuario);
-
-        academia.atualizarStatusPendencias();
-        academiaRepository.save(academia);
+        ativarFuncionarioInterno(academia, funcionario);
     }
 
     @Override
     public void inativarFuncionario(String cpf, String cnpj) {
-        Academia academia = buscarAcademia(cnpj);
-        Funcionario funcionario = buscarFuncionario(cpf);
+        inativarFuncionarioNaInstituicao(buscarAcademia(cnpj).getId(), cpf);
+    }
 
+    @Override
+    @Transactional
+    public void inativarFuncionarioNaInstituicao(Long instituicaoId, String cpf) {
+        Academia academia = academiaRepository.findById(instituicaoId)
+                .orElseThrow(() -> new ExcecaoDeDominio("Instituição não encontrada"));
+        Funcionario funcionario = buscarFuncionario(cpf);
         academia.validarVinculo(funcionario);
         funcionario.inativar();
         funcionarioRepository.save(funcionario);
+        academia.atualizarStatusPendencias();
+        academiaRepository.save(academia);
     }
 
     @Override
