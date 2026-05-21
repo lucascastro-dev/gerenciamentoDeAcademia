@@ -1,0 +1,107 @@
+package gerenciamentoDeAcademia.infra.config;
+
+import gerenciamentoDeAcademia.entidades.Academia;
+import gerenciamentoDeAcademia.entidades.Funcionario;
+import gerenciamentoDeAcademia.entidades.Usuario;
+import gerenciamentoDeAcademia.enums.TipoFuncionario;
+import gerenciamentoDeAcademia.enums.UserRole;
+import gerenciamentoDeAcademia.repositorios.AcademiaRepository;
+import gerenciamentoDeAcademia.repositorios.FuncionarioRepository;
+import gerenciamentoDeAcademia.repositorios.UsuarioRepository;
+import gerenciamentoDeAcademia.servicos.plano.ServicoAssinaturaPlataforma;
+import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.annotation.Profile;
+import org.springframework.context.event.EventListener;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+
+/**
+ * Cria usuário master (DIRETOR) na primeira execução com PostgreSQL/Docker.
+ */
+@Component
+@Profile({"docker", "local"})
+@RequiredArgsConstructor
+public class DataInicializadorMaster {
+
+    private static final Logger log = LoggerFactory.getLogger(DataInicializadorMaster.class);
+
+    private final FuncionarioRepository funcionarioRepository;
+    private final AcademiaRepository academiaRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final ServicoAssinaturaPlataforma servicoAssinaturaPlataforma;
+
+    @Value("${app.master.cpf}")
+    private String masterCpf;
+
+    @Value("${app.master.password}")
+    private String masterPassword;
+
+    @EventListener(ApplicationReadyEvent.class)
+    @Transactional
+    public void inicializarMaster() {
+        Academia academiaExistente = academiaRepository.findByCnpj("00000000000191");
+        if (academiaExistente != null) {
+            servicoAssinaturaPlataforma.garantirTrial(academiaExistente);
+        }
+        if (usuarioRepository.existsByLogin(masterCpf)) {
+            log.info("Usuário master já existe (CPF: {}).", masterCpf);
+            return;
+        }
+
+        Funcionario master = funcionarioRepository.findByCpf(masterCpf);
+        if (master == null) {
+            master = Funcionario.builder()
+                    .nome("Administrador Master")
+                    .rg("0000000")
+                    .cpf(masterCpf)
+                    .dataDeNascimento(LocalDate.of(1990, 1, 1))
+                    .endereco("Sede")
+                    .telefone("00000000000")
+                    .tipoFuncionario(TipoFuncionario.DIRETOR)
+                    .cargo(TipoFuncionario.DIRETOR.getDescricao())
+                    .especializacao("Gestão")
+                    .permitirGerenciarFuncoes(true)
+                    .senha(masterPassword)
+                    .cadastroAtivo(true)
+                    .build();
+            master = funcionarioRepository.save(master);
+        } else {
+            master.setTipoFuncionario(TipoFuncionario.DIRETOR);
+            master.setCadastroAtivo(true);
+            master.setPermitirGerenciarFuncoes(true);
+            funcionarioRepository.save(master);
+        }
+
+        Academia academia = academiaRepository.findByCnpj("00000000000191");
+        if (academia == null) {
+            academia = new Academia();
+            academia.setRazaoSocial("Instituição Master");
+            academia.setCnpj("00000000000191");
+            academia.setCadastroAtivo(true);
+            academia = academiaRepository.save(academia);
+        }
+        if (!academia.getFuncionarios().contains(master)) {
+            academia.getFuncionarios().add(master);
+            academiaRepository.save(academia);
+        }
+
+        Usuario usuario = Usuario.builder()
+                .login(masterCpf)
+                .password(passwordEncoder.encode(masterPassword))
+                .role(UserRole.ADMIN)
+                .build();
+        usuarioRepository.save(usuario);
+
+        servicoAssinaturaPlataforma.garantirTrial(academia);
+
+        log.warn("Usuário MASTER criado. CPF: {} | Altere a senha em produção!", masterCpf);
+    }
+}
