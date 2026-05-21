@@ -37,6 +37,8 @@ public class Aluno {
     private Integer diaVencimentoMensalidade;
     private String nomeResponsavel;
     private String telefoneResponsavel;
+    /** Data do último pagamento de mensalidade registrado (baixa manual). */
+    private LocalDate dataUltimoPagamentoMensalidade;
 
     @ManyToMany
     @JoinTable(name = "turma_aluno", joinColumns = @JoinColumn(name = "aluno_id"), inverseJoinColumns = @JoinColumn(name = "turma_id"))
