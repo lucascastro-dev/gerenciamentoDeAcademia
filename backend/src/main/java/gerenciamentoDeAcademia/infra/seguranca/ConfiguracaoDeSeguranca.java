@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -21,6 +22,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class ConfiguracaoDeSeguranca {
 
     @Autowired
@@ -33,17 +35,11 @@ public class ConfiguracaoDeSeguranca {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .antMatchers("/**/login").permitAll()
-                        .antMatchers("/**/registrarAcademia").permitAll()
-                        .antMatchers("/**/ativarFuncionario/**").permitAll()
-                        .antMatchers("/**/areapublica/**").permitAll()
-
-                        .antMatchers("/**/funcionario/**").permitAll()
-                        .antMatchers("/**/academia/**").permitAll()
-
+                        .antMatchers("/**/login", "/**/login/**").permitAll()
+                        .antMatchers("/**/solicitarPrimeiroAcesso/**").permitAll()
+                        .antMatchers("/**/preCadastroColaborador").permitAll()
+                        .antMatchers("/actuator/health", "/actuator/info").permitAll()
                         .antMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        .antMatchers("**/swagger-ui/**", "**/v3/api-docs/**").permitAll()
-
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(filtroSeguranca, UsernamePasswordAuthenticationFilter.class)
@@ -53,7 +49,11 @@ public class ConfiguracaoDeSeguranca {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5173", "http://127.0.0.1:5173"));
+        config.setAllowedOrigins(List.of(
+                "http://localhost:5173",
+                "http://127.0.0.1:5173",
+                "http://localhost:80"
+        ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Origin", "Content-Type", "Accept", "Authorization", "X-Requested-With"));
         config.setAllowCredentials(true);

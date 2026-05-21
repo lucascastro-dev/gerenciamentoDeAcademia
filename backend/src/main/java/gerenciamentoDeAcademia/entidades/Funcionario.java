@@ -1,6 +1,8 @@
 package gerenciamentoDeAcademia.entidades;
 
 import gerenciamentoDeAcademia.dto.FuncionarioDto;
+import gerenciamentoDeAcademia.enums.AreaTerceirizado;
+import gerenciamentoDeAcademia.enums.TipoFuncionario;
 import gerenciamentoDeAcademia.excecao.ApplicationException;
 import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
 import lombok.AllArgsConstructor;
@@ -12,6 +14,8 @@ import org.hibernate.validator.constraints.br.CPF;
 import org.springframework.http.HttpStatus;
 
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -37,6 +41,14 @@ public class Funcionario {
     private String endereco;
     private String telefone;
     private String cargo;
+
+    @Enumerated(EnumType.STRING)
+    private TipoFuncionario tipoFuncionario;
+
+    /** Obrigatório quando {@link #tipoFuncionario} = TERCEIRIZADO. */
+    @Enumerated(EnumType.STRING)
+    private AreaTerceirizado areaTerceirizado;
+
     private String especializacao;
     private Boolean permitirGerenciarFuncoes;
     private String senha;
@@ -50,9 +62,13 @@ public class Funcionario {
         this.dataDeNascimento = funcionarioDto.getDataDeNascimento();
         this.endereco = funcionarioDto.getEndereco();
         this.telefone = funcionarioDto.getTelefone();
-        this.cargo = funcionarioDto.getCargo();
+        this.tipoFuncionario = resolverTipo(funcionarioDto);
+        this.cargo = this.tipoFuncionario.getDescricao();
+        this.areaTerceirizado = funcionarioDto.getAreaTerceirizado();
         this.especializacao = funcionarioDto.getEspecializacao();
-        this.permitirGerenciarFuncoes = funcionarioDto.getPermitirGerenciarFuncoes();
+        this.permitirGerenciarFuncoes = funcionarioDto.getPermitirGerenciarFuncoes() != null
+                ? funcionarioDto.getPermitirGerenciarFuncoes()
+                : this.tipoFuncionario.isUsuarioMaster();
         this.senha = funcionarioDto.getSenha();
         this.cadastroAtivo = false;
     }
@@ -65,9 +81,33 @@ public class Funcionario {
         ExcecaoDeDominio.quandoDataNulaOuVazia(funcionarioDto.getDataDeNascimento(), "Data de nascimento é obrigatória!");
         ExcecaoDeDominio.quandoNuloOuVazio(funcionarioDto.getEndereco(), "Endereço é obrigatório!");
         ExcecaoDeDominio.quandoNuloOuVazio(funcionarioDto.getTelefone(), "Telefone é obrigatório!");
-        ExcecaoDeDominio.quandoNuloOuVazio(funcionarioDto.getCargo(), "Cargo é obrigatório!");
-        if (funcionarioDto.getCargo() != null || funcionarioDto.getCargo().isEmpty())
-            ExcecaoDeDominio.quandoNuloOuVazio(funcionarioDto.getEspecializacao(), "Especialização é obrigatório!");
+        TipoFuncionario tipo = resolverTipo(funcionarioDto);
+        ExcecaoDeDominio.quandoNulo(tipo, "Tipo de funcionário é obrigatório!");
+        if (tipo == TipoFuncionario.PROFESSOR) {
+            ExcecaoDeDominio.quandoNuloOuVazio(funcionarioDto.getEspecializacao(), "Especialização é obrigatória para professores!");
+        }
+        if (tipo == TipoFuncionario.TERCEIRIZADO) {
+            ExcecaoDeDominio.quandoNulo(funcionarioDto.getAreaTerceirizado(),
+                    "Informe a área do terceirizado (RH, professor substituto ou TI).");
+        }
+    }
+
+    private TipoFuncionario resolverTipo(FuncionarioDto dto) {
+        if (dto.getTipoFuncionario() != null) {
+            return dto.getTipoFuncionario();
+        }
+        return TipoFuncionario.fromCargo(dto.getCargo());
+    }
+
+    public void atualizarDadosPessoais(FuncionarioDto funcionarioDto) {
+        this.nome = funcionarioDto.getNome();
+        this.rg = funcionarioDto.getRg();
+        this.dataDeNascimento = funcionarioDto.getDataDeNascimento();
+        this.endereco = funcionarioDto.getEndereco();
+        this.telefone = funcionarioDto.getTelefone();
+        if (tipoFuncionario == TipoFuncionario.PROFESSOR) {
+            this.especializacao = funcionarioDto.getEspecializacao();
+        }
     }
 
     public void atualizar(FuncionarioDto funcionarioDto) {
@@ -76,10 +116,27 @@ public class Funcionario {
         this.dataDeNascimento = funcionarioDto.getDataDeNascimento();
         this.endereco = funcionarioDto.getEndereco();
         this.telefone = funcionarioDto.getTelefone();
-        this.cargo = funcionarioDto.getCargo();
+        TipoFuncionario tipo = resolverTipo(funcionarioDto);
+        if (tipo != null) {
+            this.tipoFuncionario = tipo;
+            this.cargo = tipo.getDescricao();
+            if (tipo == TipoFuncionario.TERCEIRIZADO) {
+                ExcecaoDeDominio.quandoNulo(funcionarioDto.getAreaTerceirizado(),
+                        "Informe a área do terceirizado (RH, professor substituto ou TI).");
+                this.areaTerceirizado = funcionarioDto.getAreaTerceirizado();
+            } else {
+                this.areaTerceirizado = null;
+            }
+        }
         this.especializacao = funcionarioDto.getEspecializacao();
-        this.permitirGerenciarFuncoes = funcionarioDto.getPermitirGerenciarFuncoes();
+        if (funcionarioDto.getPermitirGerenciarFuncoes() != null) {
+            this.permitirGerenciarFuncoes = funcionarioDto.getPermitirGerenciarFuncoes();
+        }
         this.cadastroAtivo = funcionarioDto.getCadastroAtivo();
+    }
+
+    public boolean isUsuarioMaster() {
+        return tipoFuncionario != null && tipoFuncionario.isUsuarioMaster();
     }
 
     public void ativar() {

@@ -1,6 +1,8 @@
 package gerenciamentoDeAcademia.dto;
 
 import gerenciamentoDeAcademia.entidades.Funcionario;
+import gerenciamentoDeAcademia.enums.AreaTerceirizado;
+import gerenciamentoDeAcademia.enums.TipoFuncionario;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -10,6 +12,8 @@ import lombok.Setter;
 @NoArgsConstructor
 public class FuncionarioDto extends PessoaDto {
     private String cargo;
+    private TipoFuncionario tipoFuncionario;
+    private AreaTerceirizado areaTerceirizado;
     private String especializacao;
     private Boolean permitirGerenciarFuncoes;
     private Boolean cadastroAtivo;
@@ -24,6 +28,8 @@ public class FuncionarioDto extends PessoaDto {
         this.setSenha(funcionario.getSenha());
 
         this.cargo = funcionario.getCargo();
+        this.tipoFuncionario = funcionario.getTipoFuncionario();
+        this.areaTerceirizado = funcionario.getAreaTerceirizado();
         this.especializacao = funcionario.getEspecializacao();
         this.permitirGerenciarFuncoes = funcionario.getPermitirGerenciarFuncoes();
         this.cadastroAtivo = funcionario.getCadastroAtivo();
