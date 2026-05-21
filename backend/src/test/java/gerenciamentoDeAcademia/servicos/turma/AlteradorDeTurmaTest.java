@@ -109,23 +109,39 @@ public class AlteradorDeTurmaTest {
     }
 
     @Test
-    void deveConsultarProfessorNaBaseCasoProfessorSejaDiferenteDaTurmaEncontrada() {
-        turmaParaAlterar.getProfessor().setCpf("07757569036");
-        Mockito.when(funcionarioRepository.findByCpf(turmaParaAlterar.getProfessor().getCpf())).thenReturn(professor);
+    void deveVincularProfessorNaTurmaComSucesso() {
+        String cpfProfessor = "07757569036";
+        Mockito.when(turmaRepository.findById(turma.getId())).thenReturn(Optional.of(turma));
+        Mockito.when(funcionarioRepository.findByCpf(cpfProfessor)).thenReturn(professor);
 
-        alteradorDeTurma.alterarTurma(turmaParaAlterar);
+        alteradorDeTurma.vincularProfessor(turma.getId(), cpfProfessor);
 
-        Mockito.verify(funcionarioRepository).findByCpf(turmaParaAlterar.getProfessor().getCpf());
+        Mockito.verify(funcionarioRepository).findByCpf(cpfProfessor);
+        Mockito.verify(turmaRepository).save(turma);
     }
 
     @Test
     void deveRetornarMensagemDeErroSeNaoEncontrarProfessorNaBase() {
-        turmaParaAlterar.getProfessor().setCpf("07757569036");
-        Mockito.when(funcionarioRepository.findByCpf(turmaParaAlterar.getProfessor().getCpf())).thenReturn(null);
+        String cpfProfessor = "07757569036";
+        Mockito.when(turmaRepository.findById(turma.getId())).thenReturn(Optional.of(turma));
+        Mockito.when(funcionarioRepository.findByCpf(cpfProfessor)).thenReturn(null);
 
-        var mensagemDeErro = Assertions.assertThrows(ExcecaoDeDominio.class, () -> alteradorDeTurma.alterarTurma(turmaParaAlterar));
+        var mensagemDeErro = Assertions.assertThrows(
+                ExcecaoDeDominio.class,
+                () -> alteradorDeTurma.vincularProfessor(turma.getId(), cpfProfessor));
 
         Assertions.assertEquals("Professor não encontrado na base", mensagemDeErro.getMessage());
+    }
+
+    @Test
+    void deveRemoverProfessorDaTurmaQuandoCpfVazio() {
+        turma.setProfessor(professor);
+        Mockito.when(turmaRepository.findById(turma.getId())).thenReturn(Optional.of(turma));
+
+        alteradorDeTurma.vincularProfessor(turma.getId(), "");
+
+        Assertions.assertNull(turma.getProfessor());
+        Mockito.verify(turmaRepository).save(turma);
     }
 
     @Test
@@ -159,6 +175,7 @@ public class AlteradorDeTurmaTest {
 
     @Test
     void deveRetornarMensagemDeErroSeAlunoNaoEncontradoNaBaseAoRemoverAluno() {
+        turmaParaAlterar.setAlunos(Set.of(aluno1));
         Mockito.when(alunoRepository.findByCpf(aluno1.getCpf())).thenReturn(null);
 
         var mensagemDeErro = Assertions.assertThrows(ExcecaoDeDominio.class, () -> alteradorDeTurma.removerAlunoNaTurma(turmaParaAlterar));

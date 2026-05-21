@@ -1,7 +1,5 @@
 package gerenciamentoDeAcademia.entidades;
 
-import gerenciamentoDeAcademia.dto.TurmaDto;
-import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -43,19 +41,5 @@ public class Turma {
     @ManyToMany
     @JoinTable(name = "turma_aluno", joinColumns = @JoinColumn(name = "turma_id"), inverseJoinColumns = @JoinColumn(name = "aluno_id"))
     private Set<Aluno> alunos = new HashSet<>();
-
-    public Turma(TurmaDto turmaDto) {
-        validar(turmaDto);
-        this.horario = turmaDto.getHorario();
-        this.dias = turmaDto.getDias();
-        this.modalidade = turmaDto.getModalidade();
-        this.professor = Funcionario.builder().cpf(turmaDto.getCpfProfessor()).build();
-    }
-
-    private void validar(TurmaDto turmaDto) {
-        ExcecaoDeDominio.quandoNuloOuVazio(turmaDto.getHorario(), "Horário da turma é obrigatório");
-        ExcecaoDeDominio.quandoListaNulaOuVazia(turmaDto.getDias(), "Dias de aula são obrigatórios");
-        ExcecaoDeDominio.quandoNuloOuVazio(turmaDto.getModalidade(), "Modalidade da turma é obrigatória");
-    }
 
 }

@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface TurmaRepository extends JpaRepository<Turma, Long> {
     List<Turma> findByModalidade(String modalidade);
+
+    List<Turma> findByProfessor_Cpf(String cpfProfessor);
 }

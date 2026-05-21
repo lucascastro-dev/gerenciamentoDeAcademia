@@ -56,8 +56,18 @@ public class MontadorDeTurmaTest {
     }
 
     @Test
-    void deveRetornarMensagemDeErroQuandoFuncionarioPraCadastrarNaTurmaNaoForEncontradoNaBase() {
-        Mockito.when(funcionarioRepository.findByCpf(anyString())).thenReturn(null);
+    void deveMontarTurmaSemProfessorQuandoCpfNaoInformado() {
+        turmaDto.setCpfProfessor(null);
+        turmaDto.setAlunos(java.util.List.of());
+        montadorDeTurma.montar(turmaDto);
+        Mockito.verify(funcionarioRepository, Mockito.never()).findByCpf(anyString());
+        Mockito.verify(turmaRepository).save(Mockito.any(Turma.class));
+    }
+
+    @Test
+    void deveRetornarMensagemDeErroQuandoFuncionarioInformadoNaoForEncontradoNaBase() {
+        turmaDto.setCpfProfessor(cpfValido);
+        Mockito.when(funcionarioRepository.findByCpf(cpfValido)).thenReturn(null);
 
         var mensagemDeErro = Assertions.assertThrows(ExcecaoDeDominio.class, () -> montadorDeTurma.montar(turmaDto));
 

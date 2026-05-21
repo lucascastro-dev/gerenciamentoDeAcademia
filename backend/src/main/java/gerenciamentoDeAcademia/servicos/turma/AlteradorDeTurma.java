@@ -1,6 +1,7 @@
 package gerenciamentoDeAcademia.servicos.turma;
 
 import gerenciamentoDeAcademia.entidades.Aluno;
+import gerenciamentoDeAcademia.entidades.Funcionario;
 import gerenciamentoDeAcademia.entidades.Turma;
 import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
 import gerenciamentoDeAcademia.repositorios.AlunoRepository;
@@ -11,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.Optional;
 
@@ -29,15 +31,23 @@ public class AlteradorDeTurma implements IAlteradorDeTurma {
 
         ExcecaoDeDominio.quando(turma.get().getModalidade() != turmaParaAlterar.getModalidade(), "Não é possível alterar a modalidade da turma");
 
-        if (turmaParaAlterar.getProfessor().getCpf() != turma.get().getProfessor().getCpf()) {
-            ExcecaoDeDominio.quandoNulo(funcionarioRepository.findByCpf(turmaParaAlterar.getProfessor().getCpf()), "Professor não encontrado na base");
-            turma.get().setProfessor(turmaParaAlterar.getProfessor());
-        }
-
         turma.get().setDias(turmaParaAlterar.getDias());
         turma.get().setHorario(turmaParaAlterar.getHorario());
 
         turmaRepository.save(turma.get());
+    }
+
+    public void vincularProfessor(Long turmaId, String cpfProfessor) {
+        Turma turma = turmaRepository.findById(turmaId)
+                .orElseThrow(() -> new ExcecaoDeDominio("Turma não encontrada na base"));
+        if (!StringUtils.hasText(cpfProfessor)) {
+            turma.setProfessor(null);
+        } else {
+            Funcionario professor = funcionarioRepository.findByCpf(cpfProfessor.replaceAll("\\D", ""));
+            ExcecaoDeDominio.quandoNulo(professor, "Professor não encontrado na base");
+            turma.setProfessor(professor);
+        }
+        turmaRepository.save(turma);
     }
 
     @Override
