@@ -1,92 +1,134 @@
-import { AxiosError } from 'axios';
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { salvarSessao } from '../../auth/permissoes';
 import HttpService from '../../services/HttpService';
-import "./Login.css";
+import { extractApiMessage } from '../../utils/apiError';
+import './Login.css';
+
+interface Vinculo {
+  id: number;
+  razaoSocial: string;
+}
 
 const Login: React.FC = () => {
-  const [login, setLogin] = useState('');
+  const [cpf, setCpf] = useState('');
   const [password, setPassword] = useState('');
   const [vinculo, setVinculo] = useState('');
+  const [instituicoes, setInstituicoes] = useState<Vinculo[]>([]);
+  const [buscandoVinculos, setBuscandoVinculos] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
-  const handleLoginMask = (value: string) => {
-    if (/^\d/.test(value)) {
-      return value
-        .replace(/\D/g, "")
-        .replace(/(\d{3})(\d)/, "$1.$2")
-        .replace(/(\d{3})(\d)/, "$1.$2")
-        .replace(/(\d{3})(\d{1,2})$/, "$1-$2")
-        .slice(0, 14);
-    }
-    return value;
-  };
+  const maskCPF = (value: string) =>
+    value
+      .replace(/\D/g, '')
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+      .slice(0, 14);
 
-  const sanitizeCpf = (value: string) => {
-  return /^\d/.test(value) ? value.replace(/\D/g, "") : value;
-};
+  const cpfLimpo = cpf.replace(/\D/g, '');
+
+  const carregarInstituicoes = async () => {
+    if (cpfLimpo.length < 11) {
+      setInstituicoes([]);
+      setVinculo('');
+      return;
+    }
+    setBuscandoVinculos(true);
+    setErrorMsg(null);
+    try {
+      const { data } = await HttpService.listarVinculos(cpfLimpo);
+      setInstituicoes(data);
+      if (data.length === 1) {
+        setVinculo(String(data[0].id));
+      } else {
+        setVinculo('');
+      }
+      if (data.length === 0) {
+        setErrorMsg('Nenhuma instituição vinculada a este CPF ou cadastro inativo.');
+      }
+    } catch {
+      setInstituicoes([]);
+      setVinculo('');
+      setErrorMsg('Não foi possível buscar suas instituições. Tente novamente.');
+    } finally {
+      setBuscandoVinculos(false);
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setErrorMsg(null);
 
-    const cleanLogin = sanitizeCpf(login);
-
     try {
-      const response = await HttpService.login(cleanLogin, password, vinculo);
-      
-      const { token } = response.data;
+      const response = await HttpService.login(cpfLimpo, password, vinculo);
+      const data = response.data;
 
-      localStorage.setItem('@App:token', token);
-      localStorage.setItem('@App:cpf', cleanLogin);
-      localStorage.setItem('@App:vinculo', vinculo);
+      salvarSessao({
+        token: data.token,
+        cpf: cpfLimpo,
+        vinculo,
+        nome: data.nome,
+        tipoFuncionario: data.tipoFuncionario as any,
+        usuarioMaster: data.usuarioMaster,
+        permissoes: data.permissoes || [],
+        tipoAcesso: (data.tipoAcesso as 'COLABORADOR' | 'ALUNO') || 'COLABORADOR',
+        planoInstituicaoAtivo: data.planoInstituicaoAtivo,
+      });
 
-      navigate('/arealogada/home');
+      const destino = '/arealogada/home';
+      navigate(destino);
     } catch (err) {
-      const axiosError = err as AxiosError;
-
-      const data = axiosError.response?.data as any;
-
-      const message =
-        data?.message ||
-        data?.error ||
-        data?.msg ||
-        (typeof data === 'string' ? data : null) ||
-        "Erro inesperado no servidor";
-      setErrorMsg(message);
+      setErrorMsg(extractApiMessage(err, 'Usuário, senha ou instituição inválidos.'));
     } finally {
       setLoading(false);
     }
   };
 
-  const isFormValid = login.length > 0 && password.length > 0 && vinculo.length > 0 && !loading;
+  const podeEntrar =
+    cpfLimpo.length >= 11 &&
+    password.length > 0 &&
+    vinculo.length > 0 &&
+    !loading &&
+    !buscandoVinculos;
 
   return (
-    <div className="main-wrapper">
-      <div className='header'>Gestão de Academias Inteligente</div>
+    <div className="auth-page">
+      <div className="auth-page__brand">EduGestão Inteligente</div>
 
       <div className="login-container">
-        <h2>Login</h2>
+        <h2>Entrar</h2>
 
         <form onSubmit={handleLogin}>
+          <label className="login-label">CPF</label>
           <input
             type="text"
-            placeholder="Código da academia"
-            value={vinculo}
-            onChange={(e) => setVinculo(e.target.value)}
+            inputMode="numeric"
+            placeholder="000.000.000-00"
+            value={cpf}
+            onChange={(e) => setCpf(maskCPF(e.target.value))}
+            onBlur={carregarInstituicoes}
           />
 
-          <input
-            type="text"
-            placeholder="Digite seu usuário (CPF ou Email)"
-            value={login}
-            onChange={(e) => setLogin(handleLoginMask(e.target.value))}
-          />
+          {buscandoVinculos && <p className="login-hint">Buscando instituições...</p>}
 
+          {instituicoes.length > 0 && (
+            <>
+              <label className="login-label">Instituição</label>
+              <select value={vinculo} onChange={(e) => setVinculo(e.target.value)}>
+                <option value="" disabled>Selecione onde deseja entrar</option>
+                {instituicoes.map((i) => (
+                  <option key={i.id} value={String(i.id)}>{i.razaoSocial}</option>
+                ))}
+              </select>
+            </>
+          )}
+
+          <label className="login-label">Senha</label>
           <input
             type="password"
             placeholder="Digite sua senha"
@@ -94,24 +136,24 @@ const Login: React.FC = () => {
             onChange={(e) => setPassword(e.target.value)}
           />
 
-          <button disabled={!isFormValid} type="submit">
-            {loading ? "Carregando..." : "Login"}
+          <button disabled={!podeEntrar} type="submit">
+            {loading ? 'Entrando...' : 'Entrar'}
           </button>
         </form>
 
         <div className="links-container">
-          <Link to="/areapublica/cadastro">Registrar</Link>
+          <Link to="/areapublica/cadastro">Pré-cadastro colaborador</Link>
           <Link to="/areapublica/esqueciSenha">Esqueci minha senha</Link>
-          <Link to="/areapublica/solicitarAcesso">Realizar primeiro acesso</Link>
+          <Link to="/areapublica/solicitarAcesso">Solicitar ativação (RH)</Link>
         </div>
       </div>
 
       {errorMsg && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <h3>Ops! Algo deu errado</h3>
+            <h3>Atenção</h3>
             <p>{errorMsg}</p>
-            <button onClick={() => setErrorMsg(null)}>Fechar</button>
+            <button type="button" onClick={() => setErrorMsg(null)}>Fechar</button>
           </div>
         </div>
       )}

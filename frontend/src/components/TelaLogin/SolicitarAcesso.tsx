@@ -1,53 +1,42 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import HttpService from '../../services/HttpService';
-import { AxiosError } from 'axios';
-import "./Login.css";
+import { extractApiMessage } from '../../utils/apiError';
+import './Login.css';
 
 const SolicitarAcesso: React.FC = () => {
-  const [cnpj, setCnpj] = useState('');
   const [cpf, setCpf] = useState('');
   const [loading, setLoading] = useState(false);
-  
-  const [modal, setModal] = useState<{ show: boolean, message: string, isSuccess: boolean }>({
+
+  const [modal, setModal] = useState<{ show: boolean; message: string; isSuccess: boolean }>({
     show: false,
     message: '',
-    isSuccess: false
+    isSuccess: false,
   });
 
   const navigate = useNavigate();
 
-  const maskCPF = (v: string) => v.replace(/\D/g, "").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d{1,2})$/, "$1-$2").slice(0, 14);
-  const maskCNPJ = (v: string) => v.toUpperCase().replace(/[^A-Z0-9]/g, "").replace(/^([A-Z0-9]{2})([A-Z0-9])/, "$1.$2").replace(/^([A-Z0-9]{2})\.([A-Z0-9]{3})([A-Z0-9])/, "$1.$2.$3").replace(/\.([A-Z0-9]{3})([A-Z0-9])/, ".$1/$2").replace(/([A-Z0-9]{4})([A-Z0-9])/, "$1-$2").slice(0, 18);
+  const maskCPF = (v: string) =>
+    v.replace(/\D/g, '').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d{1,2})$/, '$1-$2').slice(0, 14);
 
-  const sanitize = (v: string) => v.replace(/[./-]/g, "");
+  const onlyNumbers = (v: string) => v.replace(/\D/g, '');
 
-  const getErrorMessage = (err: any) => {
-    const axiosError = err as AxiosError;
-    const data = axiosError.response?.data;
-    if (typeof data === 'string') return data;
-    if (data && typeof data === 'object') return (data as any).message || (data as any).error || "Erro na solicitação.";
-    return "Erro de conexão com o servidor.";
-  };
-
-  const handleSolicitarPrimeiroAcesso = async () => {
+  const handleSolicitar = async () => {
     setLoading(true);
     try {
-      await HttpService.vincularFuncionario({ 
-        cnpj: sanitize(cnpj), 
-        cpf: sanitize(cpf) 
-      });
-      
-      setModal({ 
-        show: true, 
-        message: "Vínculo solicitado a academia com sucesso, em breve você receberá as instruções no seu e-mail!", 
-        isSuccess: true 
+      await HttpService.solicitarPrimeiroAcesso(onlyNumbers(cpf));
+      setModal({
+        show: true,
+        message:
+          'Solicitação registrada. O RH da instituição consultará seu CPF e ativará seu vínculo. Você será avisado quando puder entrar.',
+        isSuccess: true,
       });
     } catch (err) {
-      setModal({ 
-        show: true, 
-        message: getErrorMessage(err), 
-        isSuccess: false 
+      setModal({
+        show: true,
+        message: extractApiMessage(err, 'Erro na solicitação.'),
+        isSuccess: false,
       });
     } finally {
       setLoading(false);
@@ -56,38 +45,35 @@ const SolicitarAcesso: React.FC = () => {
 
   const closeModal = () => {
     if (modal.isSuccess) navigate('/areapublica/login');
-    setModal({ ...modal, show: false });
+    setModal({ show: false, message: '', isSuccess: false });
   };
 
-  const isFormValid = cpf.length >= 14 && cnpj.length >= 14 && !loading;
+  const isFormValid = cpf.replace(/\D/g, '').length >= 11 && !loading;
 
   return (
     <div className="login-container">
-      <h2>Solicitar primeiro acesso</h2>
+      <h2>Solicitar ativação</h2>
       <form onSubmit={(e) => e.preventDefault()}>
+        <p style={{ fontSize: '0.85rem', color: '#64748b' }}>
+          Já fez o pré-cadastro? Informe seu CPF. O RH da instituição em que você trabalhará irá ativar seu acesso
+          (não é necessário informar CNPJ).
+        </p>
         <input
-          placeholder="CNPJ Academia"
-          type="text"
-          value={cnpj}
-          onChange={(e) => setCnpj(maskCNPJ(e.target.value))}
-        />
-        <input
-          placeholder="CPF Funcionário"
+          placeholder="CPF"
           type="text"
           value={cpf}
           onChange={(e) => setCpf(maskCPF(e.target.value))}
         />
 
-        <button
-          type="button"
-          onClick={handleSolicitarPrimeiroAcesso}
-          disabled={!isFormValid}
-        >
-          {loading ? "Enviando..." : "Solicitar"}
+        <button type="button" onClick={handleSolicitar} disabled={!isFormValid}>
+          {loading ? 'Enviando...' : 'Solicitar'}
         </button>
       </form>
 
       <Link to="/areapublica/login">Voltar</Link>
+      <Link to="/areapublica/cadastro" style={{ display: 'block', marginTop: 8 }}>
+        Ainda não tenho pré-cadastro
+      </Link>
 
       {modal.show && (
         <div className="modal-overlay">
@@ -96,10 +82,7 @@ const SolicitarAcesso: React.FC = () => {
               {modal.isSuccess ? 'Sucesso!' : 'Erro'}
             </h3>
             <p>{modal.message}</p>
-            <button 
-              className={modal.isSuccess ? 'btn-success' : 'btn-error'} 
-              onClick={closeModal}
-            >
+            <button type="button" onClick={closeModal}>
               {modal.isSuccess ? 'Fechar' : 'Tentar novamente'}
             </button>
           </div>
