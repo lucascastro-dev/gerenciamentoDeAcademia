@@ -1,11 +1,14 @@
-import { AxiosError } from 'axios';
 import React, { useState } from 'react';
+import EnderecoFields from '../common/EnderecoFields';
+import FeedbackModal from '../common/FeedbackModal';
+import PageShell from '../common/PageShell';
 import HttpService from '../../services/HttpService';
-import "./AreaLogada.css";
+import { extractApiMessage } from '../../utils/apiError';
+import { EnderecoCompleto, enderecoVazio, parseEndereco, serializarEndereco } from '../../utils/endereco';
 
 const GerenciarFuncionario: React.FC = () => {
   const [cpf, setCpf] = useState('');
-  const [endereco, setEndereco] = useState('');
+  const [endereco, setEndereco] = useState<EnderecoCompleto>(enderecoVazio());
   const [telefone, setTelefone] = useState('');
   const [nome, setNome] = useState('');
   const [rg, setRg] = useState('');
@@ -14,45 +17,19 @@ const GerenciarFuncionario: React.FC = () => {
   const [especializacao, setEspecializacao] = useState('');
   const [permitirGerenciarFuncoes, setGerenciarFuncoes] = useState(false);
   const [cadastroAtivo, setCadastroAtivo] = useState(false);
-
   const [loading, setLoading] = useState(false);
   const [isEditable, setIsEditable] = useState(false);
-
-  const [modal, setModal] = useState<{
-    show: boolean;
-    message: string;
-    isSuccess: boolean;
-  }>({
-    show: false,
-    message: '',
-    isSuccess: false,
-  });
+  const [modal, setModal] = useState({ open: false, success: false, message: '' });
 
   const maskCPF = (v: string) =>
-    v
-      .replace(/\D/g, "")
-      .replace(/(\d{3})(\d)/, "$1.$2")
-      .replace(/(\d{3})(\d)/, "$1.$2")
-      .replace(/(\d{3})(\d{1,2})$/, "$1-$2")
-      .slice(0, 14);
+    v.replace(/\D/g, '').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2').slice(0, 14);
 
   const maskPhone = (v: string) =>
-    v
-      .replace(/\D/g, "")
-      .replace(/^(\d{2})(\d)/g, "($1) $2")
-      .replace(/(\d)(\d{4})$/, "$1-$2")
-      .slice(0, 15);
+    v.replace(/\D/g, '').replace(/^(\d{2})(\d)/g, '($1) $2').replace(/(\d)(\d{4})$/, '$1-$2').slice(0, 15);
 
-  const onlyNumbers = (v: string) => v.replace(/\D/g, "");
+  const onlyNumbers = (v: string) => v.replace(/\D/g, '');
 
-  const getErrorMessage = (err: any) => {
-    const axiosError = err as AxiosError<any>;
-    return (
-      axiosError.response?.data?.message ||
-      axiosError.response?.data?.error ||
-      "Erro ao processar requisição."
-    );
-  };
+  const getErrorMessage = (err: unknown) => extractApiMessage(err, 'Erro ao processar requisição.');
 
   const resetForm = () => {
     setNome('');
@@ -60,247 +37,114 @@ const GerenciarFuncionario: React.FC = () => {
     setNascimento('');
     setCargo('');
     setEspecializacao('');
-    setEndereco('');
+    setEndereco(enderecoVazio());
     setTelefone('');
     setGerenciarFuncoes(false);
     setCadastroAtivo(false);
     setIsEditable(false);
   };
 
-  const handleConsultarPessoa = async () => {
-    const token = localStorage.getItem('@App:token');
-
-    if (!token) {
-      setModal({
-        show: true,
-        message: "Sessão expirada. Faça login novamente.",
-        isSuccess: false,
-      });
+  const handleConsultar = async () => {
+    if (!localStorage.getItem('@App:token')) {
+      setModal({ open: true, success: false, message: 'Sessão expirada. Faça login novamente.' });
       return;
     }
-
     setLoading(true);
     resetForm();
-
     try {
-      const res = await HttpService.consultarFuncionarioPorCpf(
-        onlyNumbers(cpf),
-        token
-      );
-
+      const res = await HttpService.consultarFuncionarioPorCpf(onlyNumbers(cpf));
       const data = res.data;
-
       setNome(data.nome ?? '');
       setRg(data.rg ?? '');
       setNascimento(data.dataDeNascimento ?? '');
-      setCargo(data.cargo ?? '');
+      setCargo(data.cargo ?? data.tipoFuncionario ?? '');
       setEspecializacao(data.especializacao ?? '');
-      setEndereco(data.endereco ?? '');
+      setEndereco(parseEndereco(data.endereco));
       setTelefone(data.telefone ?? '');
       setGerenciarFuncoes(data.permitirGerenciarFuncoes ?? false);
       setCadastroAtivo(data.cadastroAtivo ?? false);
-
       setIsEditable(true);
-    } catch (err) {
-      setModal({
-        show: true,
-        message: "Funcionário não encontrado ou erro na busca.",
-        isSuccess: false,
-      });
+    } catch {
+      setModal({ open: true, success: false, message: 'Funcionário não encontrado.' });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleEditarPessoa = async () => {
+  const handleSalvar = async () => {
     setLoading(true);
-
     try {
-      const token: any = localStorage.getItem('@App:token');
-      const payload: any = {
+      await HttpService.editarPessoa({
         nome,
         cpf: onlyNumbers(cpf),
         rg,
         dataDeNascimento,
-        endereco,
-        telefone: onlyNumbers(telefone),
         cargo,
         especializacao,
+        endereco: serializarEndereco(endereco),
+        telefone: onlyNumbers(telefone),
         permitirGerenciarFuncoes,
         cadastroAtivo,
-      };
-
-      await HttpService.editarPessoa(payload, token);
-
-      setModal({
-        show: true,
-        message: "Dados atualizados com sucesso!",
-        isSuccess: true,
       });
+      setModal({ open: true, success: true, message: 'Dados atualizados com sucesso.' });
     } catch (err) {
-      setModal({
-        show: true,
-        message: getErrorMessage(err),
-        isSuccess: false,
-      });
+      setModal({ open: true, success: false, message: getErrorMessage(err) });
     } finally {
       setLoading(false);
     }
   };
 
-  const closeModal = () => {
-    setModal({ ...modal, show: false });
-  };
-
   return (
-    <div>
-      <h2>Gerenciar Funcionários</h2>
-
-      <div className="search-section">
-        <input style={{marginRight: '15px'}}
+    <PageShell title="Funcionários">
+      <div className="card" style={{ marginBottom: '1rem' }}>
+        <label>CPF</label>
+        <input
           placeholder="Digite o CPF para buscar"
           value={cpf}
           onChange={(e) => setCpf(maskCPF(e.target.value))}
         />
-        <button
-          type="button"
-          onClick={handleConsultarPessoa}
-          disabled={loading || cpf.length < 14}
-        >
-          {loading ? "Buscando..." : "Consultar"}
-        </button>
-      </div>
-
-      <hr />
-
-      <div className={`form-container ${!isEditable ? 'form-disabled' : ''}`}>
-        <input
-          className="formEdit"
-          disabled={!isEditable}
-          style={{ width: '92%' }}
-          placeholder="Nome"
-          value={nome}
-          onChange={(e) => setNome(e.target.value)}
-        />
-
-        <input
-          className="formEdit"
-          disabled
-          placeholder="CPF (Não editável)"
-          value={cpf}
-        />
-
-        <input
-          className="formEdit"
-          disabled={!isEditable}
-          placeholder="RG"
-          value={rg}
-          onChange={(e) => setRg(e.target.value)}
-        />
-
-        <input
-          className="formEdit"
-          disabled={!isEditable}
-          type="date"
-          value={dataDeNascimento}
-          onChange={(e) => setNascimento(e.target.value)}
-        />
-
-        <input
-          className="formEdit"
-          disabled={!isEditable}
-          placeholder="Cargo"
-          value={cargo}
-          onChange={(e) => setCargo(e.target.value)}
-        />
-
-        <input
-          className="formEdit"
-          disabled={!isEditable}
-          placeholder="Especialização"
-          value={especializacao}
-          onChange={(e) => setEspecializacao(e.target.value)}
-        />
-
-        <input
-          className="formEdit"
-          disabled={!isEditable}
-          style={{ width: '52%' }}
-          placeholder="Endereço"
-          value={endereco}
-          onChange={(e) => setEndereco(e.target.value)}
-        />
-
-        <input
-          className="formEdit"
-          disabled={!isEditable}
-          placeholder="Telefone"
-          type="tel"
-          value={telefone}
-          onChange={(e) => setTelefone(maskPhone(e.target.value))}
-        />
-
-        <div style={{ marginLeft: '10px' }} className="switch-row">
-          <label htmlFor="gerenciar-funcoes" className="switch-label">
-            <span>Permite gerenciar funcionalidades?</span>
-
-            <div className="switch-wrapper">
-              <input
-                id="gerenciar-funcoes"
-                className="switch switch--shadow"
-                type="checkbox"
-                checked={permitirGerenciarFuncoes}
-                onChange={(e) => setGerenciarFuncoes(e.target.checked)}
-                disabled={!isEditable}
-              />
-              <span className="slider"></span>
-            </div>
-          </label>
-        </div>
-        <p />
-        <div style={{ marginLeft: '10px' }} className="switch-row">
-          <label htmlFor="cadastro-ativo" className="switch-label">
-            <span>Cadastro ativo</span>
-
-            <div className="switch-wrapper">
-              <input
-                id="cadastro-ativo"
-                className="switch switch--shadow"
-                type="checkbox"
-                checked={cadastroAtivo}
-                onChange={(e) => setCadastroAtivo(e.target.checked)}
-                disabled={!isEditable}
-              />
-              <span className="slider"></span>
-            </div>
-          </label>
+        <div className="form-actions">
+          <button type="button" className="btn-primary" onClick={handleConsultar} disabled={loading || cpf.length < 14}>
+            {loading ? 'Buscando...' : 'Consultar'}
+          </button>
         </div>
       </div>
 
-      <button
-        type="button"
-        onClick={handleEditarPessoa}
-        disabled={!isEditable || loading}
-        style={{
-          marginTop: '20px',
-          backgroundColor: isEditable ? '#4CAF50' : '#ccc'
-        }}
-      >
-        {loading ? "Processando..." : "Salvar Alterações"}
-      </button>
-
-      {modal.show && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h3 style={{ color: modal.isSuccess ? '#2e7d32' : '#d32f2f' }}>
-              {modal.isSuccess ? 'Sucesso!' : 'Atenção'}
-            </h3>
-            <p>{modal.message}</p>
-            <button onClick={closeModal}>Fechar</button>
-          </div>
+      <div className={`card ${!isEditable ? 'card--disabled' : ''}`}>
+        <div className="form-grid">
+          <div className="form-grid__span-2"><label>Nome</label><input disabled={!isEditable} value={nome} onChange={(e) => setNome(e.target.value)} /></div>
+          <div><label>CPF</label><input disabled value={cpf} /></div>
+          <div><label>RG</label><input disabled={!isEditable} value={rg} onChange={(e) => setRg(e.target.value)} /></div>
+          <div><label>Nascimento</label><input disabled={!isEditable} type="date" value={dataDeNascimento} onChange={(e) => setNascimento(e.target.value)} /></div>
+          <div><label>Cargo</label><input disabled={!isEditable} value={cargo} onChange={(e) => setCargo(e.target.value)} /></div>
+          <div><label>Especialização</label><input disabled={!isEditable} value={especializacao} onChange={(e) => setEspecializacao(e.target.value)} /></div>
+          <div><label>Telefone</label><input disabled={!isEditable} type="tel" value={telefone} onChange={(e) => setTelefone(maskPhone(e.target.value))} /></div>
         </div>
-      )}
-    </div>
+        <EnderecoFields value={endereco} onChange={setEndereco} disabled={!isEditable} />
+        <div className="form-grid" style={{ marginTop: '0.75rem' }}>
+          <label className="switch-inline">
+            <input type="checkbox" disabled={!isEditable} checked={permitirGerenciarFuncoes} onChange={(e) => setGerenciarFuncoes(e.target.checked)} />
+            Permite gerenciar funcionalidades
+          </label>
+          <label className="switch-inline">
+            <input type="checkbox" disabled={!isEditable} checked={cadastroAtivo} onChange={(e) => setCadastroAtivo(e.target.checked)} />
+            Cadastro ativo
+          </label>
+        </div>
+        <div className="form-actions">
+          <button type="button" className="btn-primary" onClick={handleSalvar} disabled={!isEditable || loading}>
+            {loading ? 'Processando...' : 'Salvar alterações'}
+          </button>
+        </div>
+      </div>
+
+      <FeedbackModal
+        open={modal.open}
+        success={modal.success}
+        message={modal.message}
+        onClose={() => setModal((m) => ({ ...m, open: false }))}
+      />
+    </PageShell>
   );
 };
 

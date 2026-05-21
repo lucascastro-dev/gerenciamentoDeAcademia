@@ -1,0 +1,51 @@
+.form-grid--cert {
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+.cert-form__table-wrap {
+  margin-top: 0.75rem;
+  max-height: 200px;
+  overflow: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius);
+}
+
+.cert-form__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.cert-form__table th,
+.cert-form__table td {
+  padding: 0.45rem 0.6rem;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: left;
+}
+
+.cert-form__table th {
+  background: #f8fafc;
+}
+
+.cert-form__checkbox {
+  margin: 0.75rem 0 0;
+}
+
+.btn-sm {
+  padding: 0.2rem 0.45rem;
+  border: none;
+  border-radius: 5px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  margin-right: 0.25rem;
+}
+
+.btn-sm--edit {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.btn-sm--remove {
+  background: #94a3b8;
+  color: #fff;
+}
