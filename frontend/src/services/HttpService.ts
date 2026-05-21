@@ -1,63 +1,151 @@
 import axios from 'axios';
+import { carregarSessao } from '../auth/permissoes';
 
-const BASE_URL = 'http://localhost:8000/srv-gerenciaracademia';
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/srv-gerenciaracademia';
+
+const api = axios.create({ baseURL: BASE_URL });
+
+api.interceptors.request.use((config) => {
+  const sessao = carregarSessao();
+  const token = sessao?.token || localStorage.getItem('@App:token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+export interface LoginResponse {
+  token: string;
+  nome: string;
+  tipoFuncionario: string | null;
+  usuarioMaster: boolean;
+  permissoes: string[];
+  tipoAcesso?: 'COLABORADOR' | 'ALUNO';
+  planoInstituicaoAtivo?: boolean;
+}
 
 const HttpService = {
-    login: (login: string, password: string, vinculo: string) => {
-        return axios.post(`${BASE_URL}/login`, { login, password, vinculo });
-    },
+  login: (login: string, password: string, vinculo: string) =>
+    api.post<LoginResponse>('/login', { login, password, vinculo }),
 
-    cadastrarPessoa: (data: { nome: string, cpf: string, rg: string, dataDeNascimento: string, endereco: string, telefone: string, cargo: string, especializacao: string, permitirGerenciarFuncoes: boolean, senha: string }) => {
-        return axios.post(`${BASE_URL}/funcionario/cadastrarFuncionario`, data);
-    },
+  listarVinculos: (cpf: string) =>
+    api.get<Array<{ id: number; razaoSocial: string }>>(`/login/vinculos/${cpf}`),
 
-    cadastrarEmpresa: (data: { razaoSocial: string, cnpj: string, cadastroAtivo: boolean, endereco: string, telefone: string }) => {
-        return axios.post(`${BASE_URL}/academia/registrarAcademia`, data);
-    },
+  solicitarRecuperacaoSenha: (cpf: string) =>
+    api.post<{ message: string }>('/login/solicitarRecuperacaoSenha', { cpf }),
 
-    vincularFuncionario: (data: { cnpj: string, cpf: string }) => {
-        return axios.put(`${BASE_URL}/academia/solicitarPrimeiroAcesso/${data.cpf}/${data.cnpj}`, data);
-    },
+  cadastrarPessoa: (data: Record<string, unknown>) =>
+    api.post('/funcionario/cadastrarFuncionario', data),
 
-    consultarAcademia: (codAcademia: string | number, token: string) => {
-        return axios.get(`${BASE_URL}/academia/consultarAcademiaId/${codAcademia}`, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        });
-    },
+  cadastrarEmpresa: (data: Record<string, unknown>) =>
+    api.post('/academia/registrarAcademia', data),
 
-    consultarFuncionarioPorCpf: (cpf: string, token: string) => {
-        return axios.get(`${BASE_URL}/funcionario/consultarPorCpf/${cpf}`, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        });
-    },
+  preCadastroColaborador: (data: Record<string, unknown>) =>
+    api.post('/funcionario/preCadastroColaborador', data),
 
-    editarPessoa: (data: { nome: string, cpf: string, rg: string, dataDeNascimento: string, endereco: string, telefone: string, cargo: string, especializacao: string, permitirGerenciarFuncoes: boolean }, token: string) => {
-        return axios.put(`${BASE_URL}/funcionario/editarFuncionario`, data, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        });
-    },
+  solicitarPrimeiroAcesso: (cpf: string) =>
+    api.put(`/academia/solicitarPrimeiroAcesso/${cpf.replace(/\D/g, '')}`),
 
-    consultarAcademiaPorCnpj: (cnpj: string, token: string) => {
-        return axios.get(`${BASE_URL}/academia/consultarAcademiaCnpj/${cnpj}`, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        });
-    },
+  ativarFuncionarioInstituicao: (
+    instituicaoId: string | number,
+    cpf: string,
+    data: Record<string, unknown>,
+  ) => api.post(`/academia/instituicao/${instituicaoId}/ativarFuncionario/${cpf.replace(/\D/g, '')}`, data),
 
-    editarAcademia: (data: { razaoSocial: string, cnpj: string, endereco: string, telefone: string, cadastroAtivo: boolean }, token: string) => {
-        return axios.put(`${BASE_URL}/academia/atualizarDadosAcademia`, data, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        });
-    }
+  inativarFuncionarioInstituicao: (instituicaoId: string | number, cpf: string) =>
+    api.post(`/academia/instituicao/${instituicaoId}/inativarFuncionario/${cpf.replace(/\D/g, '')}`),
+
+  desativarAcademia: (cnpj: string) =>
+    api.delete(`/academia/desativarAcademia/${cnpj}`),
+
+  listarTiposFuncionario: () => api.get('/funcionario/tipos'),
+
+  consultarAcademia: (codAcademia: string | number) =>
+    api.get(`/academia/consultarAcademiaId/${codAcademia}`),
+
+  consultarFuncionarioPorCpf: (cpf: string) =>
+    api.get(`/funcionario/consultarPorCpf/${cpf}`),
+
+  editarPessoa: (data: Record<string, unknown>) =>
+    api.put('/funcionario/editarFuncionario', data),
+
+  consultarAcademiaPorCnpj: (cnpj: string) =>
+    api.get(`/academia/consultarAcademiaCnpj/${cnpj}`),
+
+  editarAcademia: (data: Record<string, unknown>) =>
+    api.put('/academia/atualizarDadosAcademia', data),
+
+  listarAlunos: () => api.get('/aluno/consultarAluno'),
+
+  consultarAluno: (cpf: string) => api.get(`/aluno/consultarAluno/${cpf}`),
+
+  matricularAluno: (data: Record<string, unknown>) =>
+    api.post('/aluno/matricularAluno', data),
+
+  alterarAluno: (data: Record<string, unknown>) =>
+    api.put('/aluno/alterarAluno', data),
+
+  desmatricularAluno: (cpf: string) =>
+    api.delete(`/aluno/desmatricularAluno/${cpf}`),
+
+  listarTurmas: () => api.get('/turma/listarTurmas'),
+
+  montarTurma: (data: Record<string, unknown>) =>
+    api.post('/turma/montarTurma', data),
+
+  professoresInstituicao: (instituicaoId: string | number) =>
+    api.get<Array<{ cpf: string; nome: string }>>('/turma/professores', { params: { instituicaoId } }),
+
+  vincularProfessorTurma: (turmaId: number, cpfProfessor: string) =>
+    api.put(`/turma/${turmaId}/professor`, { cpfProfessor: cpfProfessor || null }),
+
+  baixaMensalidade: (cpf: string) =>
+    api.post(`/financeiro/mensalidades/${cpf.replace(/\D/g, '')}/baixa`),
+
+  excluirTurma: (id: number) => api.delete(`/turma/excluirTurma/${id}`),
+
+  minhasTurmasProfessor: () => api.get('/turma/professor/minhas'),
+
+  alunosDaTurma: (id: string | number) => api.get(`/turma/${id}/alunos`),
+
+  dashboardResumo: () => api.get('/dashboard/resumo'),
+
+  financeiroDashboard: () => api.get('/financeiro/dashboard/resumo'),
+
+  financeiroMensalidades: () => api.get('/financeiro/mensalidades'),
+
+  financeiroInadimplentes: () => api.get('/financeiro/inadimplentes'),
+
+  gerarCertificados: (data: Record<string, unknown>) =>
+    api.post('/certificado/gerarCertificadoJudo', data),
+
+  meuPerfil: () => api.get('/funcionario/meuPerfil'),
+
+  atualizarMeuPerfil: (data: Record<string, unknown>) =>
+    api.put('/funcionario/meuPerfil', data),
+
+  alterarSenha: (data: { senhaAtual: string; senhaNova: string }) =>
+    api.put('/funcionario/alterarSenha', data),
+
+  listarFuncionarios: () => api.get('/funcionario/consultarFuncionario'),
+
+  auditoriaFuncionario: (id: number) => api.get(`/funcionario/revision/${id}`),
+
+  planoInstituicao: (instituicaoId: string | number) =>
+    api.get(`/plano-instituicao/${instituicaoId}`),
+
+  tiposPlanoInstituicao: () => api.get<Array<{ codigo: string; descricao: string; dias: string }>>('/plano-instituicao/tipos'),
+
+  ativarPlanoInstituicao: (instituicaoId: string | number, plano: string) =>
+    api.put(`/plano-instituicao/${instituicaoId}/ativar`, { plano }),
+
+  portalAlunoDados: () => api.get('/portal-aluno/meus-dados'),
+
+  portalAlunoTurmas: () => api.get('/portal-aluno/minhas-turmas'),
+
+  portalAlunoMensalidade: () => api.get('/portal-aluno/mensalidade'),
+
+  portalAlunoPagamentoInfo: () => api.get<{ message: string }>('/portal-aluno/pagamento-info'),
 };
 
 export default HttpService;
