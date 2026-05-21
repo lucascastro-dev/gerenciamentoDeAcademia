@@ -1,17 +1,12 @@
--- 1. Limpa dados antigos (opcional para teste limpo)
 DELETE FROM academia_funcionario;
 DELETE FROM tb_funcionario;
 DELETE FROM tb_academia;
+DELETE FROM tb_usuarios;
 
--- 2. Insere a Academia
-INSERT INTO tb_academia(id, razao_social, cnpj)
-VALUES (1, 'Academia Central', '23498897000120');
+INSERT INTO tb_academia(id, razao_social, cnpj, cadastro_ativo)
+VALUES (1, 'Academia Central', '23498897000120', true);
 
--- Use este INSERT no seu data.sql (A senha é 123456)
-INSERT INTO tb_funcionario(id, nome, cpf, cargo, senha, cadastro_ativo)
-VALUES (1, 'Lucas', '15179950783', 'Professor', '123456', false);
+INSERT INTO tb_funcionario(id, nome, cpf, cargo, tipo_funcionario, especializacao, senha, cadastro_ativo, permitir_gerenciar_funcoes)
+VALUES (1, 'Lucas', '15179950783', 'Professor', 'PROFESSOR', 'Judô', '123456', false, false);
 
--- 4. Cria o Vínculo (Obrigatório para o JOIN funcionar)
 INSERT INTO academia_funcionario(academia_id, funcionario_id) VALUES (1, 1);
-
-ALTER TABLE tb_funcionario ALTER COLUMN id RESTART WITH (SELECT MAX(id) + 1 FROM tb_funcionario);

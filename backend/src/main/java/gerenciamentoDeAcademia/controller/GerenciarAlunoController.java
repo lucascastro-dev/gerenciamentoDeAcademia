@@ -8,6 +8,7 @@ import gerenciamentoDeAcademia.servicos.aluno.ConsultaDeAlunos;
 import gerenciamentoDeAcademia.servicos.aluno.DesmatricularAluno;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -37,30 +38,35 @@ public class GerenciarAlunoController {
 
     @PostMapping("/matricularAluno")
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("@permissaoEvaluator.possui(authentication, 'aluno:matricular')")
     public void matricularAluno(@RequestBody AlunoDto alunoDto) {
         cadastradorDeAluno.cadastrar(alunoDto);
     }
 
     @DeleteMapping("/desmatricularAluno/{cpf}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("@permissaoEvaluator.possui(authentication, 'aluno:desmatricular')")
     public void desmatricularAlunoPorCpf(@PathVariable("cpf") String cpf) {
         desmatricularAluno.excluirCadastro(cpf);
     }
 
     @PutMapping("/alterarAluno")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("@permissaoEvaluator.possui(authentication, 'aluno:editar')")
     public void alterarAluno(@RequestBody AlunoDto alunoDto) {
         alteadorDeDadosDoAluno.alterarAluno(alunoDto);
     }
 
     @GetMapping("/consultarAluno")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("@permissaoEvaluator.possui(authentication, 'aluno:consultar')")
     public List<Aluno> listarAlunos() {
         return consultaDeAlunos.listarAlunos();
     }
 
     @GetMapping("/consultarAluno/{cpf}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("@permissaoEvaluator.possui(authentication, 'aluno:consultar')")
     public ResponseEntity<Aluno> consultarAlunoPorCpf(@PathVariable("cpf") String cpf) {
         var aluno = consultaDeAlunos.consultaAlunoPorCpf(cpf);
 
