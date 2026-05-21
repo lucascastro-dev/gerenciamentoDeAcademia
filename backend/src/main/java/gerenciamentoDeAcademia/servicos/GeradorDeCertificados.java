@@ -23,7 +23,12 @@ import java.util.Map;
 
 @Service
 public class GeradorDeCertificados implements IGeradorDeCertificados {
-    private static final String CAMINHO_BASE = "C:/certificado";
+
+    private final String caminhoBase;
+
+    public GeradorDeCertificados(@org.springframework.beans.factory.annotation.Value("${app.certificado.base-path}") String caminhoBase) {
+        this.caminhoBase = caminhoBase;
+    }
     private static final String FORMATO_DATA = "dd/MM/yyyy";
     private static final Font FONTE_PADRAO = new Font("Brush Script MT", Font.ITALIC, 130);
     private static final Font FONTE_DATA = new Font("Arial", Font.ITALIC, 70);
@@ -49,7 +54,7 @@ public class GeradorDeCertificados implements IGeradorDeCertificados {
     }
 
     private String criarDiretorioProfessor(String nomeProfessor) {
-        String caminhoPasta = CAMINHO_BASE + "/" + nomeProfessor;
+        String caminhoPasta = caminhoBase + "/" + nomeProfessor;
         File diretorio = new File(caminhoPasta);
         if (!diretorio.exists() && !diretorio.mkdirs()) {
             throw new RuntimeException("Erro ao criar o diretório: " + caminhoPasta);
@@ -68,9 +73,9 @@ public class GeradorDeCertificados implements IGeradorDeCertificados {
 
         try {
             if (dadosCertificado.getPersonalizado()) {
-                imagemBase = ImageIO.read(new File(CAMINHO_BASE.concat("/").concat(dadosCertificado.getProjeto().concat(".jpg"))));
+                imagemBase = ImageIO.read(new File(caminhoBase.concat("/").concat(dadosCertificado.getProjeto().concat(".jpg"))));
             } else {
-                imagemBase = ImageIO.read(new File(CAMINHO_BASE + "/default.jpg"));
+                imagemBase = ImageIO.read(new File(caminhoBase + "/default.jpg"));
             }
 
             if (imagemBase == null) {
