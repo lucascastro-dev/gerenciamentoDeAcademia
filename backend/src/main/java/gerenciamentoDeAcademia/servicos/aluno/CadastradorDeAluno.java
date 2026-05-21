@@ -15,9 +15,11 @@ import org.springframework.stereotype.Service;
 public class CadastradorDeAluno implements ICadastradorDeAluno {
 
     private final AlunoRepository alunoRepository;
+    private final ServicoAcessoAluno servicoAcessoAluno;
 
     @Override
     public void cadastrar(AlunoDto alunoDto) {
-        alunoRepository.save(new Aluno(alunoDto));
+        Aluno aluno = alunoRepository.save(new Aluno(alunoDto));
+        servicoAcessoAluno.garantirUsuarioPortal(aluno);
     }
 }

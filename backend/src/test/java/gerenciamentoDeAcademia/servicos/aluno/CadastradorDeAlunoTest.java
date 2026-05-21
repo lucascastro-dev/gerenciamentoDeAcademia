@@ -24,10 +24,13 @@ public class CadastradorDeAlunoTest {
     CadastradorDeAluno cadastradorDeAluno;
     @Mock
     AlunoRepository alunoRepository;
+    @Mock
+    ServicoAcessoAluno servicoAcessoAluno;
 
     @Test
     void deveCadastrarUmAluno() {
         AlunoDto alunoDto = Instancio.of(AlunoDto.class).create();
+        Mockito.when(alunoRepository.save(Mockito.any(Aluno.class))).thenAnswer(inv -> inv.getArgument(0));
 
         cadastradorDeAluno.cadastrar(alunoDto);
 
