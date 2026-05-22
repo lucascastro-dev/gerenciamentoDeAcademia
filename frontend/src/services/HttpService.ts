@@ -14,6 +14,34 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const data = error?.response?.data;
+    const code = typeof data === 'object' && data !== null ? (data as { code?: string }).code : undefined;
+    const path = window.location.pathname;
+    const emAreaPublica = path.startsWith('/areapublica');
+    const emAreaLogada = path.startsWith('/arealogada');
+    const temSessao = !!localStorage.getItem('@App:token');
+
+    // Bloqueio no login: mensagem fica na tela de login (não redirecionar).
+    if (code === 'COBRANCA_BLOQUEADA') {
+      return Promise.reject(error);
+    }
+
+    if (
+      code === 'PLANO_INSTITUICAO_INATIVO'
+      && emAreaLogada
+      && temSessao
+      && !emAreaPublica
+      && !path.includes('plano-instituicao')
+    ) {
+      window.location.href = '/arealogada/plano-instituicao';
+    }
+    return Promise.reject(error);
+  },
+);
+
 export interface LoginResponse {
   token: string;
   nome: string;
@@ -22,6 +50,9 @@ export interface LoginResponse {
   permissoes: string[];
   tipoAcesso?: 'COLABORADOR' | 'ALUNO';
   planoInstituicaoAtivo?: boolean;
+  situacaoCobranca?: 'ATIVO' | 'EM_TOLERANCIA' | 'BLOQUEADO';
+  alertaCobranca?: boolean;
+  mensagemAlertaCobranca?: string | null;
 }
 
 const HttpService = {
@@ -37,31 +68,43 @@ const HttpService = {
   cadastrarPessoa: (data: Record<string, unknown>) =>
     api.post('/funcionario/cadastrarFuncionario', data),
 
+  cadastrarInstituicao: (data: Record<string, unknown>) =>
+    api.post('/instituicao/registrarAcademia', data),
+
+  /** @deprecated use cadastrarInstituicao */
   cadastrarEmpresa: (data: Record<string, unknown>) =>
-    api.post('/academia/registrarAcademia', data),
+    api.post('/instituicao/registrarAcademia', data),
 
   preCadastroColaborador: (data: Record<string, unknown>) =>
     api.post('/funcionario/preCadastroColaborador', data),
 
   solicitarPrimeiroAcesso: (cpf: string) =>
-    api.put(`/academia/solicitarPrimeiroAcesso/${cpf.replace(/\D/g, '')}`),
+    api.put(`/instituicao/solicitarPrimeiroAcesso/${cpf.replace(/\D/g, '')}`),
 
   ativarFuncionarioInstituicao: (
     instituicaoId: string | number,
     cpf: string,
     data: Record<string, unknown>,
-  ) => api.post(`/academia/instituicao/${instituicaoId}/ativarFuncionario/${cpf.replace(/\D/g, '')}`, data),
+  ) => api.post(`/instituicao/instituicao/${instituicaoId}/ativarFuncionario/${cpf.replace(/\D/g, '')}`, data),
 
   inativarFuncionarioInstituicao: (instituicaoId: string | number, cpf: string) =>
-    api.post(`/academia/instituicao/${instituicaoId}/inativarFuncionario/${cpf.replace(/\D/g, '')}`),
+    api.post(`/instituicao/instituicao/${instituicaoId}/inativarFuncionario/${cpf.replace(/\D/g, '')}`),
 
+  desativarInstituicao: (cnpj: string) =>
+    api.delete(`/instituicao/desativarAcademia/${cnpj}`),
+
+  /** @deprecated use desativarInstituicao */
   desativarAcademia: (cnpj: string) =>
-    api.delete(`/academia/desativarAcademia/${cnpj}`),
+    api.delete(`/instituicao/desativarAcademia/${cnpj}`),
 
   listarTiposFuncionario: () => api.get('/funcionario/tipos'),
 
-  consultarAcademia: (codAcademia: string | number) =>
-    api.get(`/academia/consultarAcademiaId/${codAcademia}`),
+  consultarInstituicao: (instituicaoId: string | number) =>
+    api.get(`/instituicao/consultarAcademiaId/${instituicaoId}`),
+
+  /** @deprecated use consultarInstituicao */
+  consultarAcademia: (instituicaoId: string | number) =>
+    api.get(`/instituicao/consultarAcademiaId/${instituicaoId}`),
 
   consultarFuncionarioPorCpf: (cpf: string) =>
     api.get(`/funcionario/consultarPorCpf/${cpf}`),
@@ -69,15 +112,25 @@ const HttpService = {
   editarPessoa: (data: Record<string, unknown>) =>
     api.put('/funcionario/editarFuncionario', data),
 
+  consultarInstituicaoPorCnpj: (cnpj: string) =>
+    api.get(`/instituicao/consultarAcademiaCnpj/${cnpj}`),
+
+  /** @deprecated use consultarInstituicaoPorCnpj */
   consultarAcademiaPorCnpj: (cnpj: string) =>
-    api.get(`/academia/consultarAcademiaCnpj/${cnpj}`),
+    api.get(`/instituicao/consultarAcademiaCnpj/${cnpj}`),
 
+  editarInstituicao: (data: Record<string, unknown>) =>
+    api.put('/instituicao/atualizarDadosAcademia', data),
+
+  /** @deprecated use editarInstituicao */
   editarAcademia: (data: Record<string, unknown>) =>
-    api.put('/academia/atualizarDadosAcademia', data),
+    api.put('/instituicao/atualizarDadosAcademia', data),
 
-  listarAlunos: () => api.get('/aluno/consultarAluno'),
+  listarAlunos: (instituicaoId: string | number) =>
+    api.get('/aluno/consultarAluno', { params: { instituicaoId } }),
 
-  consultarAluno: (cpf: string) => api.get(`/aluno/consultarAluno/${cpf}`),
+  consultarAluno: (cpf: string, instituicaoId: string | number) =>
+    api.get(`/aluno/consultarAluno/${cpf.replace(/\D/g, '')}`, { params: { instituicaoId } }),
 
   matricularAluno: (data: Record<string, unknown>) =>
     api.post('/aluno/matricularAluno', data),
@@ -146,6 +199,57 @@ const HttpService = {
   portalAlunoMensalidade: () => api.get('/portal-aluno/mensalidade'),
 
   portalAlunoPagamentoInfo: () => api.get<{ message: string }>('/portal-aluno/pagamento-info'),
+
+  portalAlunoAlterarSenha: (data: { senhaAtual: string; senhaNova: string }) =>
+    api.put('/portal-aluno/alterar-senha', data),
+
+  portalAlunoProgramacao: () =>
+    api.get<Array<{
+      id: number;
+      tipo: string;
+      tipoDescricao: string;
+      titulo: string;
+      descricao?: string;
+      dataPrevista?: string;
+      horario?: string;
+      sala?: string;
+    }>>('/portal-aluno/minha-programacao'),
+
+  programacaoTipos: (instituicaoId: string | number) =>
+    api.get<Array<{ codigo: string; descricao: string }>>(`/instituicao/${instituicaoId}/programacao/tipos`),
+
+  programacaoListarItens: (instituicaoId: string | number) =>
+    api.get(`/instituicao/${instituicaoId}/programacao/itens`),
+
+  programacaoCriarItem: (instituicaoId: string | number, data: Record<string, unknown>) =>
+    api.post(`/instituicao/${instituicaoId}/programacao/itens`, data),
+
+  programacaoAtualizarItem: (instituicaoId: string | number, id: number, data: Record<string, unknown>) =>
+    api.put(`/instituicao/${instituicaoId}/programacao/itens/${id}`, data),
+
+  programacaoExcluirItem: (instituicaoId: string | number, id: number) =>
+    api.delete(`/instituicao/${instituicaoId}/programacao/itens/${id}`),
+
+  programacaoValidarConflito: (
+    instituicaoId: string | number,
+    data: Record<string, unknown>,
+    ignorarId?: number,
+  ) =>
+    api.post(`/instituicao/${instituicaoId}/programacao/itens/validar-conflito`, data, {
+      params: ignorarId ? { ignorarId } : undefined,
+    }),
+
+  programacaoGrade: (instituicaoId: string | number, semana?: string) =>
+    api.get(`/instituicao/${instituicaoId}/programacao/grade`, { params: semana ? { semana } : undefined }),
+
+  programacaoListarSalas: (instituicaoId: string | number) =>
+    api.get(`/instituicao/${instituicaoId}/programacao/salas`),
+
+  programacaoCriarSala: (instituicaoId: string | number, data: Record<string, unknown>) =>
+    api.post(`/instituicao/${instituicaoId}/programacao/salas`, data),
+
+  programacaoExcluirSala: (instituicaoId: string | number, salaId: number) =>
+    api.delete(`/instituicao/${instituicaoId}/programacao/salas/${salaId}`),
 };
 
 export default HttpService;

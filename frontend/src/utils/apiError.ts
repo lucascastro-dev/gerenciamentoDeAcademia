@@ -11,6 +11,10 @@ export function extractApiMessage(error: unknown, fallback = 'Erro na operação
 
   if (data && typeof data === 'object') {
     const obj = data as Record<string, unknown>;
+    if ((obj.code === 'PLANO_INSTITUICAO_INATIVO' || obj.code === 'COBRANCA_BLOQUEADA')
+        && typeof obj.message === 'string') {
+      return obj.message.trim();
+    }
     const msg = obj.message ?? obj.error ?? obj.msg;
     if (typeof msg === 'string' && msg.trim()) {
       return msg.trim();
@@ -22,6 +26,12 @@ export function extractApiMessage(error: unknown, fallback = 'Erro na operação
     return 'Usuário ou senha inválidos. Verifique o CPF, a senha e a instituição selecionada.';
   }
   if (status === 403) {
+    if (data && typeof data === 'object') {
+      const obj = data as Record<string, unknown>;
+      if (typeof obj.message === 'string' && obj.message.trim()) {
+        return obj.message.trim();
+      }
+    }
     return 'Você não tem permissão para esta ação.';
   }
 
