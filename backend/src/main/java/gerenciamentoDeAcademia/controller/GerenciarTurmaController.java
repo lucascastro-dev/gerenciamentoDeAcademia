@@ -3,7 +3,7 @@ package gerenciamentoDeAcademia.controller;
 import gerenciamentoDeAcademia.dto.ProfessorResumoDto;
 import gerenciamentoDeAcademia.dto.TurmaDto;
 import gerenciamentoDeAcademia.dto.TurmaResumoDto;
-import gerenciamentoDeAcademia.repositorios.AcademiaRepository;
+import gerenciamentoDeAcademia.repositorios.InstituicaoRepository;
 import gerenciamentoDeAcademia.entidades.Aluno;
 import gerenciamentoDeAcademia.entidades.Turma;
 import gerenciamentoDeAcademia.infra.seguranca.UsuarioAutenticado;
@@ -49,12 +49,12 @@ public class GerenciarTurmaController {
     @Autowired
     TurmaRepository turmaRepository;
     @Autowired
-    AcademiaRepository academiaRepository;
+    InstituicaoRepository instituicaoRepository;
 
     @GetMapping("/professores")
     @PreAuthorize("@permissaoEvaluator.possui(authentication, 'turma:gerenciar')")
     public List<ProfessorResumoDto> professoresDaInstituicao(@RequestParam("instituicaoId") Long instituicaoId) {
-        return academiaRepository.findProfessoresAtivosPorAcademia(instituicaoId).stream()
+        return instituicaoRepository.findProfessoresAtivosPorInstituicao(instituicaoId).stream()
                 .map(ProfessorResumoDto::of)
                 .collect(Collectors.toList());
     }

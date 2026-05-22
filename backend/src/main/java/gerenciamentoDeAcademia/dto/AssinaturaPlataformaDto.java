@@ -26,7 +26,7 @@ public class AssinaturaPlataformaDto {
             dto.setVigente(false);
             return dto;
         }
-        dto.setInstituicaoId(assinatura.getAcademia().getId());
+        dto.setInstituicaoId(assinatura.getInstituicao().getId());
         dto.setPlano(assinatura.getPlano());
         dto.setDataInicio(assinatura.getDataInicio());
         dto.setDataFim(assinatura.getDataFim());

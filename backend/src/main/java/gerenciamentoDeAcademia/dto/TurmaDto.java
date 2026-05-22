@@ -11,7 +11,9 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 public class TurmaDto {
+    private Long instituicaoId;
     private String horario;
+    private String sala;
     private List<String> dias;
     private String modalidade;
     private String cpfProfessor;

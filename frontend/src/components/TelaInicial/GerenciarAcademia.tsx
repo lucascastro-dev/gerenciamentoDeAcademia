@@ -44,7 +44,7 @@ const GerenciarAcademia: React.FC = () => {
     setLoading(true);
     resetForm();
     try {
-      const res = await HttpService.consultarAcademiaPorCnpj(onlyNumbers(cnpj));
+      const res = await HttpService.consultarInstituicaoPorCnpj(onlyNumbers(cnpj));
       const data = res.data;
       setRazaoSocial(data.razaoSocial ?? '');
       setEndereco(parseEndereco(data.endereco));
@@ -61,7 +61,7 @@ const GerenciarAcademia: React.FC = () => {
   const handleSalvar = async () => {
     setLoading(true);
     try {
-      await HttpService.editarAcademia({
+      await HttpService.editarInstituicao({
         razaoSocial,
         cnpj: onlyNumbers(cnpj),
         endereco: serializarEndereco(endereco),

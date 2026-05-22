@@ -11,7 +11,7 @@ const GestaoAcademias: React.FC = () => {
 
   const desativar = async () => {
     try {
-      await HttpService.desativarAcademia(cnpj.replace(/\D/g, ''));
+      await HttpService.desativarInstituicao(cnpj.replace(/\D/g, ''));
       setModal({ open: true, success: true, message: `${INSTITUICAO.capitalized} desativada.` });
     } catch (e) {
       setModal({ open: true, success: false, message: extractApiMessage(e, 'Erro ao desativar.') });

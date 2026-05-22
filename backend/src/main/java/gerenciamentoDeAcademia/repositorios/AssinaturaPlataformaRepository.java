@@ -8,6 +8,6 @@ import java.util.Optional;
 
 @Repository
 public interface AssinaturaPlataformaRepository extends JpaRepository<AssinaturaPlataforma, Long> {
-    Optional<AssinaturaPlataforma> findByAcademia_Id(Long academiaId);
-    boolean existsByAcademia_Id(Long academiaId);
+    Optional<AssinaturaPlataforma> findByInstituicao_Id(Long instituicaoId);
+    boolean existsByInstituicao_Id(Long instituicaoId);
 }

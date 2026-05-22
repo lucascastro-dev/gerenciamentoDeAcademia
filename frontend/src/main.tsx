@@ -11,6 +11,8 @@ import Login from "./components/TelaLogin/Login";
 import SolicitarAcesso from "./components/TelaLogin/SolicitarAcesso";
 import "./index.css";
 import "./theme/global.css";
+import "./theme/programacao.css";
+import "./theme/turmas.css";
 import ProtectedRoute from "./ProtectedRoute";
 import PermissaoRoute from "./components/common/PermissaoRoute";
 import GerenciarFuncionario from "./components/TelaInicial/GerenciarFuncionario";
@@ -32,9 +34,13 @@ import MeuPerfil from "./pages/MeuPerfil";
 import CadastrarInstituicao from "./pages/CadastrarInstituicao";
 import Auditoria from "./pages/Auditoria";
 import PlanoInstituicao from "./pages/PlanoInstituicao";
+import PlanoInstituicaoGuard from "./components/common/PlanoInstituicaoGuard";
+import PortalAlunoSenha from "./pages/portal-aluno/PortalAlunoSenha";
+import PortalAlunoProgramacao from "./pages/portal-aluno/PortalAlunoProgramacao";
 import PortalAlunoDados from "./pages/portal-aluno/PortalAlunoDados";
 import PortalAlunoTurmas from "./pages/portal-aluno/PortalAlunoTurmas";
 import PortalAlunoMensalidades from "./pages/portal-aluno/PortalAlunoMensalidades";
+import GestaoProgramacao from "./pages/academico/GestaoProgramacao";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
@@ -56,6 +62,7 @@ root.render(
         <Route element={<ProtectedRoute />}>
           <Route path="portal-aluno/*" element={<Navigate to="/arealogada/home" replace />} />
           <Route path="arealogada" element={<LayoutHome />}>
+            <Route element={<PlanoInstituicaoGuard />}>
             <Route index element={<Navigate to="home" replace />} />
             <Route path="home" element={<TelaInicial />} />
 
@@ -67,6 +74,12 @@ root.render(
             } />
             <Route path="aluno/mensalidades" element={
               <PermissaoRoute permissao="aluno-portal:mensalidades"><PortalAlunoMensalidades /></PermissaoRoute>
+            } />
+            <Route path="aluno/senha" element={
+              <PermissaoRoute permissao="aluno-portal:senha"><PortalAlunoSenha /></PermissaoRoute>
+            } />
+            <Route path="aluno/programacao" element={
+              <PermissaoRoute permissao="aluno-portal:programacao"><PortalAlunoProgramacao /></PermissaoRoute>
             } />
             <Route path="meu-perfil" element={<MeuPerfil />} />
 
@@ -101,10 +114,13 @@ root.render(
               <PermissaoRoute permissao="aluno:consultar"><GerenciarAlunos /></PermissaoRoute>
             } />
             <Route path="turmas" element={
-              <PermissaoRoute permissao="turma:consultar"><GerenciarTurmas /></PermissaoRoute>
+              <PermissaoRoute permissao="turma:consultar"><GerenciarTurmas modo="consulta" /></PermissaoRoute>
             } />
             <Route path="turmas/gerenciar" element={
-              <PermissaoRoute permissao="turma:gerenciar"><GerenciarTurmas /></PermissaoRoute>
+              <PermissaoRoute permissao="turma:gerenciar"><GerenciarTurmas modo="gerenciar" /></PermissaoRoute>
+            } />
+            <Route path="programacao" element={
+              <PermissaoRoute permissao="programacao:consultar"><GestaoProgramacao /></PermissaoRoute>
             } />
             <Route path="plano-instituicao" element={
               <PermissaoRoute permissao="plano:visualizar"><PlanoInstituicao /></PermissaoRoute>
@@ -133,6 +149,7 @@ root.render(
             <Route path="auditoria" element={
               <PermissaoRoute permissao="auditoria:consultar"><Auditoria /></PermissaoRoute>
             } />
+            </Route>
           </Route>
         </Route>
 

@@ -30,8 +30,8 @@ public class AssinaturaPlataforma {
     private Long id;
 
     @OneToOne
-    @JoinColumn(name = "academia_id", nullable = false, unique = true)
-    private Academia academia;
+    @JoinColumn(name = "instituicao_id", nullable = false, unique = true)
+    private Instituicao instituicao;
 
     @Enumerated(EnumType.STRING)
     private PlanoInstituicaoTipo plano;

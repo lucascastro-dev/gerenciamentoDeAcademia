@@ -26,7 +26,7 @@ const CadastrarInstituicao: React.FC = () => {
 
   const cadastrar = async () => {
     try {
-      await HttpService.cadastrarEmpresa({
+      await HttpService.cadastrarInstituicao({
         razaoSocial,
         cnpj: onlyNumbers(cnpj),
         endereco: serializarEndereco(endereco),

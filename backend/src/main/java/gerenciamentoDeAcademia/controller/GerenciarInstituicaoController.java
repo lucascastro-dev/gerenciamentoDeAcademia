@@ -1,8 +1,8 @@
 package gerenciamentoDeAcademia.controller;
 
-import gerenciamentoDeAcademia.dto.AcademiaDto;
 import gerenciamentoDeAcademia.dto.AtivacaoFuncionarioDto;
-import gerenciamentoDeAcademia.servicos.academia.GerenciadorDeAcademia;
+import gerenciamentoDeAcademia.dto.InstituicaoDto;
+import gerenciamentoDeAcademia.servicos.instituicao.GerenciadorDeInstituicao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,37 +20,37 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-@RequestMapping("academia")
-public class GerenciarAcademiaController {
+@RequestMapping({"/instituicao", "/academia"})
+public class GerenciarInstituicaoController {
 
     @Autowired
-    private GerenciadorDeAcademia gerenciadorDeAcademia;
+    private GerenciadorDeInstituicao gerenciadorDeInstituicao;
 
     @PostMapping("/registrarAcademia")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("@permissaoEvaluator.possuiMaster(authentication)")
-    public void registrarNovaAcademia(@RequestBody AcademiaDto academiaDto) {
-        gerenciadorDeAcademia.cadastrar(academiaDto);
+    public void registrarNovaAcademia(@RequestBody InstituicaoDto instituicaoDto) {
+        gerenciadorDeInstituicao.cadastrar(instituicaoDto);
     }
 
     @DeleteMapping("/desativarAcademia/{cnpjAcademia}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("@permissaoEvaluator.possui(authentication, 'academia:ativar-inativar')")
     public void desativarAcademia(@PathVariable("cnpjAcademia") String cnpjAcademia) {
-        gerenciadorDeAcademia.desativarAcademia(cnpjAcademia);
+        gerenciadorDeInstituicao.desativarInstituicao(cnpjAcademia);
     }
 
     @PutMapping("/atualizarDadosAcademia")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("@permissaoEvaluator.possui(authentication, 'academia:gerenciar')")
-    public void atualizarDadosAcademia(@RequestBody AcademiaDto academiaDto) {
-        gerenciadorDeAcademia.atualizarDados(academiaDto);
+    public void atualizarDadosAcademia(@RequestBody InstituicaoDto instituicaoDto) {
+        gerenciadorDeInstituicao.atualizarDados(instituicaoDto);
     }
 
     @PutMapping("/solicitarPrimeiroAcesso/{cpf}")
     @ResponseStatus(HttpStatus.OK)
     public void solicitarPrimeiroAcesso(@PathVariable("cpf") String cpf) {
-        gerenciadorDeAcademia.solicitarPrimeiroAcesso(cpf.replaceAll("\\D", ""));
+        gerenciadorDeInstituicao.solicitarPrimeiroAcesso(cpf.replaceAll("\\D", ""));
     }
 
     @PostMapping("/instituicao/{instituicaoId}/ativarFuncionario/{cpf}")
@@ -60,7 +60,7 @@ public class GerenciarAcademiaController {
             @PathVariable Long instituicaoId,
             @PathVariable("cpf") String cpf,
             @RequestBody AtivacaoFuncionarioDto dados) {
-        gerenciadorDeAcademia.ativarFuncionarioNaInstituicao(instituicaoId, cpf.replaceAll("\\D", ""), dados);
+        gerenciadorDeInstituicao.ativarFuncionarioNaInstituicao(instituicaoId, cpf.replaceAll("\\D", ""), dados);
     }
 
     @PostMapping("/instituicao/{instituicaoId}/inativarFuncionario/{cpf}")
@@ -69,28 +69,27 @@ public class GerenciarAcademiaController {
     public void inativarFuncionarioNaInstituicao(
             @PathVariable Long instituicaoId,
             @PathVariable("cpf") String cpf) {
-        gerenciadorDeAcademia.inativarFuncionarioNaInstituicao(instituicaoId, cpf.replaceAll("\\D", ""));
+        gerenciadorDeInstituicao.inativarFuncionarioNaInstituicao(instituicaoId, cpf.replaceAll("\\D", ""));
     }
 
     @GetMapping("/consultarAcademiaCnpj/{cnpjAcademia}")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("@permissaoEvaluator.possui(authentication, 'academia:consultar')")
-    public AcademiaDto consultarAcademiaPorCnpj(@PathVariable("cnpjAcademia") String cnpjAcademia) {
-        return gerenciadorDeAcademia.consultarAcademiaCnpj(cnpjAcademia);
+    public InstituicaoDto consultarAcademiaPorCnpj(@PathVariable("cnpjAcademia") String cnpjAcademia) {
+        return gerenciadorDeInstituicao.consultarInstituicaoCnpj(cnpjAcademia);
     }
 
     @GetMapping("/consultarAcademiaId/{codAcademia}")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("@permissaoEvaluator.possui(authentication, 'academia:consultar')")
-    public AcademiaDto consultarAcademiaPorId(@PathVariable("codAcademia") Long codAcademia) {
-        return gerenciadorDeAcademia.consultarAcademiaId(codAcademia);
+    public InstituicaoDto consultarAcademiaPorId(@PathVariable("codAcademia") Long codAcademia) {
+        return gerenciadorDeInstituicao.consultarInstituicaoId(codAcademia);
     }
 
     @GetMapping("/consultarTodasAcademias")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("@permissaoEvaluator.possui(authentication, 'academia:consultar')")
-    public List<AcademiaDto> consultarTodasAcademias() {
-        return new ArrayList<AcademiaDto>(gerenciadorDeAcademia.consultarTodasAcademias());
+    public List<InstituicaoDto> consultarTodasAcademias() {
+        return new ArrayList<>(gerenciadorDeInstituicao.consultarTodasInstituicoes());
     }
 }
-

@@ -1,9 +1,11 @@
 package gerenciamentoDeAcademia.entidades;
 
-import gerenciamentoDeAcademia.dto.AcademiaDto;
+import gerenciamentoDeAcademia.dto.InstituicaoDto;
 import gerenciamentoDeAcademia.excecao.ApplicationException;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.springframework.http.HttpStatus;
 
 import javax.persistence.Entity;
@@ -20,8 +22,8 @@ import java.util.Set;
 @Data
 @Entity
 @NoArgsConstructor
-@Table(name = "tb_academia")
-public class Academia {
+@Table(name = "tb_instituicao")
+public class Instituicao {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
@@ -33,20 +35,22 @@ public class Academia {
     private Boolean possuiCadastrosParaAprovar;
 
     @ManyToMany
-    @JoinTable(name = "academia_funcionario", joinColumns = @JoinColumn(name = "academia_id"), inverseJoinColumns = @JoinColumn(name = "funcionario_id"))
+    @JoinTable(name = "instituicao_funcionario", joinColumns = @JoinColumn(name = "instituicao_id"), inverseJoinColumns = @JoinColumn(name = "funcionario_id"))
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private Set<Funcionario> funcionarios = new HashSet<>();
 
-    public Academia(AcademiaDto academiaDto) {
-        this.razaoSocial = academiaDto.getRazaoSocial();
-        this.cnpj = academiaDto.getCnpj();
-        this.cadastroAtivo = academiaDto.getCadastroAtivo();
-        this.endereco = academiaDto.getEndereco();
-        this.telefone = academiaDto.getTelefone();
+    public Instituicao(InstituicaoDto instituicaoDto) {
+        this.razaoSocial = instituicaoDto.getRazaoSocial();
+        this.cnpj = instituicaoDto.getCnpj();
+        this.cadastroAtivo = instituicaoDto.getCadastroAtivo();
+        this.endereco = instituicaoDto.getEndereco();
+        this.telefone = instituicaoDto.getTelefone();
     }
 
     public void validarVinculo(Funcionario funcionario) {
         if (!this.getFuncionarios().contains(funcionario)) {
-            throw new ApplicationException("Funcionário não cadastrado nesta academia", HttpStatus.BAD_REQUEST);
+            throw new ApplicationException("Funcionário não cadastrado nesta instituição", HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -56,10 +60,10 @@ public class Academia {
         this.setPossuiCadastrosParaAprovar(pendente);
     }
 
-    public void atualizarCadastro(AcademiaDto academiaDto) {
-        this.razaoSocial = academiaDto.getRazaoSocial();
-        this.endereco = academiaDto.getEndereco();
-        this.telefone = academiaDto.getTelefone();
-        this.cadastroAtivo = academiaDto.getCadastroAtivo();
+    public void atualizarCadastro(InstituicaoDto instituicaoDto) {
+        this.razaoSocial = instituicaoDto.getRazaoSocial();
+        this.endereco = instituicaoDto.getEndereco();
+        this.telefone = instituicaoDto.getTelefone();
+        this.cadastroAtivo = instituicaoDto.getCadastroAtivo();
     }
 }

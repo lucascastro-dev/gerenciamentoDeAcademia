@@ -1,6 +1,6 @@
 package gerenciamentoDeAcademia.dto;
 
-import gerenciamentoDeAcademia.entidades.Academia;
+import gerenciamentoDeAcademia.entidades.Instituicao;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,8 +14,8 @@ import java.util.stream.Collectors;
 @Getter
 @Setter
 @NoArgsConstructor
-public class AcademiaDto {
-    private Long registroAcademia;
+public class InstituicaoDto {
+    private Long registroInstituicao;
     private String razaoSocial;
     private String cnpj;
     private Boolean cadastroAtivo;
@@ -24,16 +24,16 @@ public class AcademiaDto {
     private List<FuncionarioDto> funcionarios = new ArrayList<>();
     private Boolean possuiCadastroPendentes;
 
-    public AcademiaDto(Academia academia) {
-        this.registroAcademia = academia.getId();
-        this.razaoSocial = academia.getRazaoSocial();
-        this.cnpj = academia.getCnpj();
-        this.cadastroAtivo = academia.getCadastroAtivo();
-        this.endereco = academia.getEndereco();
-        this.telefone = academia.getTelefone();
-        this.possuiCadastroPendentes = academia.getPossuiCadastrosParaAprovar();
+    public InstituicaoDto(Instituicao instituicao) {
+        this.registroInstituicao = instituicao.getId();
+        this.razaoSocial = instituicao.getRazaoSocial();
+        this.cnpj = instituicao.getCnpj();
+        this.cadastroAtivo = instituicao.getCadastroAtivo();
+        this.endereco = instituicao.getEndereco();
+        this.telefone = instituicao.getTelefone();
+        this.possuiCadastroPendentes = instituicao.getPossuiCadastrosParaAprovar();
 
-        this.funcionarios = Optional.ofNullable(academia.getFuncionarios())
+        this.funcionarios = Optional.ofNullable(instituicao.getFuncionarios())
                 .orElse(Collections.emptySet())
                 .stream()
                 .map(FuncionarioDto::new)

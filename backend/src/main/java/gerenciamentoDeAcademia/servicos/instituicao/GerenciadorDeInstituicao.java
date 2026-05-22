@@ -1,19 +1,19 @@
-package gerenciamentoDeAcademia.servicos.academia;
+package gerenciamentoDeAcademia.servicos.instituicao;
 
-import gerenciamentoDeAcademia.dto.AcademiaDto;
 import gerenciamentoDeAcademia.dto.AtivacaoFuncionarioDto;
+import gerenciamentoDeAcademia.dto.InstituicaoDto;
 import gerenciamentoDeAcademia.enums.AreaTerceirizado;
 import gerenciamentoDeAcademia.enums.TipoFuncionario;
-import gerenciamentoDeAcademia.entidades.Academia;
 import gerenciamentoDeAcademia.entidades.Funcionario;
+import gerenciamentoDeAcademia.entidades.Instituicao;
 import gerenciamentoDeAcademia.entidades.Usuario;
 import gerenciamentoDeAcademia.enums.UserRole;
 import gerenciamentoDeAcademia.excecao.ApplicationException;
 import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
-import gerenciamentoDeAcademia.repositorios.AcademiaRepository;
 import gerenciamentoDeAcademia.repositorios.FuncionarioRepository;
+import gerenciamentoDeAcademia.repositorios.InstituicaoRepository;
 import gerenciamentoDeAcademia.repositorios.UsuarioRepository;
-import gerenciamentoDeAcademia.servicos.interfaces.IGerenciadorDeAcademia;
+import gerenciamentoDeAcademia.servicos.interfaces.IGerenciadorDeInstituicao;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,59 +27,59 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-public class GerenciadorDeAcademia implements IGerenciadorDeAcademia {
+public class GerenciadorDeInstituicao implements IGerenciadorDeInstituicao {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    private final AcademiaRepository academiaRepository;
+    private final InstituicaoRepository instituicaoRepository;
     private final FuncionarioRepository funcionarioRepository;
     private final UsuarioRepository usuarioRepository;
 
     @Override
-    public void cadastrar(AcademiaDto academiaDto) {
-        if (academiaRepository.findByCnpj(academiaDto.getCnpj()) != null) {
-            throw new ApplicationException("Academia já cadastrada!", HttpStatus.BAD_REQUEST);
+    public void cadastrar(InstituicaoDto instituicaoDto) {
+        if (instituicaoRepository.findByCnpj(instituicaoDto.getCnpj()) != null) {
+            throw new ApplicationException("Instituição já cadastrada!", HttpStatus.BAD_REQUEST);
         }
 
-        academiaRepository.save(new Academia(academiaDto));
+        instituicaoRepository.save(new Instituicao(instituicaoDto));
     }
 
     @Override
-    public void desativarAcademia(String cnpjAcademia) {
-        Academia academiaParaDesativar = academiaRepository.findByCnpj(cnpjAcademia);
-        ExcecaoDeDominio.quandoNulo(academiaParaDesativar, "Academia não encontrada para desativar!");
+    public void desativarInstituicao(String cnpjInstituicao) {
+        Instituicao instituicaoParaDesativar = instituicaoRepository.findByCnpj(cnpjInstituicao);
+        ExcecaoDeDominio.quandoNulo(instituicaoParaDesativar, "Instituição não encontrada para desativar!");
 
-        if (!academiaParaDesativar.getCadastroAtivo()) {
-            throw new ApplicationException("Essa academia já está desativada!", HttpStatus.BAD_REQUEST);
+        if (!instituicaoParaDesativar.getCadastroAtivo()) {
+            throw new ApplicationException("Essa instituição já está desativada!", HttpStatus.BAD_REQUEST);
         }
 
-        academiaParaDesativar.setCadastroAtivo(false);
-        academiaRepository.save(academiaParaDesativar);
+        instituicaoParaDesativar.setCadastroAtivo(false);
+        instituicaoRepository.save(instituicaoParaDesativar);
     }
 
     @Override
     @Transactional
-    public void atualizarDados(AcademiaDto academiaDto) {
-        Academia academia = Optional.ofNullable(academiaRepository.findByCnpj(academiaDto.getCnpj()))
-                .orElseThrow(() -> new ExcecaoDeDominio("Academia não encontrada"));
+    public void atualizarDados(InstituicaoDto instituicaoDto) {
+        Instituicao instituicao = Optional.ofNullable(instituicaoRepository.findByCnpj(instituicaoDto.getCnpj()))
+                .orElseThrow(() -> new ExcecaoDeDominio("Instituição não encontrada"));
 
-        academia.atualizarCadastro(academiaDto);
+        instituicao.atualizarCadastro(instituicaoDto);
     }
 
     @Override
-    public AcademiaDto consultarAcademiaCnpj(String cnpjAcademia) {
-        Academia academia = academiaRepository.findByCnpj(cnpjAcademia);
-        ExcecaoDeDominio.quandoNulo(academia, "Academia não encontrada");
+    public InstituicaoDto consultarInstituicaoCnpj(String cnpjInstituicao) {
+        Instituicao instituicao = instituicaoRepository.findByCnpj(cnpjInstituicao);
+        ExcecaoDeDominio.quandoNulo(instituicao, "Instituição não encontrada");
 
-        return new AcademiaDto(academia);
+        return new InstituicaoDto(instituicao);
     }
 
     @Override
-    public List<AcademiaDto> consultarTodasAcademias() {
-        return academiaRepository.findAll()
+    public List<InstituicaoDto> consultarTodasInstituicoes() {
+        return instituicaoRepository.findAll()
                 .stream()
-                .map(AcademiaDto::new)
+                .map(InstituicaoDto::new)
                 .collect(Collectors.toList());
     }
 
@@ -94,14 +94,14 @@ public class GerenciadorDeAcademia implements IGerenciadorDeAcademia {
     @Override
     @Transactional
     public void ativarFuncionarioNaInstituicao(Long instituicaoId, String cpf, AtivacaoFuncionarioDto dados) {
-        Academia academia = academiaRepository.findById(instituicaoId)
+        Instituicao instituicao = instituicaoRepository.findById(instituicaoId)
                 .orElseThrow(() -> new ExcecaoDeDominio("Instituição não encontrada"));
         Funcionario funcionario = buscarFuncionario(cpf);
         aplicarFuncaoNaInstituicao(funcionario, dados);
-        if (!academia.getFuncionarios().contains(funcionario)) {
-            academia.getFuncionarios().add(funcionario);
+        if (!instituicao.getFuncionarios().contains(funcionario)) {
+            instituicao.getFuncionarios().add(funcionario);
         }
-        ativarFuncionarioInterno(academia, funcionario);
+        ativarFuncionarioInterno(instituicao, funcionario);
     }
 
     private void aplicarFuncaoNaInstituicao(Funcionario funcionario, AtivacaoFuncionarioDto dados) {
@@ -127,7 +127,7 @@ public class GerenciadorDeAcademia implements IGerenciadorDeAcademia {
         funcionarioRepository.save(funcionario);
     }
 
-    private void ativarFuncionarioInterno(Academia academia, Funcionario funcionario) {
+    private void ativarFuncionarioInterno(Instituicao instituicao, Funcionario funcionario) {
         String cpf = funcionario.getCpf();
         if (usuarioRepository.existsByLogin(cpf) && Boolean.TRUE.equals(funcionario.getCadastroAtivo())) {
             throw new ExcecaoDeDominio("Este colaborador já possui cadastro ativo.");
@@ -145,54 +145,54 @@ public class GerenciadorDeAcademia implements IGerenciadorDeAcademia {
                     .build());
         }
 
-        academia.atualizarStatusPendencias();
-        academiaRepository.save(academia);
+        instituicao.atualizarStatusPendencias();
+        instituicaoRepository.save(instituicao);
     }
 
     @Override
     @Transactional
     public void ativarFuncionario(String cpf, String cnpj) {
-        Academia academia = buscarAcademia(cnpj);
+        Instituicao instituicao = buscarInstituicao(cnpj);
         Funcionario funcionario = buscarFuncionario(cpf);
-        if (!academia.getFuncionarios().contains(funcionario)) {
-            academia.getFuncionarios().add(funcionario);
+        if (!instituicao.getFuncionarios().contains(funcionario)) {
+            instituicao.getFuncionarios().add(funcionario);
         }
-        ativarFuncionarioInterno(academia, funcionario);
+        ativarFuncionarioInterno(instituicao, funcionario);
     }
 
     @Override
     public void inativarFuncionario(String cpf, String cnpj) {
-        inativarFuncionarioNaInstituicao(buscarAcademia(cnpj).getId(), cpf);
+        inativarFuncionarioNaInstituicao(buscarInstituicao(cnpj).getId(), cpf);
     }
 
     @Override
     @Transactional
     public void inativarFuncionarioNaInstituicao(Long instituicaoId, String cpf) {
-        Academia academia = academiaRepository.findById(instituicaoId)
+        Instituicao instituicao = instituicaoRepository.findById(instituicaoId)
                 .orElseThrow(() -> new ExcecaoDeDominio("Instituição não encontrada"));
         Funcionario funcionario = buscarFuncionario(cpf);
-        academia.validarVinculo(funcionario);
+        instituicao.validarVinculo(funcionario);
         funcionario.inativar();
         funcionarioRepository.save(funcionario);
-        academia.atualizarStatusPendencias();
-        academiaRepository.save(academia);
+        instituicao.atualizarStatusPendencias();
+        instituicaoRepository.save(instituicao);
     }
 
     @Override
     public boolean verificarVinculo(String cpf, String vinculo) {
-        return academiaRepository.existsByCnpjAndFuncionarioCpf(Long.parseLong(vinculo), cpf);
+        return instituicaoRepository.existsByCnpjAndFuncionarioCpf(Long.parseLong(vinculo), cpf);
     }
 
     @Override
-    public AcademiaDto consultarAcademiaId(Long codAcademia) {
-        return academiaRepository.findById(codAcademia)
-                .map(AcademiaDto::new)
-                .orElseThrow(() -> new ApplicationException("Academia não encontrada", HttpStatus.NOT_FOUND));
+    public InstituicaoDto consultarInstituicaoId(Long codInstituicao) {
+        return instituicaoRepository.findById(codInstituicao)
+                .map(InstituicaoDto::new)
+                .orElseThrow(() -> new ApplicationException("Instituição não encontrada", HttpStatus.NOT_FOUND));
     }
 
-    private Academia buscarAcademia(String cnpj) {
-        return Optional.ofNullable(academiaRepository.findByCnpj(cnpj))
-                .orElseThrow(() -> new ApplicationException("Academia não encontrada", HttpStatus.NOT_FOUND));
+    private Instituicao buscarInstituicao(String cnpj) {
+        return Optional.ofNullable(instituicaoRepository.findByCnpj(cnpj))
+                .orElseThrow(() -> new ApplicationException("Instituição não encontrada", HttpStatus.NOT_FOUND));
     }
 
     private Funcionario buscarFuncionario(String cpf) {

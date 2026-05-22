@@ -1,20 +1,20 @@
 package gerenciamentoDeAcademia.servicos.interfaces;
 
-import gerenciamentoDeAcademia.dto.AcademiaDto;
 import gerenciamentoDeAcademia.dto.AtivacaoFuncionarioDto;
+import gerenciamentoDeAcademia.dto.InstituicaoDto;
 
 import java.util.List;
 
-public interface IGerenciadorDeAcademia {
-    void cadastrar(AcademiaDto academiaDto);
+public interface IGerenciadorDeInstituicao {
+    void cadastrar(InstituicaoDto instituicaoDto);
 
-    void desativarAcademia(String cnpjAcademia);
+    void desativarInstituicao(String cnpjInstituicao);
 
-    void atualizarDados(AcademiaDto academiaDto);
+    void atualizarDados(InstituicaoDto instituicaoDto);
 
-    AcademiaDto consultarAcademiaCnpj(String cnpjAcademia);
+    InstituicaoDto consultarInstituicaoCnpj(String cnpjInstituicao);
 
-    List<AcademiaDto> consultarTodasAcademias();
+    List<InstituicaoDto> consultarTodasInstituicoes();
 
     void solicitarPrimeiroAcesso(String cpf);
 
@@ -28,5 +28,5 @@ public interface IGerenciadorDeAcademia {
 
     boolean verificarVinculo(String cpf, String vinculo);
 
-    AcademiaDto consultarAcademiaId(Long codAcademia);
+    InstituicaoDto consultarInstituicaoId(Long codInstituicao);
 }
