@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -60,16 +61,16 @@ public class GerenciarAlunoController {
     @GetMapping("/consultarAluno")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("@permissaoEvaluator.possui(authentication, 'aluno:consultar')")
-    public List<Aluno> listarAlunos() {
-        return consultaDeAlunos.listarAlunos();
+    public List<Aluno> listarAlunos(@RequestParam("instituicaoId") Long instituicaoId) {
+        return consultaDeAlunos.listarAlunos(instituicaoId);
     }
 
     @GetMapping("/consultarAluno/{cpf}")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("@permissaoEvaluator.possui(authentication, 'aluno:consultar')")
-    public ResponseEntity<Aluno> consultarAlunoPorCpf(@PathVariable("cpf") String cpf) {
-        var aluno = consultaDeAlunos.consultaAlunoPorCpf(cpf);
-
-        return aluno != null ? ResponseEntity.ok(aluno) : ResponseEntity.notFound().build();
+    public ResponseEntity<Aluno> consultarAlunoPorCpf(
+            @PathVariable("cpf") String cpf,
+            @RequestParam("instituicaoId") Long instituicaoId) {
+        return ResponseEntity.ok(consultaDeAlunos.consultaAlunoPorCpf(cpf, instituicaoId));
     }
 }

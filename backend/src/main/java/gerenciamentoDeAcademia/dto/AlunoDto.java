@@ -8,6 +8,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class AlunoDto extends PessoaDto {
+    /** Instituição que matricula o aluno (vínculo via turma para login no portal). */
+    private Long instituicaoId;
     private Double valorMensalidade;
     private Integer diaVencimentoMensalidade;
     private String nomeResponsavel;

@@ -1,11 +1,16 @@
 package gerenciamentoDeAcademia.entidades;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import gerenciamentoDeAcademia.dto.AlunoDto;
 import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
+import gerenciamentoDeAcademia.util.CpfUtil;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.validator.constraints.br.CPF;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -29,6 +34,7 @@ public class Aluno {
     private String nome;
     private String rg;
     @CPF(message = "CPF inválido")
+    @Column(unique = true, nullable = false, length = 11)
     private String cpf;
     private LocalDate dataDeNascimento;
     private String endereco;
@@ -42,13 +48,17 @@ public class Aluno {
 
     @ManyToMany
     @JoinTable(name = "turma_aluno", joinColumns = @JoinColumn(name = "aluno_id"), inverseJoinColumns = @JoinColumn(name = "turma_id"))
+    @JsonIgnore
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private Set<Turma> turma = new HashSet<>();
 
     public Aluno(AlunoDto alunoDto) {
         validar(alunoDto);
         this.nome = alunoDto.getNome();
         this.rg = alunoDto.getRg();
-        this.cpf = alunoDto.getCpf();
+        this.cpf = CpfUtil.somenteDigitos(alunoDto.getCpf());
+        ExcecaoDeDominio.quando(this.cpf.length() != 11, "CPF deve conter 11 dígitos.");
         this.dataDeNascimento = alunoDto.getDataDeNascimento();
         this.endereco = alunoDto.getEndereco();
         this.telefone = alunoDto.getTelefone();

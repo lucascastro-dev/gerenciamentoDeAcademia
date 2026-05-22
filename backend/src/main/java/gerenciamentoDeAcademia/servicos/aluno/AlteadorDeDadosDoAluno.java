@@ -4,6 +4,7 @@ import gerenciamentoDeAcademia.dto.AlunoDto;
 import gerenciamentoDeAcademia.entidades.Aluno;
 import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
 import gerenciamentoDeAcademia.repositorios.AlunoRepository;
+import gerenciamentoDeAcademia.util.CpfUtil;
 import gerenciamentoDeAcademia.servicos.interfaces.IAlteradorDeDadosDoAluno;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +18,7 @@ public class AlteadorDeDadosDoAluno implements IAlteradorDeDadosDoAluno {
 
     @Override
     public void alterarAluno(AlunoDto alunoDto) {
-        Aluno aluno = alunoRepository.findByCpf(alunoDto.getCpf());
+        Aluno aluno = alunoRepository.findByCpf(CpfUtil.somenteDigitos(alunoDto.getCpf()));
 
         ExcecaoDeDominio.quandoNulo(aluno, "Aluno não encontrado!");
 

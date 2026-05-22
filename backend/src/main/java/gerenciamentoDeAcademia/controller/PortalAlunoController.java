@@ -1,19 +1,27 @@
 package gerenciamentoDeAcademia.controller;
 
+import gerenciamentoDeAcademia.dto.AlterarSenhaDto;
 import gerenciamentoDeAcademia.dto.MensalidadeResumoDto;
 import gerenciamentoDeAcademia.dto.PortalAlunoDadosDto;
 import gerenciamentoDeAcademia.dto.TurmaResumoDto;
+import gerenciamentoDeAcademia.servicos.funcionario.AlteradorSenha;
 import gerenciamentoDeAcademia.entidades.Aluno;
 import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
 import gerenciamentoDeAcademia.infra.seguranca.UsuarioAutenticado;
 import gerenciamentoDeAcademia.repositorios.AlunoRepository;
 import gerenciamentoDeAcademia.repositorios.TurmaRepository;
 import gerenciamentoDeAcademia.servicos.financeiro.ServicoFinanceiro;
+import gerenciamentoDeAcademia.servicos.programacao.ServicoProgramacaoAluno;
+import gerenciamentoDeAcademia.dto.ItemProgramacaoDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -30,6 +38,10 @@ public class PortalAlunoController {
     private TurmaRepository turmaRepository;
     @Autowired
     private ServicoFinanceiro servicoFinanceiro;
+    @Autowired
+    private AlteradorSenha alteradorSenha;
+    @Autowired
+    private ServicoProgramacaoAluno servicoProgramacaoAluno;
 
     private Aluno alunoLogado(UsuarioAutenticado usuario) {
         ExcecaoDeDominio.quando(!usuario.isPortalAluno(), "Acesso exclusivo do portal do aluno.");
@@ -48,10 +60,27 @@ public class PortalAlunoController {
     @PreAuthorize("@permissaoEvaluator.possui(authentication, 'aluno-portal:turmas')")
     public List<TurmaResumoDto> minhasTurmas(@AuthenticationPrincipal UsuarioAutenticado usuario) {
         String cpf = alunoLogado(usuario).getCpf();
-        return turmaRepository.findAll().stream()
-                .filter(t -> t.getAlunos().stream().anyMatch(a -> cpf.equals(a.getCpf())))
+        Long instituicaoId = usuario.getInstituicaoId();
+        if (instituicaoId == null) {
+            return List.of();
+        }
+        return turmaRepository.findByAlunos_CpfAndInstituicao_Id(cpf, instituicaoId).stream()
                 .map(TurmaResumoDto::of)
                 .collect(Collectors.toList());
+    }
+
+    @GetMapping("/minha-programacao")
+    @PreAuthorize("@permissaoEvaluator.possui(authentication, 'aluno-portal:programacao')")
+    public List<ItemProgramacaoDto> minhaProgramacao(@AuthenticationPrincipal UsuarioAutenticado usuario) {
+        return servicoProgramacaoAluno.listarPorAlunoEInstituicao(
+                alunoLogado(usuario), usuario.getInstituicaoId());
+    }
+
+    @PutMapping("/alterar-senha")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("@permissaoEvaluator.possui(authentication, 'aluno-portal:senha')")
+    public void alterarSenha(@AuthenticationPrincipal UsuarioAutenticado usuario, @RequestBody AlterarSenhaDto dto) {
+        alteradorSenha.alterarSenhaPortalAluno(alunoLogado(usuario).getCpf(), dto);
     }
 
     @GetMapping("/mensalidade")

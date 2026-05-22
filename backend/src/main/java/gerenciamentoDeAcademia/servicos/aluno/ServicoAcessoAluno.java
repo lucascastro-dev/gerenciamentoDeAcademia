@@ -27,13 +27,23 @@ public class ServicoAcessoAluno {
     public void garantirUsuarioPortal(Aluno aluno) {
         ExcecaoDeDominio.quandoNulo(aluno, "Aluno inválido.");
         String cpf = aluno.getCpf();
+        String senha = senhaInicialDoCpf(cpf);
         if (usuarioRepository.existsByLogin(cpf)) {
             return;
         }
         usuarioRepository.save(Usuario.builder()
                 .login(cpf)
-                .password(passwordEncoder.encode(senhaInicialAluno))
+                .password(passwordEncoder.encode(senha))
                 .role(UserRole.ALUNO)
                 .build());
+    }
+
+    /** Senha inicial do portal: 6 primeiros dígitos do CPF (apenas números). */
+    public static String senhaInicialDoCpf(String cpf) {
+        String digitos = cpf != null ? cpf.replaceAll("\\D", "") : "";
+        if (digitos.length() >= 6) {
+            return digitos.substring(0, 6);
+        }
+        return digitos.isEmpty() ? "123456" : digitos;
     }
 }
