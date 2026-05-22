@@ -26,7 +26,7 @@ const GestaoCadastros: React.FC = () => {
   const onlyNumbers = (v: string) => v.replace(/\D/g, '');
 
   useEffect(() => {
-    HttpService.consultarAcademia(instituicaoId)
+    HttpService.consultarInstituicao(instituicaoId)
       .then((r) => setNomeInstituicao(r.data.razaoSocial || 'Instituição logada'))
       .catch(() => setNomeInstituicao('Instituição logada'));
   }, [instituicaoId]);

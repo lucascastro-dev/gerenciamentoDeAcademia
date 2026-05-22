@@ -4,6 +4,7 @@ import { APP_NAME } from '../../constants/branding';
 import { carregarSessao, isPortalAluno, limparSessao, SessaoUsuario } from '../../auth/permissoes';
 import { obterMenus } from '../../auth/menuConfig';
 import HttpService from '../../services/HttpService';
+import FeedbackModal from '../common/FeedbackModal';
 import '../../theme/layout.css';
 
 const STORAGE_COLLAPSE = '@App:menuCollapsed';
@@ -19,16 +20,23 @@ function loadCollapsed(): Record<string, boolean> {
 
 export const LayoutHome: React.FC = () => {
   const [sessao, setSessao] = useState<SessaoUsuario | null>(carregarSessao());
-  const [academia, setAcademia] = useState<{ razaoSocial?: string } | null>(null);
+  const [instituicao, setInstituicao] = useState<{ razaoSocial?: string } | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>(loadCollapsed);
+  const [alertaCobranca, setAlertaCobranca] = useState<{ open: boolean; message: string }>({
+    open: false,
+    message: '',
+  });
   const menus = obterMenus(sessao);
 
   useEffect(() => {
     const s = carregarSessao();
     setSessao(s);
+    if (s?.alertaCobranca && s.mensagemAlertaCobranca) {
+      setAlertaCobranca({ open: true, message: s.mensagemAlertaCobranca });
+    }
     if (s?.vinculo) {
-      HttpService.consultarAcademia(s.vinculo).then((r) => setAcademia(r.data)).catch(() => undefined);
+      HttpService.consultarInstituicao(s.vinculo).then((r) => setInstituicao(r.data)).catch(() => undefined);
       if (!s.nome && s.cpf) {
         const carregarNome = isPortalAluno(s)
           ? HttpService.portalAlunoDados().then((r) => r.data.nome)
@@ -84,7 +92,13 @@ export const LayoutHome: React.FC = () => {
                   {sec.itens.map((item) => (
                     <NavLink
                       key={item.path}
-                      to={item.path.replace('/arealogada/', '')}
+                      to={item.path}
+                      end={
+                        item.path === '/arealogada/turmas'
+                        || item.path === '/arealogada/alunos'
+                        || item.path === '/arealogada/home'
+                        || item.path === '/arealogada/financeiro'
+                      }
                       className={({ isActive }) =>
                         `app-sidebar__link${isActive ? ' app-sidebar__link--active' : ''}`
                       }
@@ -111,7 +125,7 @@ export const LayoutHome: React.FC = () => {
             ☰
           </button>
           <span className="hide-mobile app-header__instituicao">
-            {academia?.razaoSocial || 'Instituição'}
+            {instituicao?.razaoSocial || 'Instituição'}
           </span>
         </div>
         <div className="app-header__user">
@@ -128,6 +142,13 @@ export const LayoutHome: React.FC = () => {
       <main className="app-main">
         <Outlet />
       </main>
+
+      <FeedbackModal
+        open={alertaCobranca.open}
+        success={false}
+        message={alertaCobranca.message}
+        onClose={() => setAlertaCobranca((a) => ({ ...a, open: false }))}
+      />
     </div>
   );
 };

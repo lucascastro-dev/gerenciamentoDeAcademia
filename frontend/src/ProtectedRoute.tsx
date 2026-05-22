@@ -18,14 +18,16 @@ const ProtectedRoute = () => {
     return <Navigate to={destino === '/arealogada/aluno' ? '/arealogada/home' : destino} replace />;
   }
 
+  const ehRotaPortalAluno = /^\/arealogada\/aluno(\/|$)/.test(path);
+
   if (aluno && path.startsWith('/arealogada')) {
-    const permitido = path === '/arealogada/home' || path.startsWith('/arealogada/aluno');
+    const permitido = path === '/arealogada/home' || ehRotaPortalAluno;
     if (!permitido) {
       return <Navigate to="/arealogada/home" replace />;
     }
   }
 
-  if (!aluno && path.startsWith('/arealogada/aluno')) {
+  if (!aluno && ehRotaPortalAluno) {
     return <Navigate to="/arealogada/home" replace />;
   }
 

@@ -51,6 +51,8 @@ export function obterMenus(sessao: SessaoUsuario | null): MenuSection[] {
           { label: 'Meus dados', path: '/arealogada/aluno/dados', permissao: 'aluno-portal:dados' },
           { label: 'Minhas turmas', path: '/arealogada/aluno/turmas', permissao: 'aluno-portal:turmas' },
           { label: 'Mensalidades', path: '/arealogada/aluno/mensalidades', permissao: 'aluno-portal:mensalidades' },
+          { label: 'Alterar senha', path: '/arealogada/aluno/senha', permissao: 'aluno-portal:senha' },
+          { label: 'Minha programação', path: '/arealogada/aluno/programacao', permissao: 'aluno-portal:programacao' },
         ]),
       },
     ].filter((s) => s.itens.length > 0);
@@ -166,13 +168,15 @@ export function obterMenus(sessao: SessaoUsuario | null): MenuSection[] {
 
   const itensAcademico: MenuItem[] = [
 
-      { label: 'Consultar / editar alunos', path: '/arealogada/alunos', permissao: 'aluno:consultar' },
+      { label: 'Consultar alunos', path: '/arealogada/alunos', permissao: 'aluno:consultar' },
 
     { label: 'Consultar turmas', path: '/arealogada/turmas', permissao: 'turma:consultar' },
 
-    { label: 'Gerenciar turmas', path: '/arealogada/turmas/gerenciar', permissao: 'turma:gerenciar' },
+    { label: 'Cadastrar turma', path: '/arealogada/turmas/gerenciar', permissao: 'turma:gerenciar' },
 
     { label: 'Matricular aluno', path: '/arealogada/matricula', permissao: 'aluno:matricular' },
+
+    { label: 'Programação e grade', path: '/arealogada/programacao', permissao: 'programacao:consultar' },
 
   ];
 

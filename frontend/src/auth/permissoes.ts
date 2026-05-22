@@ -22,6 +22,9 @@ export interface SessaoUsuario {
   permissoes: string[];
   tipoAcesso?: TipoAcesso;
   planoInstituicaoAtivo?: boolean;
+  situacaoCobranca?: 'ATIVO' | 'EM_TOLERANCIA' | 'BLOQUEADO';
+  alertaCobranca?: boolean;
+  mensagemAlertaCobranca?: string | null;
 }
 
 export function isPortalAluno(sessao: SessaoUsuario | null): boolean {
