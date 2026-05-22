@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import HttpService from '../../services/HttpService';
 
 interface DashboardFin {
@@ -6,14 +7,16 @@ interface DashboardFin {
   receitaMensalPrevista: number;
   alunosInadimplentes: number;
   valorInadimplente: number;
-  proximosVencimentos: { nome: string; valorMensalidade: number; diaVencimento: number }[];
 }
 
 const DashboardFinanceiro: React.FC = () => {
   const [dados, setDados] = useState<DashboardFin | null>(null);
 
   useEffect(() => {
-    HttpService.financeiroDashboard().then((r) => setDados(r.data)).catch(() => setDados(null));
+    HttpService.financeiroDashboard().then((r) => {
+      const { proximosVencimentos: _, ...rest } = r.data as DashboardFin & { proximosVencimentos?: unknown };
+      setDados(rest);
+    }).catch(() => setDados(null));
   }, []);
 
   if (!dados) {
@@ -25,7 +28,10 @@ const DashboardFinanceiro: React.FC = () => {
   return (
     <div>
       <h2 style={{ marginTop: 0 }}>Dashboard financeiro</h2>
-      <p style={{ color: 'var(--color-muted)' }}>Mensalidades, receita prevista e inadimplência</p>
+      <p style={{ color: 'var(--color-muted)' }}>
+        Indicadores de receita e inadimplência. A lista detalhada de vencimentos está em{' '}
+        <Link to="/arealogada/financeiro/mensalidades">Mensalidades</Link>.
+      </p>
       <div className="dashboard-grid">
         <div className="stat-card">
           <h3>{fmt(dados.receitaMensalPrevista)}</h3>
@@ -44,16 +50,6 @@ const DashboardFinanceiro: React.FC = () => {
           <p>Alunos com mensalidade</p>
         </div>
       </div>
-      {dados.proximosVencimentos?.length > 0 && (
-        <div className="card" style={{ marginTop: '1.5rem' }}>
-          <h3>Próximos vencimentos</h3>
-          <ul>
-            {dados.proximosVencimentos.map((p, i) => (
-              <li key={i}>{p.nome} — dia {p.diaVencimento} — {fmt(p.valorMensalidade)}</li>
-            ))}
-          </ul>
-        </div>
-      )}
     </div>
   );
 };

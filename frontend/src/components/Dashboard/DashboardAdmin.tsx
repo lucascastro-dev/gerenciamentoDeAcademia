@@ -3,8 +3,8 @@ import HttpService from '../../services/HttpService';
 
 interface Resumo {
   totalAlunos: number;
-  totalFuncionarios: number;
   funcionariosAtivos: number;
+  funcionariosPendentesAtivacao: number;
   totalTurmas: number;
 }
 
@@ -29,7 +29,10 @@ const DashboardAdmin: React.FC = () => {
   return (
     <div>
       <h2 style={{ marginTop: 0 }}>Painel administrativo</h2>
-      <p style={{ color: 'var(--color-muted)' }}>Visão geral da operação da instituição</p>
+      <p style={{ color: 'var(--color-muted)' }}>
+        Visão geral da operação da instituição. Colaboradores ativos são quem já podem acessar o sistema;
+        pendentes aguardam ativação pelo RH.
+      </p>
       <div className="dashboard-grid">
         <div className="stat-card">
           <h3>{resumo.totalAlunos}</h3>
@@ -39,13 +42,13 @@ const DashboardAdmin: React.FC = () => {
           <h3>{resumo.funcionariosAtivos}</h3>
           <p>Colaboradores ativos</p>
         </div>
+        <div className="stat-card" style={{ background: 'linear-gradient(135deg,#ea580c,#c2410c)' }}>
+          <h3>{resumo.funcionariosPendentesAtivacao}</h3>
+          <p>Aguardando ativação</p>
+        </div>
         <div className="stat-card" style={{ background: 'linear-gradient(135deg,#7c3aed,#5b21b6)' }}>
           <h3>{resumo.totalTurmas}</h3>
           <p>Turmas</p>
-        </div>
-        <div className="stat-card" style={{ background: 'linear-gradient(135deg,#ea580c,#c2410c)' }}>
-          <h3>{resumo.totalFuncionarios}</h3>
-          <p>Total de funcionários</p>
         </div>
       </div>
     </div>

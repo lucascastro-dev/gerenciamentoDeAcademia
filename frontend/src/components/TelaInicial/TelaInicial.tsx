@@ -7,7 +7,7 @@ import { TelaInicialWrapper } from './TelaInicial.styled';
 
 const TelaInicial: FC = () => {
   const sessao = carregarSessao();
-  const [academia, setAcademia] = useState<any>(null);
+  const [instituicao, setInstituicao] = useState<{ razaoSocial?: string } | null>(null);
   const [msgPagamento, setMsgPagamento] = useState('');
   const [loading, setLoading] = useState(true);
   const aluno = isPortalAluno(sessao);
@@ -16,8 +16,8 @@ const TelaInicial: FC = () => {
     const carregarDados = async () => {
       try {
         if (sessao?.vinculo) {
-          const resAcademia = await HttpService.consultarAcademia(sessao.vinculo);
-          setAcademia(resAcademia.data);
+          const resInstituicao = await HttpService.consultarInstituicao(sessao.vinculo);
+          setInstituicao(resInstituicao.data);
         }
         if (aluno) {
           const r = await HttpService.portalAlunoPagamentoInfo().catch(() => null);
@@ -48,11 +48,11 @@ const TelaInicial: FC = () => {
       >
         <div className="card">
           <p>
-            Você está vinculado à <strong>{academia?.razaoSocial || 'sua instituição'}</strong>.
+            Você está vinculado à <strong>{instituicao?.razaoSocial || 'sua instituição'}</strong>.
           </p>
           <p className="field-hint" style={{ marginTop: '0.75rem' }}>
-            Use o menu lateral para navegar. Senha inicial do portal (após matrícula): <strong>123</strong>
-            — altere quando a opção estiver disponível.
+            Use o menu lateral para navegar. Senha inicial do portal (após matrícula): <strong>123</strong>.
+            Recomendamos alterar em <strong>Alterar senha</strong> no menu.
           </p>
           {msgPagamento && (
             <p style={{ marginTop: '1rem', padding: '0.75rem', background: '#f0f9ff', borderRadius: 8 }}>
@@ -70,6 +70,12 @@ const TelaInicial: FC = () => {
           <Link to="/arealogada/aluno/mensalidades" className="btn-secondary" style={{ textDecoration: 'none' }}>
             Mensalidades
           </Link>
+          <Link to="/arealogada/aluno/senha" className="btn-secondary" style={{ textDecoration: 'none' }}>
+            Alterar senha
+          </Link>
+          <Link to="/arealogada/aluno/programacao" className="btn-secondary" style={{ textDecoration: 'none' }}>
+            Minha programação
+          </Link>
         </div>
       </PageShell>
     );
@@ -79,7 +85,7 @@ const TelaInicial: FC = () => {
     <TelaInicialWrapper>
       <h1>Olá, {sessao?.nome || 'colaborador'}!</h1>
       <p>
-        Você está vinculado à <strong>{academia?.razaoSocial || 'sua instituição'}</strong> no EduGestão
+        Você está vinculado à <strong>{instituicao?.razaoSocial || 'sua instituição'}</strong> no EduGestão
         Inteligente.
       </p>
       <p>
