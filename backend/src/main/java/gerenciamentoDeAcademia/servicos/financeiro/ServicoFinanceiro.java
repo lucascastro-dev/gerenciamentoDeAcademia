@@ -3,6 +3,7 @@ package gerenciamentoDeAcademia.servicos.financeiro;
 import gerenciamentoDeAcademia.dto.DashboardFinanceiroDto;
 import gerenciamentoDeAcademia.dto.MensalidadeResumoDto;
 import gerenciamentoDeAcademia.entidades.Aluno;
+import gerenciamentoDeAcademia.enums.SituacaoCobranca;
 import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
 import gerenciamentoDeAcademia.repositorios.AlunoRepository;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
 
@@ -91,14 +93,32 @@ public class ServicoFinanceiro {
         );
     }
 
-    private boolean isInadimplente(Aluno aluno, LocalDate hoje) {
+    public SituacaoCobranca situacaoMensalidade(Aluno aluno, LocalDate hoje, int diasTolerancia) {
         if (pagouNoMesAtual(aluno, hoje)) {
-            return false;
+            return SituacaoCobranca.ATIVO;
         }
         if (aluno.getDiaVencimentoMensalidade() == null) {
-            return false;
+            return SituacaoCobranca.ATIVO;
         }
-        return hoje.getDayOfMonth() > aluno.getDiaVencimentoMensalidade();
+        LocalDate vencimento = vencimentoNoMes(aluno, YearMonth.from(hoje));
+        if (!hoje.isAfter(vencimento)) {
+            return SituacaoCobranca.ATIVO;
+        }
+        long diasAtraso = ChronoUnit.DAYS.between(vencimento, hoje);
+        if (diasAtraso <= diasTolerancia) {
+            return SituacaoCobranca.EM_TOLERANCIA;
+        }
+        return SituacaoCobranca.BLOQUEADO;
+    }
+
+    private LocalDate vencimentoNoMes(Aluno aluno, YearMonth mes) {
+        int dia = Math.min(aluno.getDiaVencimentoMensalidade(), mes.lengthOfMonth());
+        return mes.atDay(dia);
+    }
+
+    private boolean isInadimplente(Aluno aluno, LocalDate hoje) {
+        SituacaoCobranca situacao = situacaoMensalidade(aluno, hoje, 0);
+        return situacao == SituacaoCobranca.EM_TOLERANCIA || situacao == SituacaoCobranca.BLOQUEADO;
     }
 
     private boolean pagouNoMesAtual(Aluno aluno, LocalDate hoje) {

@@ -1,5 +1,6 @@
 package gerenciamentoDeAcademia.infra.seguranca;
 
+import gerenciamentoDeAcademia.enums.SituacaoCobranca;
 import gerenciamentoDeAcademia.enums.UserRole;
 import gerenciamentoDeAcademia.repositorios.AlunoRepository;
 import gerenciamentoDeAcademia.repositorios.FuncionarioRepository;
@@ -39,17 +40,22 @@ public class FiltroSeguranca extends OncePerRequestFilter {
             var token = recoverToken(request);
 
             if (token != null) {
-                var login = tokenService.validarToken(token);
+                ClaimsSessao claims = tokenService.extrairClaims(token);
+                var login = claims != null ? claims.getLogin() : "";
 
                 if (login != null && !login.isBlank()) {
                     var usuario = usuarioRepository.findByLogin(login);
 
                     if (usuario != null) {
                         UsuarioAutenticado autenticado;
+                        Long instituicaoId = claims != null ? claims.getInstituicaoId() : null;
+                        SituacaoCobranca situacao = claims != null ? claims.getSituacaoCobranca() : SituacaoCobranca.ATIVO;
                         if (usuario.getRole() == UserRole.ALUNO) {
-                            autenticado = new UsuarioAutenticado(usuario, null, alunoRepository.findByCpf(login));
+                            autenticado = new UsuarioAutenticado(
+                                    usuario, null, alunoRepository.findByCpf(login), instituicaoId, situacao);
                         } else {
-                            autenticado = new UsuarioAutenticado(usuario, funcionarioRepository.findByCpf(login));
+                            autenticado = new UsuarioAutenticado(
+                                    usuario, funcionarioRepository.findByCpf(login), null, instituicaoId, situacao);
                         }
                         var autenticacao = new UsernamePasswordAuthenticationToken(
                                 autenticado, null, autenticado.getAuthorities());

@@ -57,7 +57,9 @@ public enum TipoFuncionario {
                     PermissaoSistema.TURMA_CONSULTAR,
                     PermissaoSistema.TURMA_GERENCIAR,
                     PermissaoSistema.PLANO_INSTITUICAO_VISUALIZAR,
-                    PermissaoSistema.PLANO_INSTITUICAO_GERENCIAR
+                    PermissaoSistema.PLANO_INSTITUICAO_GERENCIAR,
+                    PermissaoSistema.PROGRAMACAO_CONSULTAR,
+                    PermissaoSistema.PROGRAMACAO_GERENCIAR
             );
             case TI -> EnumSet.of(
                     PermissaoSistema.DASHBOARD_VISUALIZAR,
@@ -67,6 +69,8 @@ public enum TipoFuncionario {
                     PermissaoSistema.ALUNO_CONSULTAR,
                     PermissaoSistema.TURMA_CONSULTAR,
                     PermissaoSistema.TURMA_GERENCIAR,
+                    PermissaoSistema.PROGRAMACAO_CONSULTAR,
+                    PermissaoSistema.PROGRAMACAO_GERENCIAR,
                     PermissaoSistema.AUDITORIA_CONSULTAR,
                     PermissaoSistema.PLANO_INSTITUICAO_VISUALIZAR
             );
@@ -91,18 +95,23 @@ public enum TipoFuncionario {
                     PermissaoSistema.ALUNO_EDITAR,
                     PermissaoSistema.ALUNO_MATRICULAR,
                     PermissaoSistema.FINANCEIRO_COBRANCA,
-                    PermissaoSistema.TURMA_CONSULTAR
+                    PermissaoSistema.TURMA_CONSULTAR,
+                    PermissaoSistema.PROGRAMACAO_CONSULTAR,
+                    PermissaoSistema.PROGRAMACAO_GERENCIAR
             );
             case PROFESSOR -> EnumSet.of(
                     PermissaoSistema.TURMA_CONSULTAR,
                     PermissaoSistema.TURMA_PRESENCA,
                     PermissaoSistema.TURMA_AVALIACAO,
                     PermissaoSistema.CERTIFICADO_GERAR,
-                    PermissaoSistema.ALUNO_CONSULTAR
+                    PermissaoSistema.ALUNO_CONSULTAR,
+                    PermissaoSistema.PROGRAMACAO_CONSULTAR,
+                    PermissaoSistema.PROGRAMACAO_GERENCIAR
             );
             case ESTAGIARIO -> EnumSet.of(
                     PermissaoSistema.ALUNO_CONSULTAR,
-                    PermissaoSistema.TURMA_CONSULTAR
+                    PermissaoSistema.TURMA_CONSULTAR,
+                    PermissaoSistema.PROGRAMACAO_CONSULTAR
             );
             case SERVICOS_GERAIS -> EnumSet.of(
                     PermissaoSistema.ALUNO_CONSULTAR

@@ -28,6 +28,9 @@ public class ConfiguracaoDeSeguranca {
     @Autowired
     private FiltroSeguranca filtroSeguranca;
 
+    @Autowired
+    private FiltroPlanoInstituicao filtroPlanoInstituicao;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
@@ -43,6 +46,7 @@ public class ConfiguracaoDeSeguranca {
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(filtroSeguranca, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(filtroPlanoInstituicao, FiltroSeguranca.class)
                 .build();
     }
 

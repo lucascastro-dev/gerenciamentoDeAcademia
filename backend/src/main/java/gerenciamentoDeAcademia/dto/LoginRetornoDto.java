@@ -1,5 +1,6 @@
 package gerenciamentoDeAcademia.dto;
 
+import gerenciamentoDeAcademia.enums.SituacaoCobranca;
 import gerenciamentoDeAcademia.enums.TipoAcesso;
 import gerenciamentoDeAcademia.enums.TipoFuncionario;
 
@@ -12,6 +13,9 @@ public record LoginRetornoDto(
         boolean usuarioMaster,
         List<String> permissoes,
         TipoAcesso tipoAcesso,
-        boolean planoInstituicaoAtivo
+        boolean planoInstituicaoAtivo,
+        SituacaoCobranca situacaoCobranca,
+        boolean alertaCobranca,
+        String mensagemAlertaCobranca
 ) {
 }
