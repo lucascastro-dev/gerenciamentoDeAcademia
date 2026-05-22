@@ -1,0 +1,35 @@
+.dias-multiselect__label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--color-muted);
+  margin-bottom: 0.25rem;
+}
+
+.dias-multiselect__hint {
+  margin: 0 0 0.5rem;
+}
+
+.dias-multiselect__select {
+  width: 100%;
+  min-height: 9rem;
+  padding: 0.35rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.dias-multiselect__select option {
+  padding: 0.4rem 0.5rem;
+  border-radius: 4px;
+}
+
+.dias-multiselect__select option:checked {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #fff;
+}
+
+.dias-multiselect__resumo {
+  margin: 0.5rem 0 0;
+  font-size: 0.85rem;
+  color: var(--color-muted);
+}

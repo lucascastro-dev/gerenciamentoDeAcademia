@@ -50,6 +50,35 @@ body {
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
+.horario-range__inputs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.65rem;
+}
+
+.horario-range__inputs > div {
+  flex: 1;
+  min-width: 120px;
+}
+
+.horario-range__legend {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--color-muted);
+  margin-bottom: 0.25rem;
+}
+
+.horario-range__sep {
+  color: var(--color-muted);
+  font-size: 0.85rem;
+  padding-bottom: 0.55rem;
+}
+
+.horario-range input[type="time"] {
+  min-height: 2.5rem;
+}
+
 .app-main input,
 .app-main select,
 .app-main textarea,

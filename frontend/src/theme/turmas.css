@@ -1,0 +1,56 @@
+.turmas-layout {
+  display: grid;
+  gap: 1.25rem;
+}
+
+@media (min-width: 960px) {
+  .turmas-layout--gerenciar {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+}
+
+.turmas-form-card h3,
+.turmas-list-card h3 {
+  margin-top: 0;
+}
+
+.turmas-form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.turmas-horario-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 0.5rem;
+  align-items: end;
+}
+
+.turmas-item {
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius);
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  background: #fafbfc;
+}
+
+.turmas-item:last-child {
+  margin-bottom: 0;
+}
+
+.turmas-item__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+  margin-top: 0.35rem;
+}
+
+.turmas-badge {
+  font-size: 0.75rem;
+  background: #e2e8f0;
+  color: #334155;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+}
