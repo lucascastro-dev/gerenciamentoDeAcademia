@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import EnderecoFields from '../common/EnderecoFields';
 import FeedbackModal from '../common/FeedbackModal';
 import PageShell from '../common/PageShell';
+import { carregarSessao } from '../../auth/permissoes';
 import HttpService from '../../services/HttpService';
 import { extractApiMessage } from '../../utils/apiError';
 import { EnderecoCompleto, enderecoVazio, parseEndereco, serializarEndereco } from '../../utils/endereco';
@@ -18,13 +19,20 @@ const GerenciarAlunos: React.FC = () => {
   const [diaVencimento, setDiaVencimento] = useState('10');
   const [nomeResponsavel, setNomeResponsavel] = useState('');
   const [telefoneResponsavel, setTelefoneResponsavel] = useState('');
-  const [lista, setLista] = useState<any[]>([]);
+  const [lista, setLista] = useState<{ cpf: string; nome: string }[]>([]);
   const [alunoCarregado, setAlunoCarregado] = useState(false);
   const [modal, setModal] = useState({ open: false, success: false, message: '' });
   const onlyNumbers = (v: string) => v.replace(/\D/g, '');
 
   const carregarLista = () => {
-    HttpService.listarAlunos().then((r) => setLista(r.data)).catch(() => setLista([]));
+    const instituicaoId = carregarSessao()?.vinculo;
+    if (!instituicaoId) {
+      setLista([]);
+      return;
+    }
+    HttpService.listarAlunos(instituicaoId)
+      .then((r) => setLista(r.data || []))
+      .catch(() => setLista([]));
   };
 
   useEffect(() => { carregarLista(); }, []);
@@ -56,9 +64,20 @@ const GerenciarAlunos: React.FC = () => {
     telefoneResponsavel: onlyNumbers(telefoneResponsavel),
   });
 
-  const consultar = async () => {
+  const consultar = async (cpfInformado?: string) => {
+    const cpf = onlyNumbers(cpfInformado ?? cpfBusca);
+    if (cpf.length < 11) {
+      setModal({ open: true, success: false, message: 'Informe um CPF válido com 11 dígitos.' });
+      return;
+    }
+    setCpfBusca(cpf);
     try {
-      const r = await HttpService.consultarAluno(onlyNumbers(cpfBusca));
+      const instituicaoId = carregarSessao()?.vinculo;
+      if (!instituicaoId) {
+        setModal({ open: true, success: false, message: 'Instituição não identificada na sessão.' });
+        return;
+      }
+      const r = await HttpService.consultarAluno(cpf, instituicaoId);
       const d = r.data;
       setNome(d.nome);
       setRg(d.rg);
@@ -71,6 +90,7 @@ const GerenciarAlunos: React.FC = () => {
       setTelefoneResponsavel(d.telefoneResponsavel ?? '');
       setAlunoCarregado(true);
     } catch (e) {
+      setAlunoCarregado(false);
       setModal({ open: true, success: false, message: extractApiMessage(e, 'Aluno não encontrado.') });
     }
   };
@@ -101,13 +121,23 @@ const GerenciarAlunos: React.FC = () => {
   };
 
   return (
-    <PageShell title="Consultar e editar alunos" subtitle="Para matricular um aluno novo, use o menu Matricular aluno">
+    <PageShell
+      title="Consultar alunos"
+      subtitle="Busque pelo CPF, edite dados ou matricule um novo aluno pelo menu dedicado"
+    >
       <div className="card" style={{ marginBottom: '1rem' }}>
         <div className="form-grid">
-          <div><label>CPF (busca)</label><input value={cpfBusca} onChange={(e) => setCpfBusca(e.target.value)} /></div>
+          <div>
+            <label>CPF</label>
+            <input
+              value={cpfBusca}
+              onChange={(e) => setCpfBusca(e.target.value)}
+              placeholder="Somente números ou formatado"
+            />
+          </div>
         </div>
         <div className="form-actions">
-          <button type="button" className="btn-primary" onClick={consultar}>Consultar</button>
+          <button type="button" className="btn-primary" onClick={() => consultar()}>Consultar</button>
           <button type="button" className="btn-secondary" onClick={limparForm}>Limpar</button>
           <Link to="/arealogada/matricula" className="btn-secondary" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
             Matricular novo aluno
@@ -116,7 +146,7 @@ const GerenciarAlunos: React.FC = () => {
       </div>
 
       {alunoCarregado && (
-        <div className="card">
+        <div className="card" style={{ marginBottom: '1rem' }}>
           <h3 style={{ marginTop: 0 }}>Dados do aluno</h3>
           <div className="form-grid">
             <div><label>Nome</label><input value={nome} onChange={(e) => setNome(e.target.value)} /></div>
@@ -124,7 +154,7 @@ const GerenciarAlunos: React.FC = () => {
             <div><label>Nascimento</label><input type="date" value={dataDeNascimento} onChange={(e) => setDataDeNascimento(e.target.value)} /></div>
             <div><label>Telefone</label><input value={telefone} onChange={(e) => setTelefone(e.target.value)} /></div>
             <div><label>Mensalidade</label><input type="number" value={valorMensalidade} onChange={(e) => setValorMensalidade(e.target.value)} /></div>
-            <div><label>Dia venc.</label><input type="number" value={diaVencimento} onChange={(e) => setDiaVencimento(e.target.value)} /></div>
+            <div><label>Dia venc.</label><input type="number" min={1} max={28} value={diaVencimento} onChange={(e) => setDiaVencimento(e.target.value)} /></div>
             <div><label>Responsável</label><input value={nomeResponsavel} onChange={(e) => setNomeResponsavel(e.target.value)} /></div>
             <div><label>Tel. responsável</label><input value={telefoneResponsavel} onChange={(e) => setTelefoneResponsavel(e.target.value)} /></div>
           </div>
@@ -136,21 +166,30 @@ const GerenciarAlunos: React.FC = () => {
         </div>
       )}
 
-      <div className="card" style={{ marginTop: '1rem' }}>
+      <div className="card">
         <h3 style={{ marginTop: 0 }}>Alunos cadastrados ({lista.length})</h3>
-        <ul style={{ margin: 0, paddingLeft: '1.2rem' }}>
-          {lista.map((a) => (
-            <li key={a.cpf}>
-              <button
-                type="button"
-                className="link-btn"
-                onClick={() => { setCpfBusca(a.cpf); consultar(); }}
-              >
-                {a.nome} — {a.cpf}
-              </button>
-            </li>
-          ))}
-        </ul>
+        {lista.length === 0 ? (
+          <p className="field-hint">Nenhum aluno listado.</p>
+        ) : (
+          <table className="programacao-table">
+            <thead>
+              <tr><th>Nome</th><th>CPF</th><th /></tr>
+            </thead>
+            <tbody>
+              {lista.map((a) => (
+                <tr key={a.cpf}>
+                  <td>{a.nome}</td>
+                  <td>{a.cpf}</td>
+                  <td>
+                    <button type="button" className="btn-secondary" onClick={() => consultar(a.cpf)}>
+                      Abrir
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
 
       <FeedbackModal
