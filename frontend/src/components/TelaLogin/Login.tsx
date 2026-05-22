@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { salvarSessao } from '../../auth/permissoes';
 import HttpService from '../../services/HttpService';
 import { extractApiMessage } from '../../utils/apiError';
+import FeedbackModal from '../common/FeedbackModal';
 import './Login.css';
 
 interface Vinculo {
@@ -16,7 +17,8 @@ const Login: React.FC = () => {
   const [vinculo, setVinculo] = useState('');
   const [instituicoes, setInstituicoes] = useState<Vinculo[]>([]);
   const [buscandoVinculos, setBuscandoVinculos] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [vinculoAviso, setVinculoAviso] = useState<string | null>(null);
+  const [erroLogin, setErroLogin] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
@@ -38,7 +40,7 @@ const Login: React.FC = () => {
       return;
     }
     setBuscandoVinculos(true);
-    setErrorMsg(null);
+    setVinculoAviso(null);
     try {
       const { data } = await HttpService.listarVinculos(cpfLimpo);
       setInstituicoes(data);
@@ -48,12 +50,12 @@ const Login: React.FC = () => {
         setVinculo('');
       }
       if (data.length === 0) {
-        setErrorMsg('Nenhuma instituição vinculada a este CPF ou cadastro inativo.');
+        setVinculoAviso('Nenhuma instituição vinculada a este CPF ou cadastro inativo.');
       }
     } catch {
       setInstituicoes([]);
       setVinculo('');
-      setErrorMsg('Não foi possível buscar suas instituições. Tente novamente.');
+      setVinculoAviso('Não foi possível buscar suas instituições. Tente novamente.');
     } finally {
       setBuscandoVinculos(false);
     }
@@ -62,7 +64,7 @@ const Login: React.FC = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setErrorMsg(null);
+    setErroLogin(null);
 
     try {
       const response = await HttpService.login(cpfLimpo, password, vinculo);
@@ -78,12 +80,15 @@ const Login: React.FC = () => {
         permissoes: data.permissoes || [],
         tipoAcesso: (data.tipoAcesso as 'COLABORADOR' | 'ALUNO') || 'COLABORADOR',
         planoInstituicaoAtivo: data.planoInstituicaoAtivo,
+        situacaoCobranca: data.situacaoCobranca,
+        alertaCobranca: data.alertaCobranca,
+        mensagemAlertaCobranca: data.mensagemAlertaCobranca,
       });
 
       const destino = '/arealogada/home';
       navigate(destino);
     } catch (err) {
-      setErrorMsg(extractApiMessage(err, 'Usuário, senha ou instituição inválidos.'));
+      setErroLogin(extractApiMessage(err, 'Usuário, senha ou instituição inválidos.'));
     } finally {
       setLoading(false);
     }
@@ -115,6 +120,9 @@ const Login: React.FC = () => {
           />
 
           {buscandoVinculos && <p className="login-hint">Buscando instituições...</p>}
+          {vinculoAviso && !buscandoVinculos && (
+            <p className="login-hint login-hint--warn">{vinculoAviso}</p>
+          )}
 
           {instituicoes.length > 0 && (
             <>
@@ -148,15 +156,13 @@ const Login: React.FC = () => {
         </div>
       </div>
 
-      {errorMsg && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h3>Atenção</h3>
-            <p>{errorMsg}</p>
-            <button type="button" onClick={() => setErrorMsg(null)}>Fechar</button>
-          </div>
-        </div>
-      )}
+      <FeedbackModal
+        open={!!erroLogin}
+        success={false}
+        title="Não foi possível entrar"
+        message={erroLogin || ''}
+        onClose={() => setErroLogin(null)}
+      />
     </div>
   );
 };

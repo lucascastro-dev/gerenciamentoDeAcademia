@@ -2,11 +2,18 @@ import { useState } from 'react';
 import EnderecoFields from '../common/EnderecoFields';
 import FeedbackModal from '../common/FeedbackModal';
 import PageShell from '../common/PageShell';
+import { carregarSessao } from '../../auth/permissoes';
 import HttpService from '../../services/HttpService';
 import { extractApiMessage } from '../../utils/apiError';
 import { EnderecoCompleto, enderecoVazio, serializarEndereco } from '../../utils/endereco';
 
+function senhaInicialDoCpf(cpf: string): string {
+  const digitos = cpf.replace(/\D/g, '');
+  return digitos.length >= 6 ? digitos.substring(0, 6) : digitos;
+}
+
 const MatriculaAluno: React.FC = () => {
+  const sessao = carregarSessao();
   const [nome, setNome] = useState('');
   const [cpf, setCpf] = useState('');
   const [rg, setRg] = useState('');
@@ -21,10 +28,16 @@ const MatriculaAluno: React.FC = () => {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const cpfLimpo = cpf.replace(/\D/g, '');
+    const instituicaoId = Number(sessao?.vinculo);
+    if (!instituicaoId) {
+      setModal({ open: true, success: false, message: 'Instituição não identificada na sessão. Faça login novamente.' });
+      return;
+    }
     try {
       await HttpService.matricularAluno({
         nome,
-        cpf: cpf.replace(/\D/g, ''),
+        cpf: cpfLimpo,
         rg,
         dataDeNascimento,
         endereco: serializarEndereco(endereco),
@@ -33,16 +46,25 @@ const MatriculaAluno: React.FC = () => {
         diaVencimentoMensalidade: parseInt(diaVencimentoMensalidade, 10),
         nomeResponsavel,
         telefoneResponsavel: telefoneResponsavel.replace(/\D/g, ''),
+        instituicaoId,
       });
-      setModal({ open: true, success: true, message: 'Aluno matriculado com sucesso.' });
+      const senha = senhaInicialDoCpf(cpfLimpo);
+      setModal({
+        open: true,
+        success: true,
+        message: `Aluno matriculado e vinculado à instituição. Senha inicial do portal: ${senha} (6 primeiros dígitos do CPF). Oriente a alterar em Minha conta após o primeiro acesso.`,
+      });
     } catch (err) {
       setModal({ open: true, success: false, message: extractApiMessage(err, 'Erro ao matricular.') });
     }
   };
 
   return (
-    <PageShell title="Matrícula de aluno">
+    <PageShell title="Matrícula de aluno" subtitle="O aluno já fica vinculado à sua instituição e pode entrar no portal do aluno">
       <form className="card" onSubmit={submit}>
+        <p className="field-hint" style={{ marginTop: 0 }}>
+          Instituição atual: vínculo da sua sessão (ID {sessao?.vinculo || '—'}).
+        </p>
         <div className="form-grid">
           <div><label>Nome</label><input value={nome} onChange={(e) => setNome(e.target.value)} required /></div>
           <div><label>CPF</label><input value={cpf} onChange={(e) => setCpf(e.target.value)} required /></div>

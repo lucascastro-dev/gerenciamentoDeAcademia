@@ -87,6 +87,14 @@
   margin: 0.25rem 0 0.5rem;
 }
 
+.login-hint--warn {
+  color: #b45309;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 8px;
+  padding: 0.5rem 0.65rem;
+}
+
 .login-container form {
   display: flex;
   flex-direction: column;
