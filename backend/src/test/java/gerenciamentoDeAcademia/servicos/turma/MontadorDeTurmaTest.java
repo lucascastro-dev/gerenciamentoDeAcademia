@@ -1,10 +1,12 @@
 package gerenciamentoDeAcademia.servicos.turma;
 
 import gerenciamentoDeAcademia.dto.TurmaDto;
+import gerenciamentoDeAcademia.entidades.Instituicao;
 import gerenciamentoDeAcademia.entidades.Aluno;
 import gerenciamentoDeAcademia.entidades.Funcionario;
 import gerenciamentoDeAcademia.entidades.Turma;
 import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
+import gerenciamentoDeAcademia.repositorios.InstituicaoRepository;
 import gerenciamentoDeAcademia.repositorios.AlunoRepository;
 import gerenciamentoDeAcademia.repositorios.FuncionarioRepository;
 import gerenciamentoDeAcademia.repositorios.TurmaRepository;
@@ -19,6 +21,9 @@ import org.mockito.Mockito;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import static org.instancio.Select.field;
+import java.util.Optional;
+
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 
 @ExtendWith(SpringExtension.class)
@@ -32,6 +37,8 @@ public class MontadorDeTurmaTest {
     AlunoRepository alunoRepository;
     @Mock
     FuncionarioRepository funcionarioRepository;
+    @Mock
+    InstituicaoRepository instituicaoRepository;
 
     private TurmaDto turmaDto;
     private Aluno aluno;
@@ -41,11 +48,17 @@ public class MontadorDeTurmaTest {
     @BeforeEach
     void init() {
         turmaDto = Instancio.of(TurmaDto.class).create();
+        turmaDto.setInstituicaoId(1L);
+        turmaDto.setHorario("18:00-19:30");
         aluno = Instancio.of(Aluno.class).set(field(Aluno::getCpf), cpfValido).create();
         funcionario = Instancio.of(Funcionario.class).set(field(Funcionario::getCpf), cpfValido).create();
+        Instituicao instituicao = new Instituicao();
+        instituicao.setId(1L);
+        instituicao.setCadastroAtivo(true);
 
         Mockito.when(alunoRepository.findByCpf(anyString())).thenReturn(aluno);
         Mockito.when(funcionarioRepository.findByCpf(anyString())).thenReturn(funcionario);
+        Mockito.when(instituicaoRepository.findById(1L)).thenReturn(Optional.of(instituicao));
     }
 
     @Test
@@ -85,7 +98,9 @@ public class MontadorDeTurmaTest {
 
     @Test
     void deveRetornarMensagemDeErroQuandoNaoInformarModalidadeDaTurma() {
-        TurmaDto turmaDto = Instancio.of(TurmaDto.class).set(field(TurmaDto::getModalidade), null).create();
+        TurmaDto turmaDto = Instancio.of(TurmaDto.class)
+                .set(field(TurmaDto::getInstituicaoId), 1L)
+                .set(field(TurmaDto::getModalidade), null).create();
 
         var mensagemDeErro = Assertions.assertThrows(ExcecaoDeDominio.class, () -> montadorDeTurma.montar(turmaDto));
 
@@ -94,7 +109,9 @@ public class MontadorDeTurmaTest {
 
     @Test
     void deveRetornarMensagemDeErroQuandoNaoInformarHorarioDaTurma() {
-        TurmaDto turmaDto = Instancio.of(TurmaDto.class).set(field(TurmaDto::getHorario), null).create();
+        TurmaDto turmaDto = Instancio.of(TurmaDto.class)
+                .set(field(TurmaDto::getInstituicaoId), 1L)
+                .set(field(TurmaDto::getHorario), null).create();
 
         var mensagemDeErro = Assertions.assertThrows(ExcecaoDeDominio.class, () -> montadorDeTurma.montar(turmaDto));
 
@@ -103,7 +120,9 @@ public class MontadorDeTurmaTest {
 
     @Test
     void deveRetornarMensagemDeErroQuandoNaoInformarDiasDaTurma() {
-        TurmaDto turmaDto = Instancio.of(TurmaDto.class).set(field(TurmaDto::getDias), null).create();
+        TurmaDto turmaDto = Instancio.of(TurmaDto.class)
+                .set(field(TurmaDto::getInstituicaoId), 1L)
+                .set(field(TurmaDto::getDias), null).create();
 
         var mensagemDeErro = Assertions.assertThrows(ExcecaoDeDominio.class, () -> montadorDeTurma.montar(turmaDto));
 

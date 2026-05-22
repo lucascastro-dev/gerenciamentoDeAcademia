@@ -46,7 +46,12 @@ public enum PermissaoSistema {
     ALUNO_PORTAL_DADOS("aluno-portal:dados"),
     ALUNO_PORTAL_TURMAS("aluno-portal:turmas"),
     ALUNO_PORTAL_MENSALIDADES("aluno-portal:mensalidades"),
-    ALUNO_PORTAL_PAGAMENTO("aluno-portal:pagamento");
+    ALUNO_PORTAL_PAGAMENTO("aluno-portal:pagamento"),
+    ALUNO_PORTAL_SENHA("aluno-portal:senha"),
+    ALUNO_PORTAL_PROGRAMACAO("aluno-portal:programacao"),
+
+    PROGRAMACAO_CONSULTAR("programacao:consultar"),
+    PROGRAMACAO_GERENCIAR("programacao:gerenciar");
 
     private final String codigo;
 
