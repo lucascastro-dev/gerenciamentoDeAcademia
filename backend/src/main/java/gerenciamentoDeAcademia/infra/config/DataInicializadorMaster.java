@@ -1,12 +1,12 @@
 package gerenciamentoDeAcademia.infra.config;
 
-import gerenciamentoDeAcademia.entidades.Academia;
 import gerenciamentoDeAcademia.entidades.Funcionario;
+import gerenciamentoDeAcademia.entidades.Instituicao;
 import gerenciamentoDeAcademia.entidades.Usuario;
 import gerenciamentoDeAcademia.enums.TipoFuncionario;
 import gerenciamentoDeAcademia.enums.UserRole;
-import gerenciamentoDeAcademia.repositorios.AcademiaRepository;
 import gerenciamentoDeAcademia.repositorios.FuncionarioRepository;
+import gerenciamentoDeAcademia.repositorios.InstituicaoRepository;
 import gerenciamentoDeAcademia.repositorios.UsuarioRepository;
 import gerenciamentoDeAcademia.servicos.plano.ServicoAssinaturaPlataforma;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +33,7 @@ public class DataInicializadorMaster {
     private static final Logger log = LoggerFactory.getLogger(DataInicializadorMaster.class);
 
     private final FuncionarioRepository funcionarioRepository;
-    private final AcademiaRepository academiaRepository;
+    private final InstituicaoRepository instituicaoRepository;
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
     private final ServicoAssinaturaPlataforma servicoAssinaturaPlataforma;
@@ -47,9 +47,9 @@ public class DataInicializadorMaster {
     @EventListener(ApplicationReadyEvent.class)
     @Transactional
     public void inicializarMaster() {
-        Academia academiaExistente = academiaRepository.findByCnpj("00000000000191");
-        if (academiaExistente != null) {
-            servicoAssinaturaPlataforma.garantirTrial(academiaExistente);
+        Instituicao instituicaoExistente = instituicaoRepository.findByCnpj("00000000000191");
+        if (instituicaoExistente != null) {
+            servicoAssinaturaPlataforma.garantirTrial(instituicaoExistente);
         }
         if (usuarioRepository.existsByLogin(masterCpf)) {
             log.info("Usuário master já existe (CPF: {}).", masterCpf);
@@ -80,17 +80,17 @@ public class DataInicializadorMaster {
             funcionarioRepository.save(master);
         }
 
-        Academia academia = academiaRepository.findByCnpj("00000000000191");
-        if (academia == null) {
-            academia = new Academia();
-            academia.setRazaoSocial("Instituição Master");
-            academia.setCnpj("00000000000191");
-            academia.setCadastroAtivo(true);
-            academia = academiaRepository.save(academia);
+        Instituicao instituicao = instituicaoRepository.findByCnpj("00000000000191");
+        if (instituicao == null) {
+            instituicao = new Instituicao();
+            instituicao.setRazaoSocial("Instituição Master");
+            instituicao.setCnpj("00000000000191");
+            instituicao.setCadastroAtivo(true);
+            instituicao = instituicaoRepository.save(instituicao);
         }
-        if (!academia.getFuncionarios().contains(master)) {
-            academia.getFuncionarios().add(master);
-            academiaRepository.save(academia);
+        if (!instituicao.getFuncionarios().contains(master)) {
+            instituicao.getFuncionarios().add(master);
+            instituicaoRepository.save(instituicao);
         }
 
         Usuario usuario = Usuario.builder()
@@ -100,7 +100,7 @@ public class DataInicializadorMaster {
                 .build();
         usuarioRepository.save(usuario);
 
-        servicoAssinaturaPlataforma.garantirTrial(academia);
+        servicoAssinaturaPlataforma.garantirTrial(instituicao);
 
         log.warn("Usuário MASTER criado. CPF: {} | Altere a senha em produção!", masterCpf);
     }

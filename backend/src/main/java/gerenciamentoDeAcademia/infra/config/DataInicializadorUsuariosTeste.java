@@ -1,12 +1,12 @@
 package gerenciamentoDeAcademia.infra.config;
 
-import gerenciamentoDeAcademia.entidades.Academia;
+import gerenciamentoDeAcademia.entidades.Instituicao;
 import gerenciamentoDeAcademia.entidades.Funcionario;
 import gerenciamentoDeAcademia.entidades.Usuario;
 import gerenciamentoDeAcademia.enums.AreaTerceirizado;
 import gerenciamentoDeAcademia.enums.TipoFuncionario;
 import gerenciamentoDeAcademia.enums.UserRole;
-import gerenciamentoDeAcademia.repositorios.AcademiaRepository;
+import gerenciamentoDeAcademia.repositorios.InstituicaoRepository;
 import gerenciamentoDeAcademia.repositorios.FuncionarioRepository;
 import gerenciamentoDeAcademia.repositorios.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +34,7 @@ public class DataInicializadorUsuariosTeste {
     private static final String CNPJ_MASTER = "00000000000191";
 
     private final FuncionarioRepository funcionarioRepository;
-    private final AcademiaRepository academiaRepository;
+    private final InstituicaoRepository instituicaoRepository;
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -55,8 +55,8 @@ public class DataInicializadorUsuariosTeste {
     @EventListener(ApplicationReadyEvent.class)
     @Transactional
     public void criarUsuariosTeste() {
-        Academia academia = academiaRepository.findByCnpj(CNPJ_MASTER);
-        if (academia == null) {
+        Instituicao instituicao = instituicaoRepository.findByCnpj(CNPJ_MASTER);
+        if (instituicao == null) {
             log.warn("Instituição master não encontrada; usuários de teste não criados.");
             return;
         }
@@ -91,8 +91,8 @@ public class DataInicializadorUsuariosTeste {
                 f.setTipoFuncionario(perfil.tipo());
                 funcionarioRepository.save(f);
             }
-            if (!academia.getFuncionarios().contains(f)) {
-                academia.getFuncionarios().add(f);
+            if (!instituicao.getFuncionarios().contains(f)) {
+                instituicao.getFuncionarios().add(f);
             }
             usuarioRepository.save(Usuario.builder()
                     .login(perfil.cpf())
@@ -101,6 +101,6 @@ public class DataInicializadorUsuariosTeste {
                     .build());
             log.info("Usuário teste {} — CPF {} senha {}", perfil.tipo(), perfil.cpf(), SENHA_TESTE);
         }
-        academiaRepository.save(academia);
+        instituicaoRepository.save(instituicao);
     }
 }

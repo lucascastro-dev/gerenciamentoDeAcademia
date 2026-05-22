@@ -29,6 +29,7 @@ public class DashboardController {
                 .filter(f -> Boolean.TRUE.equals(f.getCadastroAtivo()))
                 .count();
 
-        return new DashboardResumoDto(alunosAtivos, funcionarios, funcionariosAtivos, turmas);
+        long pendentes = Math.max(0, funcionarios - funcionariosAtivos);
+        return new DashboardResumoDto(alunosAtivos, funcionariosAtivos, pendentes, turmas);
     }
 }

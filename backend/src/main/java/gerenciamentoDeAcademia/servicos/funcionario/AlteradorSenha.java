@@ -22,10 +22,20 @@ public class AlteradorSenha {
 
     @Transactional
     public void alterarSenhaDoUsuarioLogado(String cpf, AlterarSenhaDto dto) {
+        alterarSenha(cpf, dto, 8);
+    }
+
+    @Transactional
+    public void alterarSenhaPortalAluno(String cpf, AlterarSenhaDto dto) {
+        alterarSenha(cpf, dto, 4);
+    }
+
+    private void alterarSenha(String cpf, AlterarSenhaDto dto, int tamanhoMinimo) {
         ExcecaoDeDominio.quandoNulo(dto, "Dados de senha são obrigatórios");
         ExcecaoDeDominio.quandoNuloOuVazio(dto.getSenhaAtual(), "Informe a senha atual");
         ExcecaoDeDominio.quandoNuloOuVazio(dto.getSenhaNova(), "Informe a nova senha");
-        ExcecaoDeDominio.quando(dto.getSenhaNova().length() < 8, "A nova senha deve ter no mínimo 8 caracteres");
+        ExcecaoDeDominio.quando(dto.getSenhaNova().length() < tamanhoMinimo,
+                "A nova senha deve ter no mínimo " + tamanhoMinimo + " caracteres");
 
         Usuario usuario = usuarioRepository.findByLogin(cpf);
         ExcecaoDeDominio.quandoNulo(usuario, "Usuário não encontrado");
