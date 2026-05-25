@@ -1,7 +1,9 @@
 import axios from 'axios';
 import { carregarSessao } from '../auth/permissoes';
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/srv-gerenciaracademia';
+/** Docker: URL relativa (nginx faz proxy). Dev local: VITE_API_URL=http://localhost:8000/srv-gerenciaracademia */
+const BASE_URL =
+  import.meta.env.VITE_API_URL || '/srv-gerenciaracademia';
 
 const api = axios.create({ baseURL: BASE_URL });
 

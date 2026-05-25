@@ -3,7 +3,8 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
-ARG VITE_API_URL=http://localhost:8000/srv-gerenciaracademia
+# Caminho relativo: nginx do container encaminha para o backend
+ARG VITE_API_URL=/srv-gerenciaracademia
 ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build
 

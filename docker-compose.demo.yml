@@ -1,0 +1,10 @@
+# Uso: docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d --build
+# Expõe só a porta do app (API via nginx). Ideal para testadores na rede local.
+
+services:
+  backend:
+    ports: []
+
+  frontend:
+    ports:
+      - "0.0.0.0:${APP_PORT:-5173}:80"

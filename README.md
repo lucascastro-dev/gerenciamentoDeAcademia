@@ -17,9 +17,12 @@ cp .env.example .env
 docker compose up -d --build
 ```
 
-- API: http://localhost:8000/srv-gerenciaracademia  
-- Frontend: http://localhost:5173  
-- Swagger: http://localhost:8000/srv-gerenciaracademia/swagger-ui.html  
+**Windows:** `.\scripts\subir-docker.ps1` (mostra o link para testadores na rede)
+
+- App: http://localhost:5173 (API via proxy no mesmo host — funciona por IP na LAN)  
+- Swagger (debug): http://localhost:8000/srv-gerenciaracademia/swagger-ui.html  
+
+Guia completo (rede local, firewall, túnel): **[docs/DEPLOY_DOCKER.md](docs/DEPLOY_DOCKER.md)**
 
 ### Usuário master (criado automaticamente no profile `docker`)
 
