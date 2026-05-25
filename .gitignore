@@ -60,3 +60,6 @@ dist-ssr
 
 # Certificados gerados pelo backend (templates em src/main/resources/certificados)
 backend/certificados/
+
+# URL gerada pelo script de deploy (tunel publico)
+URL_PUBLICA.txt

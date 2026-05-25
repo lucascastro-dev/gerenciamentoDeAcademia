@@ -1,128 +1,71 @@
-# Deploy com Docker (local e testadores na rede)
+# Deploy com Docker (rede local e internet)
 
-## Pré-requisitos
+## Forma mais simples (Windows)
 
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Windows/Mac) ou Docker Engine + Compose (Linux)
-- Porta **5173** livre no host (ou altere `APP_PORT` no `.env`)
+1. Instale [Docker Desktop](https://www.docker.com/products/docker-desktop/) e deixe rodando.
+2. `copy .env.example .env` e ajuste senhas.
+3. Execute **`subir.bat`** na raiz do projeto (ou `docker compose up -d --build`).
+4. Copie o link **HTTPS** de `URL_PUBLICA.txt` ou `docker compose logs tunnel`.
+5. Envie o link + [USUARIOS_TESTE.md](./USUARIOS_TESTE.md) aos testadores.
 
-## Subir na máquina de deploy
+Passo a passo detalhado: **[PASSO_A_PASSO_DEPLOY.txt](../PASSO_A_PASSO_DEPLOY.txt)** na raiz do repositório.
+
+## Teste externo (internet)
+
+O serviço **`tunnel`** (Cloudflare Quick Tunnel) gera uma URL pública sem configurar roteador:
+
+- `docker compose up -d --build` sobe app + túnel automaticamente.
+- A URL muda a cada `docker compose down` / `up` (ex.: `https://xxx.trycloudflare.com`).
+
+API e frontend usam o **mesmo host** (nginx faz proxy) — funciona para quem acessa de qualquer lugar.
+
+### URL fixa (ngrok)
+
+1. Conta em https://ngrok.com → copie o authtoken.
+2. No `.env`: `NGROK_AUTHTOKEN=...`
+3. Suba com:
 
 ```bash
-git pull
-cp .env.example .env
-# Edite .env: JWT_SECRET, senhas do master e POSTGRES_PASSWORD em ambiente exposto
-docker compose up -d --build
+docker compose -f docker-compose.yml -f docker-compose.ngrok.yml up -d --build
 ```
 
-**Windows (PowerShell):**
+## Scripts
 
-```powershell
-.\scripts\subir-docker.ps1
-```
+| Arquivo | Função |
+|---------|--------|
+| `subir.bat` | Verifica Docker, portas, sobe compose, mostra URL pública |
+| `scripts/configurar-portas.py` | Portas livres + firewall Windows |
+| `scripts/aguardar-url-publica.py` | Lê logs do túnel → `URL_PUBLICA.txt` |
+| `scripts/subir-docker.ps1` | Mesmo fluxo em PowerShell |
 
-Aguarde ~1–2 min na primeira vez (build do backend). Verifique:
+## URLs
 
-```bash
-docker compose ps
-docker compose logs -f backend
-```
-
-| O quê | URL |
+| Acesso | URL |
 |--------|-----|
-| **Aplicação (compartilhe este link)** | `http://SEU_IP:5173` |
-| Só na máquina host | http://localhost:5173 |
-| API direta (debug/Swagger) | http://localhost:8000/srv-gerenciaracademia/swagger-ui.html |
+| Sua máquina | http://localhost:5173 |
+| Rede Wi‑Fi (opcional) | http://SEU_IP:5173 |
+| **Internet (compartilhar)** | https://….trycloudflare.com (logs do `tunnel`) |
+| Swagger (só local) | http://localhost:8000/srv-gerenciaracademia/swagger-ui.html |
 
-Descobrir IP (rede local):
-
-- Windows: `ipconfig` → IPv4 (ex.: `192.168.1.42`)
-- Linux/Mac: `hostname -I` ou `ip addr`
-
-Testadores na **mesma Wi‑Fi/rede** abrem: **http://192.168.1.42:5173** (substitua pelo seu IP).
-
-## Como funciona
-
-- O **nginx** do container `frontend` encaminha `/srv-gerenciaracademia` para o `backend`.
-- O frontend usa URL **relativa** da API — não precisa configurar IP no build.
-- Credenciais de teste: [USUARIOS_TESTE.md](./USUARIOS_TESTE.md).
-
-## Modo demo (só porta do app)
-
-Esconde a API na porta 8000 do host; testadores usam apenas o frontend (API via proxy):
-
-```bash
-docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d --build
-```
-
-Ou no Windows:
-
-```powershell
-.\scripts\subir-docker.ps1 -Demo
-```
-
-## Firewall (Windows)
-
-Para outras pessoas na rede alcançarem sua máquina:
-
-1. Painel de Controle → Firewall do Windows → Configurações avançadas
-2. Regra de entrada → TCP → porta **5173** (e **8000** se não usar `-Demo`)
-
-Ou PowerShell (administrador):
-
-```powershell
-New-NetFirewallRule -DisplayName "EduGestao App" -Direction Inbound -Protocol TCP -LocalPort 5173 -Action Allow
-```
-
-## Internet (fora da LAN)
-
-Opções:
-
-1. **Túnel** (ngrok, Cloudflare Tunnel) apontando para `localhost:5173` — uma URL pública basta (API já passa pelo nginx).
-2. **VPS** com Docker: clone o repo, `docker compose up -d --build`, libere porta 5173 no security group.
-
-Exemplo ngrok:
-
-```bash
-ngrok http 5173
-```
-
-Envie o link `https://xxxx.ngrok-free.app` aos testadores.
-
-## Variáveis úteis (`.env`)
+## Variáveis `.env`
 
 | Variável | Padrão | Descrição |
 |----------|--------|-----------|
 | `APP_PORT` | `5173` | Porta do app no host |
-| `POSTGRES_PASSWORD` | `academia_dev_secret` | Senha do banco |
-| `JWT_SECRET` | (exemplo) | **Troque** em demo pública |
-| `APP_MASTER_PASSWORD` | `Master@2024!` | Senha do master |
-| `VITE_API_URL` | `/srv-gerenciaracademia` | Só mude se rebuildar o frontend com URL absoluta |
+| `JWT_SECRET` | (exemplo) | Troque em ambiente público |
+| `NGROK_AUTHTOKEN` | — | Opcional, URL estável |
 
-## Problemas comuns
-
-| Sintoma | Solução |
-|---------|---------|
-| `password authentication failed` | Volume antigo com senha diferente: `docker compose down -v` e subir de novo |
-| Testador não abre o site | Firewall, IP errado ou não estão na mesma rede |
-| Página abre mas login falha | `docker compose logs backend`; aguarde backend healthy |
-| Porta em uso | Mude `APP_PORT=8080` no `.env` e `docker compose up -d --build` |
-
-## Desenvolvimento local (sem rebuild Docker)
-
-Backend: `mvn spring-boot:run` (perfil `local`).  
-Frontend: crie `frontend/.env.local`:
-
-```env
-VITE_API_URL=http://localhost:8000/srv-gerenciaracademia
-```
+## Desenvolvimento local (sem túnel)
 
 ```bash
-cd frontend && npm run dev
+docker compose up -d postgres backend frontend
 ```
 
-## Parar / limpar
+Frontend dev: `frontend/.env.local` com `VITE_API_URL=http://localhost:8000/srv-gerenciaracademia`.
+
+## Parar
 
 ```bash
-docker compose down          # mantém dados do Postgres
-docker compose down -v       # apaga volume do banco
+docker compose down
+docker compose down -v   # apaga banco local
 ```

@@ -1,0 +1,13 @@
+# Alternativa com URL estável (conta ngrok): NGROK_AUTHTOKEN no .env e:
+# docker compose -f docker-compose.yml -f docker-compose.ngrok.yml up -d --build
+
+services:
+  tunnel:
+    image: ngrok/ngrok:latest
+    container_name: academia-tunnel
+    restart: unless-stopped
+    environment:
+      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
+    command: http frontend:80
+    depends_on:
+      - frontend

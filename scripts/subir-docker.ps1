@@ -1,5 +1,6 @@
-# Sobe a aplicacao com Docker Compose e exibe URLs para testadores na rede.
+# Sobe Docker + tunel publico e exibe URLs (local e internet).
 param(
+    [switch]$SemTunel,
     [switch]$Demo
 )
 
@@ -9,7 +10,12 @@ Set-Location $Root
 
 if (-not (Test-Path ".env")) {
     Copy-Item ".env.example" ".env"
-    Write-Host "Arquivo .env criado a partir de .env.example. Revise senhas antes de expor na rede." -ForegroundColor Yellow
+    Write-Host "Arquivo .env criado. Revise senhas antes de expor na internet." -ForegroundColor Yellow
+}
+
+if (Get-Command python -ErrorAction SilentlyContinue) {
+    python "$PSScriptRoot\configurar-portas.py"
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 
 $port = "5173"
@@ -18,17 +24,29 @@ if (Test-Path ".env") {
     if ($line -match '=\s*(\d+)') { $port = $Matches[1] }
 }
 
+$composeArgs = @("compose")
 if ($Demo) {
-    Write-Host "Modo demo: apenas porta $port (API via proxy nginx)." -ForegroundColor Cyan
-    docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d --build
+    $composeArgs += "-f", "docker-compose.yml", "-f", "docker-compose.demo.yml"
+}
+$composeArgs += @("up", "-d", "--build")
+
+Write-Host "Subindo containers..." -ForegroundColor Cyan
+if ($SemTunel) {
+    docker compose up -d --build postgres backend frontend
 } else {
-    docker compose up -d --build
+    & docker @composeArgs
 }
 
-Write-Host ""
-Write-Host "Aguardando containers..." -ForegroundColor Gray
-Start-Sleep -Seconds 5
+Start-Sleep -Seconds 15
 docker compose ps
+
+if (-not $SemTunel) {
+    if (Get-Command python -ErrorAction SilentlyContinue) {
+        python "$PSScriptRoot\aguardar-url-publica.py"
+    } else {
+        Write-Host "Obtenha URL publica: docker compose logs tunnel" -ForegroundColor Yellow
+    }
+}
 
 $ipv4 = Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue |
     Where-Object { $_.IPAddress -notlike '127.*' -and $_.PrefixOrigin -ne 'WellKnown' } |
@@ -36,12 +54,7 @@ $ipv4 = Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue |
 
 Write-Host ""
 Write-Host "=== URLs ===" -ForegroundColor Green
-Write-Host "  Nesta maquina:  http://localhost:$port"
-if ($ipv4) {
-    Write-Host "  Rede local:     http://${ipv4}:$port  (compartilhe com testadores)"
-} else {
-    Write-Host "  Rede local:     use 'ipconfig' para ver o IPv4" -ForegroundColor Yellow
-}
+Write-Host "  Local:          http://localhost:$port"
+if ($ipv4) { Write-Host "  Rede (opcional): http://${ipv4}:$port" }
 Write-Host "  Credenciais:    docs/USUARIOS_TESTE.md"
-Write-Host ""
-Write-Host "Logs: docker compose logs -f backend"
+Write-Host "  Guia completo:  PASSO_A_PASSO_DEPLOY.txt"

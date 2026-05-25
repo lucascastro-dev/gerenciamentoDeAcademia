@@ -34,7 +34,7 @@ services:
       APP_MASTER_PASSWORD: ${APP_MASTER_PASSWORD:-Master@2024!}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-academia_dev_secret}
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     volumes:
       - certificados_data:/app/certificados
 
@@ -48,7 +48,16 @@ services:
     depends_on:
       - backend
     ports:
-      - "${APP_PORT:-5173}:80"
+      - "0.0.0.0:${APP_PORT:-5173}:80"
+
+  # Túnel HTTPS público (internet). URL: docker compose logs tunnel  ou  URL_PUBLICA.txt
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    container_name: academia-tunnel
+    restart: unless-stopped
+    command: tunnel --no-autoconfigure --url http://frontend:80
+    depends_on:
+      - frontend
 
 volumes:
   postgres_data:

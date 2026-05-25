@@ -10,19 +10,19 @@ Sistema para gestão de academias e escolas: alunos, funcionários, turmas, cert
 | Frontend | React 18, TypeScript, Vite, React Router |
 | Infra | Docker Compose (PostgreSQL + API + frontend) |
 
-## Execução rápida (Docker — PostgreSQL)
+## Execução rápida (Docker — teste externo na internet)
 
 ```bash
 cp .env.example .env
 docker compose up -d --build
 ```
 
-**Windows:** `.\scripts\subir-docker.ps1` (mostra o link para testadores na rede)
+**Windows (recomendado):** duplo clique em **`subir.bat`** — sobe tudo e grava o link público em `URL_PUBLICA.txt`.
 
-- App: http://localhost:5173 (API via proxy no mesmo host — funciona por IP na LAN)  
-- Swagger (debug): http://localhost:8000/srv-gerenciaracademia/swagger-ui.html  
-
-Guia completo (rede local, firewall, túnel): **[docs/DEPLOY_DOCKER.md](docs/DEPLOY_DOCKER.md)**
+- App local: http://localhost:5173  
+- **Testadores externos:** link `https://….trycloudflare.com` (túnel sobe junto com o compose; ver `URL_PUBLICA.txt` ou `docker compose logs tunnel`)  
+- Passo a passo: **[PASSO_A_PASSO_DEPLOY.txt](PASSO_A_PASSO_DEPLOY.txt)**  
+- Detalhes: **[docs/DEPLOY_DOCKER.md](docs/DEPLOY_DOCKER.md)**
 
 ### Usuário master (criado automaticamente no profile `docker`)
 

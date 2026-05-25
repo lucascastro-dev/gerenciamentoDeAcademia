@@ -1,0 +1,186 @@
+================================================================================
+  EDUGESTAO — PASSO A PASSO PARA SUBIR COM TESTE EXTERNO (INTERNET)
+================================================================================
+
+Objetivo: qualquer pessoa na internet abre um link HTTPS e testa o sistema,
+sem configurar roteador. Voce so precisa do Docker rodando nesta maquina.
+
+--------------------------------------------------------------------------------
+1. PRE-REQUISITOS (uma vez)
+--------------------------------------------------------------------------------
+
+[ ] Docker Desktop instalado (Windows)
+    https://www.docker.com/products/docker-desktop/
+
+[ ] Docker Desktop ABERTO e com status "Running" (icone verde)
+
+[ ] Git instalado (para clonar/atualizar o projeto na maquina de deploy)
+
+[ ] Python 3.8+ instalado (opcional mas recomendado — libera portas no firewall)
+    https://www.python.org/downloads/
+    Marque "Add python to PATH" na instalacao.
+
+[ ] Maquina com internet estavel (o tunel depende disso)
+
+--------------------------------------------------------------------------------
+2. OBTER O CODIGO NA MAQUINA DE DEPLOY
+--------------------------------------------------------------------------------
+
+Abra PowerShell ou CMD na pasta desejada:
+
+    git clone <URL_DO_SEU_REPOSITORIO> gerenciamentoDeAcademia
+    cd gerenciamentoDeAcademia
+    git pull
+
+(Se ja tiver a pasta, apenas: git pull)
+
+--------------------------------------------------------------------------------
+3. CONFIGURAR AMBIENTE (uma vez por maquina)
+--------------------------------------------------------------------------------
+
+[ ] Copiar variaveis:
+
+    copy .env.example .env
+
+[ ] Editar o arquivo .env (Bloco de notas) e TROCAR em ambiente publico:
+
+    JWT_SECRET=          -> string longa e aleatoria (min. 32 caracteres)
+    APP_MASTER_PASSWORD= -> senha forte do usuario master
+    POSTGRES_PASSWORD=   -> senha forte do banco
+
+[ ] Confirmar no .env (ja vem assim por padrao):
+
+    APP_PORT=5173
+
+    O tunel HTTPS publico sobe automaticamente junto com docker compose up.
+
+--------------------------------------------------------------------------------
+4. SUBIR A APLICACAO (toda vez que for testar)
+--------------------------------------------------------------------------------
+
+OPCAO A — Recomendada (faz tudo: portas, docker, mostra URL publica):
+
+    Clique duplo em:  subir.bat
+
+    OU no CMD/PowerShell na raiz do projeto:
+
+    subir.bat
+
+OPCAO B — Apenas Docker (voce busca a URL manualmente):
+
+    docker compose up -d --build
+
+    Aguarde 30-60 segundos na primeira vez.
+
+    Depois:
+
+    docker compose logs tunnel
+
+    Copie o link https://........trycloudflare.com que aparecer nos logs.
+
+    A URL tambem pode ser gerada em URL_PUBLICA.txt se rodou subir.bat com Python.
+
+--------------------------------------------------------------------------------
+5. O QUE ENVIAR AOS TESTADORES EXTERNOS
+--------------------------------------------------------------------------------
+
+[ ] Link HTTPS do arquivo URL_PUBLICA.txt ou dos logs do tunel
+    Exemplo: https://abc-def-123.trycloudflare.com
+
+[ ] Arquivo docs/USUARIOS_TESTE.md (credenciais de login)
+
+    Master:  CPF 00000000191  /  senha definida em APP_MASTER_PASSWORD no .env
+    Perfis:  senha 123 (colaboradores de teste)
+    Aluno:   CPF 12345678909  /  senha 123456
+
+IMPORTANTE: A URL do trycloudflare MUDA cada vez que voce sobe os containers
+            (docker compose down && up). Envie o link novo apos cada reinicio.
+
+--------------------------------------------------------------------------------
+6. VERIFICAR SE ESTA FUNCIONANDO
+--------------------------------------------------------------------------------
+
+[ ] docker compose ps
+    Todos devem estar "running" (postgres, backend, frontend, tunnel).
+
+[ ] Abra no SEU navegador o link https://....trycloudflare.com
+    Deve carregar a tela de login.
+
+[ ] Faca login com o master ou um perfil de teste.
+
+[ ] Se falhar, veja logs:
+
+    docker compose logs backend
+    docker compose logs frontend
+    docker compose logs tunnel
+
+--------------------------------------------------------------------------------
+7. PARAR A APLICACAO
+--------------------------------------------------------------------------------
+
+    docker compose down
+
+Para apagar o banco e comecar do zero:
+
+    docker compose down -v
+
+--------------------------------------------------------------------------------
+8. PROBLEMAS COMUNS E SOLUCOES
+--------------------------------------------------------------------------------
+
+Problema: "Docker nao esta rodando"
+Solucao:  Abra o Docker Desktop e aguarde iniciar.
+
+Problema: Porta 5173 em uso
+Solucao:  No .env mude APP_PORT=8080 (ou outra livre) e rode subir.bat de novo.
+
+Problema: password authentication failed for user academia_app
+Solucao:  Senha do Postgres mudou depois da primeira subida:
+          docker compose down -v
+          docker compose up -d --build
+          (Apaga dados do banco local.)
+
+Problema: Pagina abre mas login nao funciona
+Solucao:  Aguarde o backend terminar de subir (1-2 min na primeira vez).
+          docker compose logs backend | findstr "Started"
+
+Problema: Tunel sem URL nos logs
+Solucao:  docker compose ps  (container academia-tunnel deve estar Up)
+          docker compose restart tunnel
+          docker compose logs tunnel --tail 50
+
+Problema: Testador externo ve erro do Cloudflare / timeout
+Solucao:  Verifique internet; reinicie: docker compose restart tunnel
+          Gere novo link nos logs.
+
+Problema: Quero URL fixa (nao muda a cada restart)
+Solucao:  Crie conta em https://ngrok.com , copie o authtoken para .env:
+          NGROK_AUTHTOKEN=seu_token
+          COMPOSE_PROFILES=ngrok
+          docker compose -f docker-compose.yml -f docker-compose.ngrok.yml up -d --build
+
+--------------------------------------------------------------------------------
+9. FIREWALL (so se testadores na MESMA rede usarem IP local)
+--------------------------------------------------------------------------------
+
+O teste EXTERNO via trycloudflare NAO precisa abrir porta no roteador.
+
+Se quiser tambem http://SEU_IP:5173 na rede Wi-Fi:
+
+[ ] Execute subir.bat como Administrador (libera porta no Windows), ou
+[ ] Painel Windows > Firewall > Regra de entrada TCP porta 5173
+
+--------------------------------------------------------------------------------
+10. CHECKLIST RAPIDO ANTES DE ENVIAR O LINK
+--------------------------------------------------------------------------------
+
+[ ] Docker Desktop rodando
+[ ] .env existe (copiado de .env.example)
+[ ] docker compose ps — 4 servicos up (postgres, backend, frontend, tunnel)
+[ ] Link https nos logs ou em URL_PUBLICA.txt abre no seu celular (4G, nao Wi-Fi)
+[ ] Login master ou teste OK
+[ ] Enviou USUARIOS_TESTE.md junto com o link
+
+================================================================================
+  Documentacao extra: docs/DEPLOY_DOCKER.md
+================================================================================

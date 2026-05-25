@@ -19,6 +19,10 @@ if [[ -f .env ]] && grep -qE '^APP_PORT=' .env; then
   APP_PORT="$(grep -E '^APP_PORT=' .env | head -1 | cut -d= -f2 | tr -d ' \r')"
 fi
 
+if command -v python3 >/dev/null 2>&1; then
+  python3 scripts/configurar-portas.py || exit 1
+fi
+
 if $DEMO; then
   echo "Modo demo: apenas porta ${APP_PORT} (API via proxy nginx)."
   docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d --build
@@ -26,8 +30,12 @@ else
   docker compose up -d --build
 fi
 
-sleep 5
+sleep 15
 docker compose ps
+
+if command -v python3 >/dev/null 2>&1; then
+  python3 scripts/aguardar-url-publica.py || true
+fi
 
 IP="$(hostname -I 2>/dev/null | awk '{print $1}' || true)"
 if [[ -z "$IP" ]]; then
@@ -41,5 +49,6 @@ if [[ -n "$IP" ]]; then
   echo "  Rede local:     http://${IP}:${APP_PORT}  (compartilhe com testadores)"
 fi
 echo "  Credenciais:    docs/USUARIOS_TESTE.md"
+echo "  Guia:           PASSO_A_PASSO_DEPLOY.txt"
 echo ""
 echo "Logs: docker compose logs -f backend"
