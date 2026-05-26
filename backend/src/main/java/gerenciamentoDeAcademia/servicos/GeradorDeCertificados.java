@@ -20,6 +20,9 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,6 +36,9 @@ public class GeradorDeCertificados implements IGeradorDeCertificados {
     public GeradorDeCertificados(@org.springframework.beans.factory.annotation.Value("${app.certificado.base-path}") String caminhoSaida) {
         this.caminhoSaida = caminhoSaida;
     }
+
+    private static final Set<String> CONECTIVOS = Set.of("de", "da", "do", "dos", "das", "e");
+
     private static final String FORMATO_DATA = "dd/MM/yyyy";
     private final Font FONTE_PADRAO = carregarFonte("/fonts/BrushScriptMT.ttf", 130f);
     private final Font FONTE_DATA = carregarFonte("/fonts/Arial.ttf", 70f);
@@ -153,17 +159,18 @@ public class GeradorDeCertificados implements IGeradorDeCertificados {
 
         g2d.setFont(FONTE_PADRAO);
         FontMetrics metricsNome = g2d.getFontMetrics(FONTE_PADRAO);
+        nome = ajustarNomeParaCabecalho(nome, metricsNome, larguraTextoInicial, larguraDisponivel);
+
         int larguraNome = metricsNome.stringWidth(nome);
 
         int larguraTotal = larguraTextoInicial + larguraNome + 25;
-        if (larguraTotal > larguraDisponivel) {
-            throw new IllegalArgumentException("Texto excede os limites horizontais permitidos.");
-        }
 
         int xInicial = xMin + (larguraDisponivel - larguraTotal) / 2;
+
         int xNome = xInicial + larguraTextoInicial + 25;
 
         int ajusteVertical = (int) (1.8 * 300 / 2.54);
+
         int yCentral = (imagem.getHeight() / 2) - ajusteVertical;
 
         g2d.setFont(FONT_TEXT);
@@ -271,5 +278,40 @@ public class GeradorDeCertificados implements IGeradorDeCertificados {
         } catch (IOException e) {
             throw new RuntimeException("Erro ao salvar o resumo de faixas.", e);
         }
+    }
+
+    private String ajustarNomeParaCabecalho(String nome, FontMetrics metricsNome, int larguraTextoInicial, int larguraDisponivel) {
+        String nomeAtual = nome;
+        int larguraNome = metricsNome.stringWidth(nomeAtual);
+        int larguraTotal = larguraTextoInicial + larguraNome + 25;
+
+        if (larguraTotal <= larguraDisponivel)
+            return nomeAtual;
+
+        List<String> partes = new ArrayList<>(List.of(nome.split("\\s+")));
+
+        for (int i = 1; i < partes.size() - 1; i++) {
+            String parte = partes.get(i);
+
+            if (CONECTIVOS.contains(parte.toLowerCase()))
+                continue;
+
+            if (parte.length() <= 2 || parte.endsWith("."))
+                continue;
+
+            partes.set(i, parte.charAt(0) + ".");
+
+            nomeAtual = String.join(" ", partes);
+            larguraNome = metricsNome.stringWidth(nomeAtual);
+            larguraTotal = larguraTextoInicial + larguraNome + 25;
+
+            if (larguraTotal <= larguraDisponivel)
+                return nomeAtual;
+        }
+
+        throw new IllegalArgumentException(
+                "Nome excede os limites horizontais permitidos mesmo abreviado: "
+                        + nome
+        );
     }
 }
