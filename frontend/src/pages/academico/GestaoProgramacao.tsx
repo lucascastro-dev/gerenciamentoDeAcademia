@@ -136,7 +136,7 @@ const GestaoProgramacao: React.FC = () => {
     HttpService.programacaoTipos(instituicaoId).then((r) => setTipos(r.data)).catch(() => undefined);
     carregarSalas();
     if (podeGerenciar) {
-      HttpService.listarAlunos()
+      HttpService.listarAlunos(instituicaoId)
         .then((r) => setAlunos((r.data || []).map((a: AlunoOpt) => ({ cpf: a.cpf, nome: a.nome }))))
         .catch(() => setAlunos([]));
     }

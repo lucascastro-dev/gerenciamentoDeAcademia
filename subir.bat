@@ -46,8 +46,13 @@ echo Subindo containers (build na primeira vez pode demorar)...
 echo.
 
 docker compose up -d --build
+
 if errorlevel 1 (
-    echo [ERRO] docker compose falhou.
+    echo.
+    echo ================= ERRO DETALHADO =================
+    docker compose logs backend
+    echo =================================================
+    echo.
     pause
     exit /b 1
 )

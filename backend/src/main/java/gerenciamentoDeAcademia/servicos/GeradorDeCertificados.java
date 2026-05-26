@@ -28,16 +28,15 @@ public class GeradorDeCertificados implements IGeradorDeCertificados {
 
     private static final String PASTA_TEMPLATES_CLASSPATH = "certificados/";
 
-    /** Pasta no disco onde os certificados gerados são salvos (por professor). */
     private final String caminhoSaida;
 
     public GeradorDeCertificados(@org.springframework.beans.factory.annotation.Value("${app.certificado.base-path}") String caminhoSaida) {
         this.caminhoSaida = caminhoSaida;
     }
     private static final String FORMATO_DATA = "dd/MM/yyyy";
-    private static final Font FONTE_PADRAO = new Font("Brush Script MT", Font.ITALIC, 130);
-    private static final Font FONTE_DATA = new Font("Arial", Font.ITALIC, 70);
-    private static final Font FONT_TEXT = new Font("Times New Roman", Font.PLAIN, 105);
+    private final Font FONTE_PADRAO = carregarFonte("/fonts/BrushScriptMT.ttf", 130f);
+    private final Font FONTE_DATA = carregarFonte("/fonts/Arial.ttf", 70f);
+    private final Font FONT_TEXT = carregarFonte("/fonts/TimesNewRoman.ttf", 105f);
 
     @Override
     public void gerarCertificado(DadosCertificadoDto dadosCertificado) {
@@ -65,6 +64,21 @@ public class GeradorDeCertificados implements IGeradorDeCertificados {
             throw new RuntimeException("Erro ao criar o diretório: " + caminhoPasta);
         }
         return caminhoPasta;
+    }
+
+    private Font carregarFonte(String caminho, float tamanho) {
+        try (InputStream is = getClass().getResourceAsStream(caminho)) {
+
+            if (is == null) {
+                throw new RuntimeException("Fonte não encontrada: " + caminho);
+            }
+
+            return Font.createFont(Font.TRUETYPE_FONT, is)
+                    .deriveFont(tamanho);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Erro ao carregar fonte", e);
+        }
     }
 
     private BufferedImage processarImagemBase(DadosCertificadoDto dadosCertificado) {
@@ -158,7 +172,7 @@ public class GeradorDeCertificados implements IGeradorDeCertificados {
         g2d.setFont(FONTE_PADRAO);
         g2d.drawString(nome, xNome, yCentral);
 
-        Font fonteFaixa = new Font(FONTE_PADRAO.getName(), Font.PLAIN, 160);
+        Font fonteFaixa = carregarFonte("/fonts/BrushScriptMT.ttf", 160f);
         g2d.setFont(fonteFaixa);
         FontMetrics metrics = g2d.getFontMetrics(fonteFaixa);
         String textoFaixa = "Faixa " + faixa;

@@ -55,7 +55,7 @@ services:
     image: cloudflare/cloudflared:latest
     container_name: academia-tunnel
     restart: unless-stopped
-    command: tunnel --no-autoconfigure --url http://frontend:80
+    command: tunnel --url http://frontend:80
     depends_on:
       - frontend
 
