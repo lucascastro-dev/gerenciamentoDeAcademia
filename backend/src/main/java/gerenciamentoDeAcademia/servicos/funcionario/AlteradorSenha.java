@@ -6,6 +6,7 @@ import gerenciamentoDeAcademia.entidades.Usuario;
 import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
 import gerenciamentoDeAcademia.repositorios.FuncionarioRepository;
 import gerenciamentoDeAcademia.repositorios.UsuarioRepository;
+import gerenciamentoDeAcademia.util.PoliticaSenha;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,20 +23,24 @@ public class AlteradorSenha {
 
     @Transactional
     public void alterarSenhaDoUsuarioLogado(String cpf, AlterarSenhaDto dto) {
-        alterarSenha(cpf, dto, 8);
+        alterarSenha(cpf, dto, true);
     }
 
     @Transactional
     public void alterarSenhaPortalAluno(String cpf, AlterarSenhaDto dto) {
-        alterarSenha(cpf, dto, 4);
+        alterarSenha(cpf, dto, false);
     }
 
-    private void alterarSenha(String cpf, AlterarSenhaDto dto, int tamanhoMinimo) {
+    private void alterarSenha(String cpf, AlterarSenhaDto dto, boolean senhaForteObrigatoria) {
         ExcecaoDeDominio.quandoNulo(dto, "Dados de senha são obrigatórios");
         ExcecaoDeDominio.quandoNuloOuVazio(dto.getSenhaAtual(), "Informe a senha atual");
         ExcecaoDeDominio.quandoNuloOuVazio(dto.getSenhaNova(), "Informe a nova senha");
-        ExcecaoDeDominio.quando(dto.getSenhaNova().length() < tamanhoMinimo,
-                "A nova senha deve ter no mínimo " + tamanhoMinimo + " caracteres");
+        if (senhaForteObrigatoria) {
+            PoliticaSenha.validarSenhaForte(dto.getSenhaNova());
+        } else {
+            ExcecaoDeDominio.quando(dto.getSenhaNova().length() < 4,
+                    "A nova senha deve ter no mínimo 4 caracteres");
+        }
 
         Usuario usuario = usuarioRepository.findByLogin(cpf);
         ExcecaoDeDominio.quandoNulo(usuario, "Usuário não encontrado");
