@@ -50,6 +50,7 @@ docker compose up -d --build
 if errorlevel 1 (
     echo.
     echo ================= ERRO DETALHADO =================
+    docker compose logs frontend
     docker compose logs backend
     echo =================================================
     echo.
