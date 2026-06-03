@@ -6,15 +6,15 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.7.1</version>
+        <version>2.7.18</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
     <groupId>com.lucastro-dev</groupId>
     <artifactId>gerenciamentoDeAcademia</artifactId>
     <version>1.0.1-SNAPSHOT</version>
-    <name>gerenciamentoDeAcademia</name>
-    <description>Projeto de Gerenciamento de Academia</description>
+    <name>EduGestão Inteligente — API</name>
+    <description>API de gestão de instituições de ensino (EduGestão Inteligente)</description>
     <properties>
         <java.version>17</java.version>
     </properties>
@@ -53,8 +53,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.30</version>
-            <scope>compile</scope>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.springdoc</groupId>
@@ -72,11 +71,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.springframework.data</groupId>
-            <artifactId>spring-data-jpa</artifactId>
-            <version>2.4.5</version>
-        </dependency>
-        <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
             <version>4.1.2</version>
@@ -87,11 +81,6 @@
             <version>4.1.2</version>
         </dependency>
         <dependency>
-            <groupId>javax.validation</groupId>
-            <artifactId>validation-api</artifactId>
-            <version>2.0.1.Final</version>
-        </dependency>
-        <dependency>
             <groupId>com.auth0</groupId>
             <artifactId>java-jwt</artifactId>
             <version>4.4.0</version>
@@ -99,11 +88,6 @@
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-envers</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>net.bytebuddy</groupId>
-            <artifactId>byte-buddy</artifactId>
-            <version>1.14.2</version>
         </dependency>
         <dependency>
             <groupId>org.instancio</groupId>

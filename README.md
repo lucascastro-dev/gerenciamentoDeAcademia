@@ -1,96 +1,105 @@
-# Projeto Gerenciamento de Academia / Instituição de Ensino
+# EduGestão Inteligente
 
-Sistema para gestão de academias e escolas: alunos, funcionários, turmas, certificados, permissões por perfil e auditoria.
+Sistema SaaS para gestão de **instituições de ensino**: colaboradores, alunos, turmas, grade horária, financeiro, portal do aluno, permissões por perfil e auditoria.
+
+## Estrutura do projeto
+
+```
+gerenciamentoDeAcademia/
+├── backend/          # API Spring Boot (Java 17)
+├── frontend/         # SPA React + TypeScript + Vite
+├── docs/             # Roadmap, deploy, migrações, testes — índice em docs/README.md
+├── infra/            # Docker/PostgreSQL init — ver infra/README.md
+├── scripts/          # Portas, subida Docker, URL do túnel
+├── docker-compose.yml
+└── .env.example
+```
+
+Arquitetura detalhada: **[docs/ARQUITETURA.md](docs/ARQUITETURA.md)**.
 
 ## Stack
 
 | Camada | Tecnologias |
 |--------|-------------|
-| Backend | Java 17, Spring Boot 2.7, JPA, JWT, PostgreSQL / H2 |
-| Frontend | React 18, TypeScript, Vite, React Router |
-| Infra | Docker Compose (PostgreSQL + API + frontend) |
+| Backend | Java 17, Spring Boot 2.7, JPA, JWT (Auth0), PostgreSQL / H2 |
+| Frontend | React 18, TypeScript, Vite, React Router, styled-components |
+| Infra | Docker Compose (PostgreSQL + API + frontend + túnel opcional) |
 
-## Execução rápida (Docker — teste externo na internet)
+Pacotes: backend `com.lucastro-dev:gerenciamentoDeAcademia` · frontend `edugestao-inteligente-frontend` (`1.0.1-SNAPSHOT`).
+
+## Execução rápida (Docker — teste na internet)
 
 ```bash
 cp .env.example .env
 docker compose up -d --build
 ```
 
-**Windows (recomendado):** duplo clique em **`subir.bat`** — sobe tudo e grava o link público em `URL_PUBLICA.txt`.
+**Windows:** duplo clique em **`subir.bat`** — sobe a stack e grava o link público em `URL_PUBLICA.txt`.
 
-- App local: http://localhost:5173  
-- **Testadores externos:** link `https://….trycloudflare.com` (túnel sobe junto com o compose; ver `URL_PUBLICA.txt` ou `docker compose logs tunnel`)  
-- Passo a passo: **[PASSO_A_PASSO_DEPLOY.txt](PASSO_A_PASSO_DEPLOY.txt)**  
-- Detalhes: **[docs/DEPLOY_DOCKER.md](docs/DEPLOY_DOCKER.md)**
+| Acesso | URL |
+|--------|-----|
+| Local | http://localhost:5173 |
+| Externo (túnel) | `https://….trycloudflare.com` — ver `URL_PUBLICA.txt` ou `docker compose logs tunnel` |
+| Swagger (local) | http://localhost:8000/srv-gerenciaracademia/swagger-ui.html |
 
-### Usuário master (criado automaticamente no profile `docker`)
+- Passo a passo: **[PASSO_A_PASSO_DEPLOY.txt](PASSO_A_PASSO_DEPLOY.txt)**
+- Deploy: **[docs/DEPLOY_DOCKER.md](docs/DEPLOY_DOCKER.md)**
+- Usuários de teste: **[docs/USUARIOS_TESTE.md](docs/USUARIOS_TESTE.md)**
+
+### Usuário master (profile `docker`)
 
 | Campo | Valor padrão |
 |-------|----------------|
 | CPF (login) | `00000000191` |
 | Senha | `Master@2024!` |
-| Código academia | ID `1` (após seed) |
+| Instituição | ID `1` (após seed) |
 
-Altere credenciais em `.env` (`APP_MASTER_CPF`, `APP_MASTER_PASSWORD`).
+Altere em `.env`: `APP_MASTER_CPF`, `APP_MASTER_PASSWORD`.
 
-## Desenvolvimento local (PostgreSQL persistente)
+## Desenvolvimento local
 
-1. Crie o arquivo de ambiente (senha alinhada com o backend):
-
-```bash
-cp .env.example .env
-```
-
-2. Suba o banco:
-
-```bash
-docker compose up postgres -d
-```
-
-**Backend** (profile `local` é o padrão — `ddl-auto=update`)
+1. `cp .env.example .env`
+2. Banco: `docker compose up postgres -d` (porta host **5435** — `POSTGRES_HOST_PORT`)
+3. **Backend** (profile `local`, `ddl-auto=update`):
 
 ```bash
 cd backend
 mvn spring-boot:run
 ```
 
+4. **Frontend**:
+
+```bash
+cd frontend
+cp .env.example .env.local
+npm install
+npm run dev
+```
+
+H2 em memória (testes rápidos): `SPRING_PROFILES_ACTIVE=h2 mvn spring-boot:run` (Windows: `set SPRING_PROFILES_ACTIVE=h2`).
+
 ### Erro `password authentication failed for user academia_app`
 
-O PostgreSQL grava a senha **na primeira criação do volume**. Se você mudou a senha depois, o container sobe mas a senha interna continua a antiga.
-
-**Solução (apaga dados locais do banco):**
+O PostgreSQL grava a senha na **primeira criação do volume**. Se a senha no `.env` mudou depois:
 
 ```bash
 docker compose down -v
 docker compose up postgres -d
 ```
 
-Depois rode o backend de novo. Senha padrão: `academia_dev_secret` (usuário `academia_app`).
+Senha padrão: `academia_dev_secret` (usuário `academia_app`). Alinhe com `application-local.properties` se alterar.
 
-### Porta do PostgreSQL
+## Perfis e segurança
 
-O projeto usa a porta **5435** no host (veja `POSTGRES_HOST_PORT` no `.env`), para não conflitar com outros Postgres no Docker (5432, 5433, 5434). Se precisar mudar, altere `.env` e `application-local.properties` juntos.
+Tipos de colaborador: `DIRETOR`, `TI`, `ADMINISTRADOR`, `FINANCEIRO`, `RH`, `RECEPCIONISTA`, `PROFESSOR`, `ESTAGIARIO`, `SERVICOS_GERAIS`, `TERCEIRIZADO`.
 
-Para H2 em memória (testes rápidos): `set SPRING_PROFILES_ACTIVE=h2` (Windows) ou `SPRING_PROFILES_ACTIVE=h2 mvn spring-boot:run`
+JWT + `@PreAuthorize`; ações críticas em `tb_auditoria`.
 
-**Frontend**
+## Roadmap e fase atual
 
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-## Perfis de funcionário e segurança
-
-Tipos: `DIRETOR`, `TI`, `ADMINISTRADOR` (master — acesso total), `FINANCEIRO`, `RH`, `RECEPCIONISTA`, `PROFESSOR`, `ESTAGIARIO`, `SERVICOS_GERAIS`, `TERCEIRIZADO`.
-
-Permissões granulares via JWT + `@PreAuthorize`. Ações críticas registradas em `tb_auditoria`.
-
-## Roadmap
-
-Ver [docs/ROADMAP.md](docs/ROADMAP.md) para funcionalidades planejadas (financeiro completo, portal do aluno, multi-tenant, etc.).
+- Índice da documentação: **[docs/README.md](docs/README.md)**
+- Planejamento completo: **[docs/ROADMAP.md](docs/ROADMAP.md)**  
+- **Em andamento:** login, cadastro, recuperação de senha (e-mail), política de senha, MFA e endurecimento de infra.
 
 ## Testes backend
 
