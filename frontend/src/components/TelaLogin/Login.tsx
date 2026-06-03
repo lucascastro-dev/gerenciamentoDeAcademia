@@ -4,6 +4,8 @@ import { salvarSessao } from '../../auth/permissoes';
 import HttpService from '../../services/HttpService';
 import { extractApiMessage } from '../../utils/apiError';
 import FeedbackModal from '../common/FeedbackModal';
+import PasswordInput from '../common/PasswordInput';
+import '../common/PasswordFields.css';
 import './Login.css';
 
 interface Vinculo {
@@ -85,8 +87,7 @@ const Login: React.FC = () => {
         mensagemAlertaCobranca: data.mensagemAlertaCobranca,
       });
 
-      const destino = '/arealogada/home';
-      navigate(destino);
+      navigate('/arealogada/home');
     } catch (err) {
       setErroLogin(extractApiMessage(err, 'Usuário, senha ou instituição inválidos.'));
     } finally {
@@ -109,8 +110,9 @@ const Login: React.FC = () => {
         <h2>Entrar</h2>
 
         <form onSubmit={handleLogin}>
-          <label className="login-label">CPF</label>
+          <label className="login-label" htmlFor="login-cpf">CPF</label>
           <input
+            id="login-cpf"
             type="text"
             inputMode="numeric"
             placeholder="000.000.000-00"
@@ -126,8 +128,12 @@ const Login: React.FC = () => {
 
           {instituicoes.length > 0 && (
             <>
-              <label className="login-label">Instituição</label>
-              <select value={vinculo} onChange={(e) => setVinculo(e.target.value)}>
+              <label className="login-label" htmlFor="login-vinculo">Instituição</label>
+              <select
+                id="login-vinculo"
+                value={vinculo}
+                onChange={(e) => setVinculo(e.target.value)}
+              >
                 <option value="" disabled>Selecione onde deseja entrar</option>
                 {instituicoes.map((i) => (
                   <option key={i.id} value={String(i.id)}>{i.razaoSocial}</option>
@@ -136,15 +142,16 @@ const Login: React.FC = () => {
             </>
           )}
 
-          <label className="login-label">Senha</label>
-          <input
-            type="password"
-            placeholder="Digite sua senha"
+          <PasswordInput
+            id="login-senha"
+            label="Senha"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={setPassword}
+            placeholder="Digite sua senha"
+            autoComplete="current-password"
           />
 
-          <button disabled={!podeEntrar} type="submit">
+          <button className="auth-btn-primary" disabled={!podeEntrar} type="submit">
             {loading ? 'Entrando...' : 'Entrar'}
           </button>
         </form>
@@ -152,7 +159,6 @@ const Login: React.FC = () => {
         <div className="links-container">
           <Link to="/areapublica/cadastro">Pré-cadastro colaborador</Link>
           <Link to="/areapublica/esqueciSenha">Esqueci minha senha</Link>
-          <Link to="/areapublica/solicitarAcesso">Solicitar ativação (RH)</Link>
         </div>
       </div>
 

@@ -8,7 +8,6 @@ import Cadastro from "./components/TelaLogin/Cadastro";
 import EsqueciSenha from "./components/TelaLogin/EsqueciSenha";
 import { LayoutLogin } from "./components/TelaLogin/Layout";
 import Login from "./components/TelaLogin/Login";
-import SolicitarAcesso from "./components/TelaLogin/SolicitarAcesso";
 import "./index.css";
 import "./theme/global.css";
 import "./theme/programacao.css";
@@ -56,7 +55,7 @@ root.render(
           <Route path="login" element={<Login />} />
           <Route path="cadastro" element={<Cadastro />} />
           <Route path="esqueciSenha" element={<EsqueciSenha />} />
-          <Route path="solicitarAcesso" element={<SolicitarAcesso />} />
+          <Route path="solicitarAcesso" element={<Navigate to="/areapublica/cadastro" replace />} />
         </Route>
 
         <Route element={<ProtectedRoute />}>
