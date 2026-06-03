@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react';
 import EnderecoFields from '../components/common/EnderecoFields';
 import FeedbackModal from '../components/common/FeedbackModal';
 import PageShell from '../components/common/PageShell';
+import PasswordInput from '../components/common/PasswordInput';
+import PasswordStrengthHints from '../components/common/PasswordStrengthHints';
+import '../components/common/PasswordFields.css';
 import HttpService from '../services/HttpService';
 import { extractApiMessage } from '../utils/apiError';
 import { EnderecoCompleto, enderecoVazio, parseEndereco, serializarEndereco } from '../utils/endereco';
-
-const isPasswordValid = (p: string) =>
-  p.length >= 8 && /[A-Z]/.test(p) && /[a-z]/.test(p) && /\d/.test(p) && /[^A-Za-z0-9]/.test(p);
+import { isSenhaForte } from '../utils/passwordPolicy';
 
 const MeuPerfil: React.FC = () => {
   const [nome, setNome] = useState('');
@@ -22,6 +23,13 @@ const MeuPerfil: React.FC = () => {
   const [senhaNova, setSenhaNova] = useState('');
   const [senhaConfirma, setSenhaConfirma] = useState('');
   const [modal, setModal] = useState({ open: false, success: false, message: '' });
+
+  const senhasConferem = senhaNova === senhaConfirma;
+  const podeAlterarSenha =
+    senhaAtual.length > 0 &&
+    isSenhaForte(senhaNova) &&
+    senhaConfirma.length > 0 &&
+    senhasConferem;
 
   useEffect(() => {
     HttpService.meuPerfil()
@@ -56,12 +64,12 @@ const MeuPerfil: React.FC = () => {
   };
 
   const salvarSenha = async () => {
-    if (senhaNova !== senhaConfirma) {
+    if (!senhasConferem) {
       showErr('A confirmação da nova senha não confere.');
       return;
     }
-    if (!isPasswordValid(senhaNova)) {
-      showErr('Senha fraca: use 8+ caracteres, maiúscula, minúscula, número e especial.');
+    if (!isSenhaForte(senhaNova)) {
+      showErr('A nova senha não atende aos critérios de segurança.');
       return;
     }
     try {
@@ -98,13 +106,53 @@ const MeuPerfil: React.FC = () => {
 
       <div className="card">
         <h3 style={{ marginTop: 0 }}>Alterar senha</h3>
-        <div className="form-grid">
-          <div><label>Senha atual</label><input type="password" value={senhaAtual} onChange={(e) => setSenhaAtual(e.target.value)} /></div>
-          <div><label>Nova senha</label><input type="password" value={senhaNova} onChange={(e) => setSenhaNova(e.target.value)} /></div>
-          <div><label>Confirmar nova senha</label><input type="password" value={senhaConfirma} onChange={(e) => setSenhaConfirma(e.target.value)} /></div>
+        <div className="perfil-senha-form">
+          <PasswordInput
+            id="perfil-senha-atual"
+            label="Senha atual"
+            value={senhaAtual}
+            onChange={setSenhaAtual}
+            placeholder="Digite a senha atual"
+            autoComplete="current-password"
+          />
+
+          <div className="perfil-senha-form__row">
+            <PasswordInput
+              id="perfil-senha-nova"
+              label="Nova senha"
+              value={senhaNova}
+              onChange={setSenhaNova}
+              placeholder="Defina uma senha forte"
+              autoComplete="new-password"
+            />
+            <PasswordInput
+              id="perfil-senha-confirma"
+              label="Confirmar nova senha"
+              value={senhaConfirma}
+              onChange={setSenhaConfirma}
+              placeholder="Repita a nova senha"
+              autoComplete="new-password"
+            />
+          </div>
+
+          <PasswordStrengthHints password={senhaNova} idPrefix="perfil" />
+
+          {senhaConfirma.length > 0 && !senhasConferem && (
+            <p className="password-field--mismatch" role="alert">
+              A confirmação da nova senha não confere.
+            </p>
+          )}
         </div>
+
         <div className="form-actions">
-          <button type="button" className="btn-primary" onClick={salvarSenha}>Alterar senha</button>
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={salvarSenha}
+            disabled={!podeAlterarSenha}
+          >
+            Alterar senha
+          </button>
         </div>
       </div>
 
