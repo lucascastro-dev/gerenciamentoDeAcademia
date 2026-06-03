@@ -42,6 +42,27 @@ if errorlevel 1 (
 )
 
 echo.
+echo Baixando imagens base (evita erro de metadata no build)...
+echo.
+
+where powershell >nul 2>&1
+if errorlevel 1 (
+    echo [AVISO] PowerShell nao encontrado; tentando pull via mirror AWS...
+    docker pull public.ecr.aws/docker/library/node:20-alpine
+    docker pull public.ecr.aws/docker/library/nginx:alpine
+    docker pull public.ecr.aws/docker/library/postgres:16-alpine
+) else (
+    powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\baixar-imagens-docker.ps1"
+    if errorlevel 1 (
+        echo.
+        echo Teste: docker pull public.ecr.aws/docker/library/node:20-alpine
+        echo Depois execute subir.bat novamente.
+        pause
+        exit /b 1
+    )
+)
+
+echo.
 echo Subindo containers (build na primeira vez pode demorar)...
 echo.
 
@@ -50,6 +71,10 @@ docker compose up -d --build
 if errorlevel 1 (
     echo.
     echo ================= ERRO DETALHADO =================
+    echo Se apareceu timeout no Docker Hub:
+    echo   - Teste: docker pull public.ecr.aws/docker/library/node:20-alpine
+    echo   - Reinicie o Docker Desktop e rode subir.bat de novo
+    echo.
     docker compose logs frontend
     docker compose logs backend
     echo =================================================

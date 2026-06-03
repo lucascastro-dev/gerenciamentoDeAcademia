@@ -1,5 +1,21 @@
 # Deploy com Docker (rede local e internet)
 
+## Erro `load metadata` / timeout no Docker Hub
+
+Mensagens como `registry-1.docker.io: context deadline exceeded` indicam que o **Docker Hub** não responde na sua rede.
+
+O projeto usa **mirror público da AWS (ECR)** para Node, Nginx, Postgres e Java. O `subir.bat` tenta ECR antes do Hub.
+
+1. Abra o **Docker Desktop** e aguarde ficar em execução.
+2. Execute **`subir.bat`** de novo.
+3. Teste manual:
+   ```bash
+   docker pull public.ecr.aws/docker/library/node:20-alpine
+   docker compose up -d --build
+   ```
+4. Se só o túnel (`cloudflared`) falhar, a app sobe em http://localhost:5173 sem URL pública.
+5. VPN/proxy: configure em *Docker Desktop → Settings* ou teste outra rede (ex.: celular).
+
 ## Forma mais simples (Windows)
 
 1. Instale [Docker Desktop](https://www.docker.com/products/docker-desktop/) e deixe rodando.
