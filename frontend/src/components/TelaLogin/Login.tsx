@@ -11,6 +11,8 @@ import './Login.css';
 interface Vinculo {
   id: number;
   razaoSocial: string;
+  cadastroAtivo?: boolean;
+  selecionavel?: boolean;
 }
 
 const Login: React.FC = () => {
@@ -45,14 +47,17 @@ const Login: React.FC = () => {
     setVinculoAviso(null);
     try {
       const { data } = await HttpService.listarVinculos(cpfLimpo);
-      setInstituicoes(data);
-      if (data.length === 1) {
-        setVinculo(String(data[0].id));
+      const ativas = (data || []).filter((i) => i.selecionavel !== false && i.cadastroAtivo !== false);
+      setInstituicoes(ativas);
+      if (ativas.length === 1) {
+        setVinculo(String(ativas[0].id));
       } else {
         setVinculo('');
       }
-      if (data.length === 0) {
-        setVinculoAviso('Nenhuma instituição vinculada a este CPF ou cadastro inativo.');
+      if (ativas.length === 0) {
+        setVinculoAviso(
+          'Nenhuma instituição ativa vinculada a este CPF. Instituições inativas não permitem acesso.',
+        );
       }
     } catch {
       setInstituicoes([]);
@@ -78,7 +83,10 @@ const Login: React.FC = () => {
         vinculo,
         nome: data.nome,
         tipoFuncionario: data.tipoFuncionario as any,
+        perfilExibicao: data.perfilExibicao,
         usuarioMaster: data.usuarioMaster,
+        masterRaiz: data.masterRaiz,
+        acessoFinanceiroCompleto: data.acessoFinanceiroCompleto,
         permissoes: data.permissoes || [],
         tipoAcesso: (data.tipoAcesso as 'COLABORADOR' | 'ALUNO') || 'COLABORADOR',
         planoInstituicaoAtivo: data.planoInstituicaoAtivo,

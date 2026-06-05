@@ -64,25 +64,39 @@ public class LoginController {
 
             var usernamePassword = new UsernamePasswordAuthenticationToken(data.login(), data.password());
             var auth = authenticationManager.authenticate(usernamePassword);
-            var autenticado = (UsuarioAutenticado) auth.getPrincipal();
+            var base = (UsuarioAutenticado) auth.getPrincipal();
+            var autenticado = gerenciadorDeLogin.montarSessaoAutenticada(base, data.vinculo());
             var tipoAcesso = gerenciadorDeLogin.resolverTipoAcesso(autenticado);
             SituacaoCobranca situacao = gerenciadorDeLogin.resolverSituacaoCobranca(data.vinculo(), autenticado);
-            boolean acessoOperacional = situacao.permiteAcesso();
+            boolean acessoOperacional = situacao.permiteAcesso()
+                    && (autenticado.isOperadorPlataforma() || autenticado.acessoFinanceiroCompleto());
             var token = tokenService.gerarToken(autenticado, data.vinculo(), situacao);
             var funcionario = autenticado.getFuncionario();
             var aluno = autenticado.getAluno();
             String mensagemAlerta = servicoSituacaoCobranca.mensagemAlerta(tipoAcesso, situacao);
+            if (!autenticado.acessoFinanceiroCompleto() && funcionario != null) {
+                mensagemAlerta = "Pagamento da instituição pendente. Funcionalidades liberadas após confirmação pelo master da plataforma.";
+            }
+
+            String perfilExibicao = autenticado.isOperadorPlataforma()
+                    ? "USUÁRIO MASTER"
+                    : (funcionario != null && funcionario.getTipoFuncionario() != null
+                    ? funcionario.getTipoFuncionario().getDescricao()
+                    : null);
 
             var retorno = new LoginRetornoDto(
                     token,
                     funcionario != null ? funcionario.getNome() : (aluno != null ? aluno.getNome() : data.login()),
                     funcionario != null ? funcionario.getTipoFuncionario() : null,
-                    funcionario != null && funcionario.isUsuarioMaster(),
+                    perfilExibicao,
+                    autenticado.isOperadorPlataforma(),
+                    autenticado.isMasterRaiz(),
                     gerenciadorDeLogin.obterPermissoes(autenticado),
                     tipoAcesso,
                     acessoOperacional,
+                    autenticado.acessoFinanceiroCompleto(),
                     situacao,
-                    situacao.exibeAlerta(),
+                    situacao.exibeAlerta() || !autenticado.acessoFinanceiroCompleto(),
                     mensagemAlerta
             );
 

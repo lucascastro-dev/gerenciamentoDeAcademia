@@ -32,6 +32,8 @@ import MatriculaAluno from "./components/Academico/MatriculaAluno";
 import MeuPerfil from "./pages/MeuPerfil";
 import CadastrarInstituicao from "./pages/CadastrarInstituicao";
 import Auditoria from "./pages/Auditoria";
+import PagamentosPendentes from "./pages/PagamentosPendentes";
+import PlanosExpirados from "./pages/PlanosExpirados";
 import PlanoInstituicao from "./pages/PlanoInstituicao";
 import PlanoInstituicaoGuard from "./components/common/PlanoInstituicaoGuard";
 import PortalAlunoSenha from "./pages/portal-aluno/PortalAlunoSenha";
@@ -82,15 +84,19 @@ root.render(
             } />
             <Route path="meu-perfil" element={<MeuPerfil />} />
 
-            <Route path="dashboard" element={
-              <PermissaoRoute permissao="dashboard:visualizar"><DashboardAdmin /></PermissaoRoute>
-            } />
+            <Route path="dashboard" element={<DashboardAdmin />} />
 
-            <Route path="financeiro" element={
-              <PermissaoRoute permissao="financeiro:visualizar"><FinanceiroLayout /></PermissaoRoute>
-            }>
+            <Route path="financeiro" element={<FinanceiroLayout />}>
               <Route index element={<DashboardFinanceiro />} />
-              <Route path="mensalidades" element={<Mensalidades />} />
+              <Route path="pendentes" element={
+                <PermissaoRoute somenteMaster><PagamentosPendentes /></PermissaoRoute>
+              } />
+              <Route path="planos-expirados" element={
+                <PermissaoRoute somenteMaster><PlanosExpirados /></PermissaoRoute>
+              } />
+              <Route path="mensalidades" element={
+                <PermissaoRoute permissao="financeiro:visualizar"><Mensalidades /></PermissaoRoute>
+              } />
               <Route path="inadimplencia" element={
                 <PermissaoRoute permissao="financeiro:relatorio"><Inadimplencia /></PermissaoRoute>
               } />
@@ -129,7 +135,7 @@ root.render(
             } />
 
             <Route path="instituicoes" element={
-              <PermissaoRoute permissao="academia:consultar"><GerenciarAcademia /></PermissaoRoute>
+              <PermissaoRoute somenteMaster><GerenciarAcademia /></PermissaoRoute>
             } />
             <Route path="academias" element={<Navigate to="/arealogada/instituicoes" replace />} />
             <Route path="cadastrar-instituicao" element={
@@ -143,10 +149,10 @@ root.render(
               <PermissaoRoute permissao="funcionario:ativar"><GestaoCadastros /></PermissaoRoute>
             } />
             <Route path="gestaoAcademia" element={
-              <PermissaoRoute permissao="academia:ativar-inativar"><GestaoAcademias /></PermissaoRoute>
+              <PermissaoRoute somenteMaster><GestaoAcademias /></PermissaoRoute>
             } />
             <Route path="auditoria" element={
-              <PermissaoRoute permissao="auditoria:consultar"><Auditoria /></PermissaoRoute>
+              <PermissaoRoute somenteMaster><Auditoria /></PermissaoRoute>
             } />
             </Route>
           </Route>

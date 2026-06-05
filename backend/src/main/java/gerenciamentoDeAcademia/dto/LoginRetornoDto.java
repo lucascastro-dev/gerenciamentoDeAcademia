@@ -10,10 +10,13 @@ public record LoginRetornoDto(
         String token,
         String nome,
         TipoFuncionario tipoFuncionario,
+        String perfilExibicao,
         boolean usuarioMaster,
+        boolean masterRaiz,
         List<String> permissoes,
         TipoAcesso tipoAcesso,
         boolean planoInstituicaoAtivo,
+        boolean acessoFinanceiroCompleto,
         SituacaoCobranca situacaoCobranca,
         boolean alertaCobranca,
         String mensagemAlertaCobranca

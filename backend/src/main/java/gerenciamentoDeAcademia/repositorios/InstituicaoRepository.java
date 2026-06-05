@@ -1,6 +1,7 @@
 package gerenciamentoDeAcademia.repositorios;
 
 import gerenciamentoDeAcademia.entidades.Instituicao;
+import gerenciamentoDeAcademia.enums.StatusFinanceiroInstituicao;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,8 +16,19 @@ public interface InstituicaoRepository extends JpaRepository<Instituicao, Long> 
     @Query("SELECT COUNT(a) > 0 FROM Instituicao a JOIN a.funcionarios f WHERE a.id = :vinculo AND f.cpf = :cpf")
     boolean existsByCnpjAndFuncionarioCpf(@Param("vinculo") Long vinculo, @Param("cpf") String cpf);
 
-    @Query("SELECT DISTINCT a FROM Instituicao a JOIN a.funcionarios f WHERE f.cpf = :cpf ORDER BY a.razaoSocial")
+    @Query("""
+            SELECT DISTINCT a FROM Instituicao a JOIN a.funcionarios f
+            WHERE f.cpf = :cpf AND a.cadastroAtivo = true
+            ORDER BY a.razaoSocial
+            """)
     List<Instituicao> findInstituicoesPorCpfFuncionario(@Param("cpf") String cpf);
+
+    long countByCadastroAtivoTrue();
+
+    @Query("SELECT COUNT(i) FROM Instituicao i WHERE i.cadastroAtivo = false OR i.cadastroAtivo IS NULL")
+    long countCadastroInativo();
+
+    long countByStatusFinanceiro(StatusFinanceiroInstituicao statusFinanceiro);
 
     @Query("SELECT DISTINCT f FROM Instituicao a JOIN a.funcionarios f WHERE a.id = :instituicaoId AND f.tipoFuncionario = gerenciamentoDeAcademia.enums.TipoFuncionario.PROFESSOR AND f.cadastroAtivo = true ORDER BY f.nome")
     List<gerenciamentoDeAcademia.entidades.Funcionario> findProfessoresAtivosPorInstituicao(@Param("instituicaoId") Long instituicaoId);
@@ -36,4 +48,8 @@ public interface InstituicaoRepository extends JpaRepository<Instituicao, Long> 
             WHERE al.cpf = :cpf AND t.instituicao.id = :instituicaoId
             """)
     boolean alunoVinculadoInstituicao(@Param("cpf") String cpf, @Param("instituicaoId") Long instituicaoId);
+
+    @org.springframework.data.jpa.repository.Modifying(clearAutomatically = true)
+    @Query("UPDATE Instituicao i SET i.cadastroAtivo = false WHERE i.cadastroAtivo IS NULL")
+    int normalizarCadastroAtivoNulo();
 }

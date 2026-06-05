@@ -1,9 +1,11 @@
 package gerenciamentoDeAcademia.controller;
 
+import gerenciamentoDeAcademia.dto.DashboardPlataformaDto;
 import gerenciamentoDeAcademia.dto.DashboardResumoDto;
 import gerenciamentoDeAcademia.repositorios.AlunoRepository;
 import gerenciamentoDeAcademia.repositorios.FuncionarioRepository;
 import gerenciamentoDeAcademia.repositorios.TurmaRepository;
+import gerenciamentoDeAcademia.servicos.plataforma.ServicoDashboardPlataforma;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +20,13 @@ public class DashboardController {
     private final AlunoRepository alunoRepository;
     private final FuncionarioRepository funcionarioRepository;
     private final TurmaRepository turmaRepository;
+    private final ServicoDashboardPlataforma servicoDashboardPlataforma;
+
+    @GetMapping("/plataforma/resumo")
+    @PreAuthorize("@permissaoEvaluator.possuiMaster(authentication)")
+    public DashboardPlataformaDto resumoPlataforma() {
+        return servicoDashboardPlataforma.resumoAdministrativo();
+    }
 
     @GetMapping("/resumo")
     @PreAuthorize("@permissaoEvaluator.possui(authentication, 'dashboard:visualizar')")

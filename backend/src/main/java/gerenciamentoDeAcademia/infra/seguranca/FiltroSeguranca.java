@@ -1,10 +1,13 @@
 package gerenciamentoDeAcademia.infra.seguranca;
 
 import gerenciamentoDeAcademia.enums.SituacaoCobranca;
+import gerenciamentoDeAcademia.enums.StatusFinanceiroInstituicao;
 import gerenciamentoDeAcademia.enums.UserRole;
 import gerenciamentoDeAcademia.repositorios.AlunoRepository;
 import gerenciamentoDeAcademia.repositorios.FuncionarioRepository;
+import gerenciamentoDeAcademia.repositorios.InstituicaoRepository;
 import gerenciamentoDeAcademia.repositorios.UsuarioRepository;
+import gerenciamentoDeAcademia.servicos.login.GerenciadorDeLogin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +35,8 @@ public class FiltroSeguranca extends OncePerRequestFilter {
     private FuncionarioRepository funcionarioRepository;
     @Autowired
     private AlunoRepository alunoRepository;
+    @Autowired
+    private GerenciadorDeLogin gerenciadorDeLogin;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -47,16 +52,18 @@ public class FiltroSeguranca extends OncePerRequestFilter {
                     var usuario = usuarioRepository.findByLogin(login);
 
                     if (usuario != null) {
-                        UsuarioAutenticado autenticado;
-                        Long instituicaoId = claims != null ? claims.getInstituicaoId() : null;
-                        SituacaoCobranca situacao = claims != null ? claims.getSituacaoCobranca() : SituacaoCobranca.ATIVO;
+                        UsuarioAutenticado base;
                         if (usuario.getRole() == UserRole.ALUNO) {
-                            autenticado = new UsuarioAutenticado(
-                                    usuario, null, alunoRepository.findByCpf(login), instituicaoId, situacao);
+                            base = new UsuarioAutenticado(
+                                    usuario, null, alunoRepository.findByCpf(login),
+                                    claims.getInstituicaoId(), claims.getSituacaoCobranca());
                         } else {
-                            autenticado = new UsuarioAutenticado(
-                                    usuario, funcionarioRepository.findByCpf(login), null, instituicaoId, situacao);
+                            base = new UsuarioAutenticado(usuario, funcionarioRepository.findByCpf(login));
                         }
+                        String vinculo = claims.getInstituicaoId() != null
+                                ? String.valueOf(claims.getInstituicaoId())
+                                : VinculoPlataforma.ID;
+                        UsuarioAutenticado autenticado = gerenciadorDeLogin.montarSessaoAutenticada(base, vinculo);
                         var autenticacao = new UsernamePasswordAuthenticationToken(
                                 autenticado, null, autenticado.getAuthorities());
                         SecurityContextHolder.getContext().setAuthentication(autenticacao);

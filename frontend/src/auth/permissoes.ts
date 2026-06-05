@@ -1,4 +1,5 @@
 export type TipoFuncionario =
+  | 'OPERADOR_PLATAFORMA'
   | 'DIRETOR'
   | 'FINANCEIRO'
   | 'RH'
@@ -18,7 +19,10 @@ export interface SessaoUsuario {
   vinculo: string;
   nome: string;
   tipoFuncionario: TipoFuncionario | null;
+  perfilExibicao?: string | null;
   usuarioMaster: boolean;
+  masterRaiz?: boolean;
+  acessoFinanceiroCompleto?: boolean;
   permissoes: string[];
   tipoAcesso?: TipoAcesso;
   planoInstituicaoAtivo?: boolean;
@@ -29,6 +33,17 @@ export interface SessaoUsuario {
 
 export function isPortalAluno(sessao: SessaoUsuario | null): boolean {
   return sessao?.tipoAcesso === 'ALUNO';
+}
+
+export function isModoPlataforma(sessao: SessaoUsuario | null): boolean {
+  return !!sessao?.usuarioMaster;
+}
+
+export function labelPerfil(sessao: SessaoUsuario | null): string {
+  if (!sessao) return '—';
+  if (sessao.perfilExibicao) return sessao.perfilExibicao;
+  if (sessao.tipoFuncionario) return sessao.tipoFuncionario.replace(/_/g, ' ');
+  return '—';
 }
 
 const STORAGE_KEY = '@App:sessao';

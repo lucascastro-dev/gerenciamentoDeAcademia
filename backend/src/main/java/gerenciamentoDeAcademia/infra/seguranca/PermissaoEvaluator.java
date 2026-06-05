@@ -1,6 +1,5 @@
 package gerenciamentoDeAcademia.infra.seguranca;
 
-import gerenciamentoDeAcademia.enums.PermissaoSistema;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
@@ -20,11 +19,20 @@ public class PermissaoEvaluator {
                 .anyMatch(auth -> auth.equals(codigoPermissao));
     }
 
+    /** Operador master da plataforma (CPF raiz ou sub-master delegado). */
     public boolean possuiMaster(Authentication authentication) {
         if (authentication == null) {
             return false;
         }
         return authentication.getAuthorities().stream()
                 .anyMatch(a -> "ROLE_MASTER".equals(a.getAuthority()));
+    }
+
+    /** Apenas o CPF configurado em app.master.cpf (não inclui sub-masters). */
+    public boolean possuiMasterRaiz(Authentication authentication) {
+        if (!(authentication != null && authentication.getPrincipal() instanceof UsuarioAutenticado usuario)) {
+            return false;
+        }
+        return usuario.isMasterRaiz();
     }
 }

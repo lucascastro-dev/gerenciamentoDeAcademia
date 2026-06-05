@@ -5,6 +5,7 @@ import gerenciamentoDeAcademia.entidades.Funcionario;
 import gerenciamentoDeAcademia.entidades.Usuario;
 import gerenciamentoDeAcademia.enums.PermissaoSistema;
 import gerenciamentoDeAcademia.enums.SituacaoCobranca;
+import gerenciamentoDeAcademia.enums.StatusFinanceiroInstituicao;
 import gerenciamentoDeAcademia.enums.TipoFuncionario;
 import gerenciamentoDeAcademia.enums.UserRole;
 import lombok.Getter;
@@ -24,24 +25,56 @@ public class UsuarioAutenticado implements UserDetails {
     private final Aluno aluno;
     private final Long instituicaoId;
     private final SituacaoCobranca situacaoCobranca;
+    private final StatusFinanceiroInstituicao statusFinanceiroInstituicao;
+    private final boolean operadorPlataforma;
+    private final boolean masterRaiz;
     private final Collection<? extends GrantedAuthority> authorities;
 
     public UsuarioAutenticado(Usuario usuario, Funcionario funcionario) {
-        this(usuario, funcionario, null, null, SituacaoCobranca.ATIVO);
+        this(usuario, funcionario, null, null, SituacaoCobranca.ATIVO, StatusFinanceiroInstituicao.PAGAMENTO_CONFIRMADO,
+                false, false);
     }
 
     public UsuarioAutenticado(Usuario usuario, Funcionario funcionario, Aluno aluno) {
-        this(usuario, funcionario, aluno, null, SituacaoCobranca.ATIVO);
+        this(usuario, funcionario, aluno, null, SituacaoCobranca.ATIVO, StatusFinanceiroInstituicao.PAGAMENTO_CONFIRMADO,
+                false, false);
     }
 
     public UsuarioAutenticado(Usuario usuario, Funcionario funcionario, Aluno aluno,
                               Long instituicaoId, SituacaoCobranca situacaoCobranca) {
+        this(usuario, funcionario, aluno, instituicaoId, situacaoCobranca,
+                StatusFinanceiroInstituicao.PAGAMENTO_CONFIRMADO, false, false);
+    }
+
+    public UsuarioAutenticado(Usuario usuario, Funcionario funcionario, Aluno aluno,
+                              Long instituicaoId, SituacaoCobranca situacaoCobranca,
+                              StatusFinanceiroInstituicao statusFinanceiroInstituicao,
+                              boolean operadorPlataforma, boolean masterRaiz) {
         this.usuario = usuario;
         this.funcionario = funcionario;
         this.aluno = aluno;
         this.instituicaoId = instituicaoId;
         this.situacaoCobranca = situacaoCobranca != null ? situacaoCobranca : SituacaoCobranca.ATIVO;
-        this.authorities = montarAuthorities(usuario, funcionario, aluno);
+        this.statusFinanceiroInstituicao = statusFinanceiroInstituicao != null
+                ? statusFinanceiroInstituicao
+                : StatusFinanceiroInstituicao.PAGAMENTO_CONFIRMADO;
+        this.operadorPlataforma = operadorPlataforma;
+        this.masterRaiz = masterRaiz;
+        this.authorities = montarAuthorities(usuario, funcionario, aluno, operadorPlataforma);
+    }
+
+    public boolean isOperadorPlataforma() {
+        return operadorPlataforma;
+    }
+
+    public boolean isMasterRaiz() {
+        return masterRaiz;
+    }
+
+    public boolean acessoFinanceiroCompleto() {
+        return operadorPlataforma
+                || statusFinanceiroInstituicao == StatusFinanceiroInstituicao.PAGAMENTO_CONFIRMADO
+                || statusFinanceiroInstituicao == StatusFinanceiroInstituicao.NAO_APLICAVEL;
     }
 
     public boolean isPlanoInstituicaoAtivo() {
@@ -52,7 +85,14 @@ public class UsuarioAutenticado implements UserDetails {
         return usuario != null && usuario.getRole() == UserRole.ALUNO;
     }
 
-    private Collection<? extends GrantedAuthority> montarAuthorities(Usuario usuario, Funcionario funcionario, Aluno aluno) {
+    private Collection<? extends GrantedAuthority> montarAuthorities(
+            Usuario usuario, Funcionario funcionario, Aluno aluno, boolean operadorPlataforma) {
+        if (operadorPlataforma) {
+            return java.util.List.of(
+                    new SimpleGrantedAuthority("ROLE_MASTER"),
+                    new SimpleGrantedAuthority("ROLE_USER")
+            );
+        }
         if (usuario != null && usuario.getRole() == UserRole.ALUNO) {
             var permissoes = EnumSet.of(
                     PermissaoSistema.ALUNO_PORTAL_DADOS,
@@ -71,12 +111,6 @@ public class UsuarioAutenticado implements UserDetails {
         }
 
         TipoFuncionario tipo = funcionario != null ? funcionario.getTipoFuncionario() : null;
-        if (tipo != null && tipo.isUsuarioMaster()) {
-            return java.util.List.of(
-                    new SimpleGrantedAuthority("ROLE_MASTER"),
-                    new SimpleGrantedAuthority("ROLE_USER")
-            );
-        }
         if (tipo == null) {
             return java.util.List.of(new SimpleGrantedAuthority("ROLE_USER"));
         }

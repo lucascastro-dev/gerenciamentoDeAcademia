@@ -6,6 +6,7 @@ import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import gerenciamentoDeAcademia.enums.SituacaoCobranca;
+import gerenciamentoDeAcademia.enums.StatusFinanceiroInstituicao;
 import gerenciamentoDeAcademia.enums.TipoFuncionario;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -35,6 +36,8 @@ public class TokenService {
                         "aluno-portal:senha",
                         "aluno-portal:programacao"
                 );
+            } else if (usuarioAutenticado.isOperadorPlataforma()) {
+                permissoes = List.of();
             } else if (tipo != null) {
                 permissoes = TipoFuncionario.codigosPermissao(
                         tipo,
@@ -47,8 +50,8 @@ public class TokenService {
             var builder = JWT.create()
                     .withIssuer("auth-api")
                     .withSubject(usuarioAutenticado.getUsername())
-                    .withClaim("master", usuarioAutenticado.getFuncionario() != null
-                            && usuarioAutenticado.getFuncionario().isUsuarioMaster())
+                    .withClaim("master", usuarioAutenticado.isOperadorPlataforma())
+                    .withClaim("masterRaiz", usuarioAutenticado.isMasterRaiz())
                     .withClaim("portalAluno", usuarioAutenticado.isPortalAluno())
                     .withExpiresAt(gerarDataValidade());
 
@@ -64,6 +67,10 @@ public class TokenService {
             SituacaoCobranca sit = situacao != null ? situacao : SituacaoCobranca.ATIVO;
             builder.withClaim("situacaoCobranca", sit.name());
             builder.withClaim("planoAtivo", sit.permiteAcesso());
+            StatusFinanceiroInstituicao statusFin = usuarioAutenticado.getStatusFinanceiroInstituicao();
+            if (statusFin != null) {
+                builder.withClaim("statusFinanceiro", statusFin.name());
+            }
             return builder.sign(algorithm);
         } catch (JWTCreationException e) {
             throw new RuntimeException("Erro ao gerar token", e);
@@ -92,12 +99,27 @@ public class TokenService {
                 }
             }
             SituacaoCobranca situacao = resolverSituacaoClaim(jwt);
-            boolean master = Boolean.TRUE.equals(jwt.getClaim("master").asBoolean());
+            boolean operador = Boolean.TRUE.equals(jwt.getClaim("master").asBoolean());
+            boolean masterRaiz = Boolean.TRUE.equals(jwt.getClaim("masterRaiz").asBoolean());
             boolean portalAluno = Boolean.TRUE.equals(jwt.getClaim("portalAluno").asBoolean());
-            return new ClaimsSessao(jwt.getSubject(), instituicaoId, situacao, master, portalAluno);
+            StatusFinanceiroInstituicao statusFinanceiro = resolverStatusFinanceiroClaim(jwt);
+            return new ClaimsSessao(jwt.getSubject(), instituicaoId, situacao, statusFinanceiro,
+                    operador, masterRaiz, portalAluno);
         } catch (JWTVerificationException e) {
             return null;
         }
+    }
+
+    private StatusFinanceiroInstituicao resolverStatusFinanceiroClaim(DecodedJWT jwt) {
+        String status = jwt.getClaim("statusFinanceiro").asString();
+        if (status != null && !status.isBlank()) {
+            try {
+                return StatusFinanceiroInstituicao.valueOf(status);
+            } catch (IllegalArgumentException ignored) {
+                // tokens antigos
+            }
+        }
+        return StatusFinanceiroInstituicao.PAGAMENTO_CONFIRMADO;
     }
 
     private SituacaoCobranca resolverSituacaoClaim(DecodedJWT jwt) {
