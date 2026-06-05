@@ -1,7 +1,9 @@
 package gerenciamentoDeAcademia.servicos.financeiro;
 
 import gerenciamentoDeAcademia.entidades.Aluno;
-import gerenciamentoDeAcademia.repositorios.AlunoRepository;
+import gerenciamentoDeAcademia.entidades.MatriculaInstituicao;
+import gerenciamentoDeAcademia.repositorios.MatriculaInstituicaoRepository;
+import gerenciamentoDeAcademia.servicos.aluno.ServicoMatriculaInstituicao;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -19,18 +21,23 @@ class ServicoFinanceiroTest {
     @InjectMocks
     ServicoFinanceiro servicoFinanceiro;
     @Mock
-    AlunoRepository alunoRepository;
+    MatriculaInstituicaoRepository matriculaInstituicaoRepository;
+    @Mock
+    ServicoMatriculaInstituicao servicoMatriculaInstituicao;
 
     @Test
     void deveCalcularReceitaPrevista() {
         Aluno a = new Aluno();
         a.setNome("Teste");
         a.setCpf("1");
-        a.setValorMensalidade(100.0);
-        a.setDiaVencimentoMensalidade(28);
-        Mockito.when(alunoRepository.findAll()).thenReturn(List.of(a));
+        MatriculaInstituicao matricula = new MatriculaInstituicao();
+        matricula.setAluno(a);
+        matricula.setValorMensalidade(100.0);
+        matricula.setDiaVencimentoMensalidade(28);
+        Mockito.when(matriculaInstituicaoRepository.findByInstituicao_IdOrderByAluno_NomeAsc(1L))
+                .thenReturn(List.of(matricula));
 
-        var dash = servicoFinanceiro.obterDashboard();
+        var dash = servicoFinanceiro.obterDashboard(1L);
         assertEquals(100.0, dash.receitaMensalPrevista());
         assertEquals(1, dash.totalAlunos());
     }

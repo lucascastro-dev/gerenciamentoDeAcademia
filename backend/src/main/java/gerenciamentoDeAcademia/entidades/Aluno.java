@@ -39,6 +39,7 @@ public class Aluno {
     private LocalDate dataDeNascimento;
     private String endereco;
     private String telefone;
+    private String email;
     private Double valorMensalidade;
     private Integer diaVencimentoMensalidade;
     private String nomeResponsavel;
@@ -62,8 +63,7 @@ public class Aluno {
         this.dataDeNascimento = alunoDto.getDataDeNascimento();
         this.endereco = alunoDto.getEndereco();
         this.telefone = alunoDto.getTelefone();
-        this.valorMensalidade = alunoDto.getValorMensalidade();
-        this.diaVencimentoMensalidade = alunoDto.getDiaVencimentoMensalidade();
+        this.email = alunoDto.getEmail();
         this.nomeResponsavel = alunoDto.getNomeResponsavel();
         this.telefoneResponsavel = alunoDto.getTelefoneResponsavel();
     }
@@ -76,8 +76,6 @@ public class Aluno {
         ExcecaoDeDominio.quandoDataNulaOuVazia(alunoDto.getDataDeNascimento(), "Data de nascimento é obrigatória!");
         ExcecaoDeDominio.quandoNuloOuVazio(alunoDto.getEndereco(), "Endereço é obrigatório!");
         ExcecaoDeDominio.quandoNuloOuVazio(alunoDto.getTelefone(), "Telefone é obrigatório!");
-        ExcecaoDeDominio.quandoNuloOuVazio(alunoDto.getValorMensalidade(), "Valor da mensalidade é obrigatório!");
-        ExcecaoDeDominio.quandoNuloOuVazio(alunoDto.getDiaVencimentoMensalidade(), "Dia de vencimento da mensalidade é obrigatório!");
 
         if ((LocalDate.now().getYear() - alunoDto.getDataDeNascimento().getYear()) < 18) {
             ExcecaoDeDominio.quandoNuloOuVazio(alunoDto.getNomeResponsavel(), "Nome do responsável é obrigatório!");

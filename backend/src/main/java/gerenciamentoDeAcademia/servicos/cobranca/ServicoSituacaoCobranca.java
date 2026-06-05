@@ -5,6 +5,8 @@ import gerenciamentoDeAcademia.entidades.AssinaturaPlataforma;
 import gerenciamentoDeAcademia.enums.SituacaoCobranca;
 import gerenciamentoDeAcademia.enums.TipoAcesso;
 import gerenciamentoDeAcademia.repositorios.AssinaturaPlataformaRepository;
+import gerenciamentoDeAcademia.entidades.MatriculaInstituicao;
+import gerenciamentoDeAcademia.servicos.aluno.ServicoMatriculaInstituicao;
 import gerenciamentoDeAcademia.servicos.financeiro.ServicoFinanceiro;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,6 +31,7 @@ public class ServicoSituacaoCobranca {
 
     private final AssinaturaPlataformaRepository assinaturaRepository;
     private final ServicoFinanceiro servicoFinanceiro;
+    private final ServicoMatriculaInstituicao servicoMatriculaInstituicao;
 
     @Value("${app.cobranca.dias-tolerancia:5}")
     private int diasTolerancia;
@@ -42,16 +45,17 @@ public class ServicoSituacaoCobranca {
                 .orElse(SituacaoCobranca.BLOQUEADO);
     }
 
-    public SituacaoCobranca situacaoMensalidadeAluno(Aluno aluno) {
-        if (aluno == null) {
+    public SituacaoCobranca situacaoMensalidadeAluno(Aluno aluno, Long instituicaoId) {
+        if (aluno == null || instituicaoId == null) {
             return SituacaoCobranca.BLOQUEADO;
         }
-        return servicoFinanceiro.situacaoMensalidade(aluno, LocalDate.now(), diasTolerancia);
+        MatriculaInstituicao matricula = servicoMatriculaInstituicao.obterOuMigrarLegado(aluno.getCpf(), instituicaoId);
+        return servicoFinanceiro.situacaoMensalidade(matricula, LocalDate.now(), diasTolerancia);
     }
 
     public SituacaoCobranca situacaoParaLogin(TipoAcesso tipoAcesso, Long instituicaoId, Aluno aluno) {
         if (tipoAcesso == TipoAcesso.ALUNO) {
-            return situacaoMensalidadeAluno(aluno);
+            return situacaoMensalidadeAluno(aluno, instituicaoId);
         }
         return situacaoPlanoInstituicao(instituicaoId);
     }

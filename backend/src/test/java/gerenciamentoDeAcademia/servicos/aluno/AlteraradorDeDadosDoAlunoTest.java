@@ -21,6 +21,8 @@ public class AlteraradorDeDadosDoAlunoTest {
     AlteadorDeDadosDoAluno alteadorDeDadosDoAluno;
     @Mock
     AlunoRepository alunoRepository;
+    @Mock
+    ServicoMatriculaInstituicao servicoMatriculaInstituicao;
 
     @Test
     void deveAlterarOsDadosDeUmAluno() {

@@ -21,7 +21,7 @@ public class PortalAlunoDadosDto {
     private Integer diaVencimentoMensalidade;
     private LocalDate dataUltimoPagamentoMensalidade;
 
-    public static PortalAlunoDadosDto of(Aluno aluno) {
+    public static PortalAlunoDadosDto of(Aluno aluno, MensalidadeResumoDto financeiro) {
         PortalAlunoDadosDto dto = new PortalAlunoDadosDto();
         dto.setNome(aluno.getNome());
         dto.setCpf(aluno.getCpf());
@@ -29,9 +29,11 @@ public class PortalAlunoDadosDto {
         dto.setDataDeNascimento(aluno.getDataDeNascimento());
         dto.setEndereco(aluno.getEndereco());
         dto.setTelefone(aluno.getTelefone());
-        dto.setValorMensalidade(aluno.getValorMensalidade());
-        dto.setDiaVencimentoMensalidade(aluno.getDiaVencimentoMensalidade());
-        dto.setDataUltimoPagamentoMensalidade(aluno.getDataUltimoPagamentoMensalidade());
+        if (financeiro != null) {
+            dto.setValorMensalidade(financeiro.valorMensalidade());
+            dto.setDiaVencimentoMensalidade(financeiro.diaVencimento());
+            dto.setDataUltimoPagamentoMensalidade(financeiro.dataUltimoPagamento());
+        }
         return dto;
     }
 }

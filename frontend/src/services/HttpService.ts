@@ -32,11 +32,12 @@ api.interceptors.response.use(
     }
 
     if (
-      code === 'PLANO_INSTITUICAO_INATIVO'
+      (code === 'PLANO_INSTITUICAO_INATIVO' || code === 'PAGAMENTO_PENDENTE')
       && emAreaLogada
       && temSessao
       && !emAreaPublica
       && !path.includes('plano-instituicao')
+      && !path.includes('meu-perfil')
     ) {
       window.location.href = '/arealogada/plano-instituicao';
     }
@@ -49,6 +50,9 @@ export interface LoginResponse {
   nome: string;
   tipoFuncionario: string | null;
   usuarioMaster: boolean;
+  perfilExibicao?: string | null;
+  masterRaiz?: boolean;
+  acessoFinanceiroCompleto?: boolean;
   permissoes: string[];
   tipoAcesso?: 'COLABORADOR' | 'ALUNO';
   planoInstituicaoAtivo?: boolean;
@@ -62,7 +66,17 @@ const HttpService = {
     api.post<LoginResponse>('/login', { login, password, vinculo }),
 
   listarVinculos: (cpf: string) =>
-    api.get<Array<{ id: number; razaoSocial: string }>>(`/login/vinculos/${cpf}`),
+    api.get<Array<{ id: number; razaoSocial: string; cadastroAtivo?: boolean; selecionavel?: boolean }>>(
+      `/login/vinculos/${cpf}`,
+    ),
+
+  listarTodasInstituicoes: () => api.get<Array<{ id: number; razaoSocial: string; cadastroAtivo?: boolean }>>(
+    '/instituicao/consultarTodasAcademias',
+  ),
+
+  dashboardPlataformaResumo: () => api.get('/dashboard/plataforma/resumo'),
+
+  financeiroPlataformaResumo: () => api.get('/financeiro/plataforma/resumo'),
 
   solicitarRecuperacaoSenha: (cpf: string) =>
     api.post<{ message: string }>('/login/solicitarRecuperacaoSenha', { cpf }),
@@ -93,7 +107,34 @@ const HttpService = {
     api.post(`/instituicao/instituicao/${instituicaoId}/inativarFuncionario/${cpf.replace(/\D/g, '')}`),
 
   desativarInstituicao: (cnpj: string) =>
-    api.delete(`/instituicao/desativarAcademia/${cnpj}`),
+    api.delete(`/instituicao/desativarAcademia/${cnpj.replace(/\D/g, '')}`),
+
+  ativarCadastroInstituicao: (cnpj: string, plano: string) =>
+    api.post(`/instituicao/ativarCadastro/${cnpj.replace(/\D/g, '')}`, { plano }),
+
+  trocarAdministradorInstituicao: (data: { cnpj: string; cpfAdministrador: string }) =>
+    api.put('/instituicao/administrador', {
+      cnpj: data.cnpj.replace(/\D/g, ''),
+      cpfAdministrador: data.cpfAdministrador.replace(/\D/g, ''),
+    }),
+
+  consultarInstituicaoDetalheCnpj: (cnpj: string) =>
+    api.get(`/instituicao/detalheCnpj/${cnpj.replace(/\D/g, '')}`),
+
+  ativarInstituicao: (data: { cnpj: string; cpfAdministrador: string; plano: string }) =>
+    api.post('/instituicao/ativarUnidade', data),
+
+  atualizarStatusFinanceiro: (data: { cnpj: string; statusFinanceiro: string }) =>
+    api.put('/instituicao/statusFinanceiro', data),
+
+  atualizarPlanoInstituicao: (data: { cnpj: string; plano: string }) =>
+    api.put('/instituicao/plano', {
+      cnpj: data.cnpj.replace(/\D/g, ''),
+      plano: data.plano,
+    }),
+
+  definirSubMaster: (cpf: string, habilitar: boolean) =>
+    api.put(`/funcionario/${cpf.replace(/\D/g, '')}/sub-master`, { habilitar }),
 
   /** @deprecated use desativarInstituicao */
   desativarAcademia: (cnpj: string) =>
@@ -134,6 +175,26 @@ const HttpService = {
   consultarAluno: (cpf: string, instituicaoId: string | number) =>
     api.get(`/aluno/consultarAluno/${cpf.replace(/\D/g, '')}`, { params: { instituicaoId } }),
 
+  consultarAlunoPorCpf: (cpf: string) =>
+    api.get<{
+      nome: string;
+      cpf: string;
+      rg: string;
+      dataDeNascimento: string;
+      endereco: string;
+      telefone: string;
+      email?: string;
+      valorMensalidade?: number;
+      diaVencimentoMensalidade?: number;
+      nomeResponsavel?: string;
+      telefoneResponsavel?: string;
+      matriculas: Array<{
+        instituicaoId: number;
+        razaoSocial: string;
+        turmas: Array<{ id: number; modalidade: string; horario: string; sala?: string }>;
+      }>;
+    }>(`/aluno/consultarPorCpf/${cpf.replace(/\D/g, '')}`),
+
   matricularAluno: (data: Record<string, unknown>) =>
     api.post('/aluno/matricularAluno', data),
 
@@ -143,7 +204,8 @@ const HttpService = {
   desmatricularAluno: (cpf: string) =>
     api.delete(`/aluno/desmatricularAluno/${cpf}`),
 
-  listarTurmas: () => api.get('/turma/listarTurmas'),
+  listarTurmas: (params?: { instituicaoId?: number; professorCpf?: string; dias?: string[] }) =>
+    api.get('/turma/listarTurmas', { params }),
 
   montarTurma: (data: Record<string, unknown>) =>
     api.post('/turma/montarTurma', data),
@@ -153,6 +215,9 @@ const HttpService = {
 
   vincularProfessorTurma: (turmaId: number, cpfProfessor: string) =>
     api.put(`/turma/${turmaId}/professor`, { cpfProfessor: cpfProfessor || null }),
+
+  alterarTurma: (data: Record<string, unknown>) =>
+    api.put('/turma/Alterar', data),
 
   baixaMensalidade: (cpf: string) =>
     api.post(`/financeiro/mensalidades/${cpf.replace(/\D/g, '')}/baixa`),

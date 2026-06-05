@@ -25,6 +25,7 @@ const PortalAlunoDados: React.FC = () => {
           <div><strong>RG</strong><p>{dados.rg}</p></div>
           <div><strong>Nascimento</strong><p>{dados.dataDeNascimento}</p></div>
           <div><strong>Telefone</strong><p>{dados.telefone}</p></div>
+          <div><strong>E-mail</strong><p>{dados.email || '—'}</p></div>
           <div className="form-grid__span-2">
             <strong>Endereço</strong>
             <p>{[end.logradouro, end.numero, end.bairro, end.cidade, end.uf].filter(Boolean).join(', ')}</p>

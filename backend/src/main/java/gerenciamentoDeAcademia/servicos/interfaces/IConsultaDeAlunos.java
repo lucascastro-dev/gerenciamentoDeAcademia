@@ -1,7 +1,8 @@
 package gerenciamentoDeAcademia.servicos.interfaces;
 
-import gerenciamentoDeAcademia.dto.AlunoDto;
+import gerenciamentoDeAcademia.dto.AlunoConsultaCompletaDto;
 import gerenciamentoDeAcademia.entidades.Aluno;
+import gerenciamentoDeAcademia.infra.seguranca.UsuarioAutenticado;
 
 import java.util.List;
 
@@ -9,4 +10,6 @@ public interface IConsultaDeAlunos {
     List<Aluno> listarAlunos(Long instituicaoId);
 
     Aluno consultaAlunoPorCpf(String cpf, Long instituicaoId);
+
+    AlunoConsultaCompletaDto consultaCompletaPorCpf(String cpf, UsuarioAutenticado usuario);
 }

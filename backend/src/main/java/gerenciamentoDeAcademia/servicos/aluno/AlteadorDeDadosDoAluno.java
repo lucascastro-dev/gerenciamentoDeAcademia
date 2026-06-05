@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 public class AlteadorDeDadosDoAluno implements IAlteradorDeDadosDoAluno {
 
     private final AlunoRepository alunoRepository;
+    private final ServicoMatriculaInstituicao servicoMatriculaInstituicao;
 
     @Override
     public void alterarAluno(AlunoDto alunoDto) {
@@ -27,11 +28,18 @@ public class AlteadorDeDadosDoAluno implements IAlteradorDeDadosDoAluno {
         aluno.setDataDeNascimento(alunoDto.getDataDeNascimento());
         aluno.setEndereco(alunoDto.getEndereco());
         aluno.setTelefone(alunoDto.getTelefone());
-        aluno.setValorMensalidade(alunoDto.getValorMensalidade());
-        aluno.setDiaVencimentoMensalidade(alunoDto.getDiaVencimentoMensalidade());
+        if (alunoDto.getEmail() != null) {
+            aluno.setEmail(alunoDto.getEmail().isBlank() ? null : alunoDto.getEmail().trim());
+        }
         aluno.setNomeResponsavel(alunoDto.getNomeResponsavel());
         aluno.setTelefoneResponsavel(alunoDto.getTelefoneResponsavel());
 
         alunoRepository.save(aluno);
+
+        if (alunoDto.getInstituicaoId() != null
+                && alunoDto.getValorMensalidade() != null
+                && alunoDto.getDiaVencimentoMensalidade() != null) {
+            servicoMatriculaInstituicao.atualizarFinanceiro(aluno, alunoDto);
+        }
     }
 }

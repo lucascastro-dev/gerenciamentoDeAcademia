@@ -1,7 +1,9 @@
 package gerenciamentoDeAcademia.controller;
 
+import gerenciamentoDeAcademia.dto.AlunoConsultaCompletaDto;
 import gerenciamentoDeAcademia.dto.AlunoDto;
 import gerenciamentoDeAcademia.entidades.Aluno;
+import gerenciamentoDeAcademia.infra.seguranca.UsuarioAutenticado;
 import gerenciamentoDeAcademia.servicos.aluno.AlteadorDeDadosDoAluno;
 import gerenciamentoDeAcademia.servicos.aluno.CadastradorDeAluno;
 import gerenciamentoDeAcademia.servicos.aluno.ConsultaDeAlunos;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -72,5 +75,14 @@ public class GerenciarAlunoController {
             @PathVariable("cpf") String cpf,
             @RequestParam("instituicaoId") Long instituicaoId) {
         return ResponseEntity.ok(consultaDeAlunos.consultaAlunoPorCpf(cpf, instituicaoId));
+    }
+
+    @GetMapping("/consultarPorCpf/{cpf}")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("@permissaoEvaluator.possui(authentication, 'aluno:consultar')")
+    public AlunoConsultaCompletaDto consultarPorCpf(
+            @PathVariable("cpf") String cpf,
+            @AuthenticationPrincipal UsuarioAutenticado usuario) {
+        return consultaDeAlunos.consultaCompletaPorCpf(cpf.replaceAll("\\D", ""), usuario);
     }
 }

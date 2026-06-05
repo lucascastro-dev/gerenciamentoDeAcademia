@@ -53,7 +53,16 @@ public class PortalAlunoController {
     @GetMapping("/meus-dados")
     @PreAuthorize("@permissaoEvaluator.possui(authentication, 'aluno-portal:dados')")
     public PortalAlunoDadosDto meusDados(@AuthenticationPrincipal UsuarioAutenticado usuario) {
-        return PortalAlunoDadosDto.of(alunoLogado(usuario));
+        Aluno aluno = alunoLogado(usuario);
+        MensalidadeResumoDto financeiro = null;
+        if (usuario.getInstituicaoId() != null) {
+            try {
+                financeiro = servicoFinanceiro.resumoMensalidade(aluno.getCpf(), usuario.getInstituicaoId());
+            } catch (ExcecaoDeDominio ignored) {
+                // sem matrícula financeira nesta instituição
+            }
+        }
+        return PortalAlunoDadosDto.of(aluno, financeiro);
     }
 
     @GetMapping("/minhas-turmas")
@@ -86,7 +95,9 @@ public class PortalAlunoController {
     @GetMapping("/mensalidade")
     @PreAuthorize("@permissaoEvaluator.possui(authentication, 'aluno-portal:mensalidades')")
     public MensalidadeResumoDto mensalidade(@AuthenticationPrincipal UsuarioAutenticado usuario) {
-        return servicoFinanceiro.resumoMensalidade(alunoLogado(usuario).getCpf());
+        Aluno aluno = alunoLogado(usuario);
+        ExcecaoDeDominio.quandoNulo(usuario.getInstituicaoId(), "Instituição não identificada na sessão.");
+        return servicoFinanceiro.resumoMensalidade(aluno.getCpf(), usuario.getInstituicaoId());
     }
 
     @GetMapping("/pagamento-info")

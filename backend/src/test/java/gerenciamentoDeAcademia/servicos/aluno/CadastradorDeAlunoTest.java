@@ -17,6 +17,9 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.time.LocalDate;
 
 import static org.instancio.Select.field;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 
 @ExtendWith(SpringExtension.class)
 public class CadastradorDeAlunoTest {
@@ -33,6 +36,8 @@ public class CadastradorDeAlunoTest {
     ServicoVinculoAlunoInstituicao servicoVinculoAlunoInstituicao;
     @Mock
     InstituicaoRepository instituicaoRepository;
+    @Mock
+    ServicoMatriculaInstituicao servicoMatriculaInstituicao;
 
     private AlunoDto dtoValido() {
         return Instancio.of(AlunoDto.class)
@@ -155,6 +160,10 @@ public class CadastradorDeAlunoTest {
     void deveRetornarMensagemDeValorDeMensalidadeDeAlunoObrigatorio() {
         AlunoDto aluno = dtoValido();
         aluno.setValorMensalidade(null);
+        Mockito.when(alunoRepository.findByCpf(CPF_VALIDO)).thenReturn(null);
+        Mockito.when(alunoRepository.save(Mockito.any(Aluno.class))).thenAnswer(inv -> inv.getArgument(0));
+        doThrow(new ExcecaoDeDominio("Valor da mensalidade é obrigatório!"))
+                .when(servicoMatriculaInstituicao).salvarFinanceiro(eq(1L), any(Aluno.class), any(AlunoDto.class));
 
         var excecao = Assertions.assertThrows(ExcecaoDeDominio.class, () -> cadastradorDeAluno.cadastrar(aluno));
 
@@ -165,6 +174,10 @@ public class CadastradorDeAlunoTest {
     void deveRetornarMensagemDeDiaVencimentoDaMensalidadeDeAlunoObrigatorio() {
         AlunoDto aluno = dtoValido();
         aluno.setDiaVencimentoMensalidade(null);
+        Mockito.when(alunoRepository.findByCpf(CPF_VALIDO)).thenReturn(null);
+        Mockito.when(alunoRepository.save(Mockito.any(Aluno.class))).thenAnswer(inv -> inv.getArgument(0));
+        doThrow(new ExcecaoDeDominio("Dia de vencimento da mensalidade é obrigatório!"))
+                .when(servicoMatriculaInstituicao).salvarFinanceiro(eq(1L), any(Aluno.class), any(AlunoDto.class));
 
         var excecao = Assertions.assertThrows(ExcecaoDeDominio.class, () -> cadastradorDeAluno.cadastrar(aluno));
 
