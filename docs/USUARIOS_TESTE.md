@@ -4,7 +4,9 @@ Instituição: **Instituição Master** (mesmo vínculo do master: ID `1` no log
 
 Senha dos perfis de teste (colaboradores): **`123`**
 
-**Master (Diretor):** CPF `00000000191` — senha padrão **`Master@2024!`** (não é `123`).
+**Operador master da plataforma:** CPF `00000000191` — senha **`Master@2024!`** — vínculo **Plataforma — Operação master** (ID `0`). Não use a instituição ID `1` para operação cross-tenant.
+
+**Mensalidade do aluno:** valor e dia de vencimento são **por instituição** (`tb_matricula_instituicao`). Na consulta master, edite em cada bloco de matrícula.
 
 **Portal do aluno (teste):**
 

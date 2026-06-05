@@ -6,7 +6,7 @@
 
 | Documento | Conteúdo |
 |-----------|----------|
-| [ROADMAP.md](./ROADMAP.md) | Entregas concluídas, **fase atual** (login/cadastro/infra) e backlog |
+| [ROADMAP.md](./ROADMAP.md) | Entregas concluídas (incl. **operador master**), **fase atual** (perfil Professor) e backlog |
 | [ARQUITETURA.md](./ARQUITETURA.md) | Estrutura do monorepo, camadas backend/frontend e convenções |
 
 > `ROADMAP_PROXIMOS.md` foi unificado em `ROADMAP.md` (mantido só como redirecionamento).

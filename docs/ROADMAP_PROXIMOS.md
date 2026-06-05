@@ -1,9 +1,17 @@
 # Próximas entregas
 
-Este arquivo foi **unificado** em [ROADMAP.md](./ROADMAP.md):
+Planejamento unificado em **[ROADMAP.md](./ROADMAP.md)**.
 
-- **Entregue** — histórico (backend, frontend, documentação até maio/2026)
-- **Fase atual** — login, cadastro e infra
-- **Pendente** e **Backlog** — prioridades seguintes
+## Concluído (jun/2026)
 
-Mantenha apenas este link se bookmarks antigos apontarem para `ROADMAP_PROXIMOS.md`.
+**Operador master da plataforma** — gestão de instituições, planos SaaS, dashboard financeiro global, consulta de alunos/turmas cross-tenant, mensalidade por instituição.
+
+## Em andamento
+
+**Perfil Professor** — ver tabela *Fase atual — perfil Professor* em [ROADMAP.md](./ROADMAP.md).
+
+Prioridades:
+1. Minhas turmas com dados completos
+2. Presença/chamada (MVP)
+3. Alunos da turma (leitura)
+4. Programação e permissões de menu
