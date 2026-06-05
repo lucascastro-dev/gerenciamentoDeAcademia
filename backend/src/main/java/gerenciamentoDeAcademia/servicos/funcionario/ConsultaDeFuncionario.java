@@ -4,6 +4,7 @@ import gerenciamentoDeAcademia.dto.AuditoriaRevisionDto;
 import gerenciamentoDeAcademia.entidades.Funcionario;
 import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
 import gerenciamentoDeAcademia.repositorios.FuncionarioRepository;
+import gerenciamentoDeAcademia.repositorios.InstituicaoRepository;
 import gerenciamentoDeAcademia.servicos.interfaces.IConsultaDeFuncionario;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,7 @@ import java.util.stream.StreamSupport;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class ConsultaDeFuncionario implements IConsultaDeFuncionario {
     private final FuncionarioRepository funcionarioRepository;
+    private final InstituicaoRepository instituicaoRepository;
 
     @Override
     public List<Funcionario> listarFuncionarios() {
@@ -30,8 +32,19 @@ public class ConsultaDeFuncionario implements IConsultaDeFuncionario {
     @Override
     public Funcionario consultarFuncionarioPorCpf(String cpf) {
         ExcecaoDeDominio.quandoNuloOuVazio(cpf, "CPF obrigatório para consultar funcionário!");
-
         return funcionarioRepository.findByCpf(cpf);
+    }
+
+    public Funcionario consultarFuncionarioPorCpfEscopo(String cpf, Long instituicaoId, boolean operadorPlataforma) {
+        Funcionario funcionario = consultarFuncionarioPorCpf(cpf);
+        ExcecaoDeDominio.quandoNulo(funcionario, "Funcionário não encontrado.");
+        if (operadorPlataforma || instituicaoId == null || instituicaoId <= 0) {
+            return funcionario;
+        }
+        ExcecaoDeDominio.quando(
+                !instituicaoRepository.existsByCnpjAndFuncionarioCpf(instituicaoId, cpf),
+                "Funcionário não vinculado à instituição do seu acesso.");
+        return funcionario;
     }
 
     public List<String> listarLogs(Long id) {

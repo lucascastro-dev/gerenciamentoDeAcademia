@@ -16,6 +16,7 @@ public class PessoaDto {
     private LocalDate dataDeNascimento;
     private String endereco;
     private String telefone;
+    private String email;
     private String senha;
 
 }

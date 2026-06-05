@@ -17,6 +17,7 @@ const MeuPerfil: React.FC = () => {
   const [dataDeNascimento, setDataDeNascimento] = useState('');
   const [endereco, setEndereco] = useState<EnderecoCompleto>(enderecoVazio());
   const [telefone, setTelefone] = useState('');
+  const [email, setEmail] = useState('');
   const [especializacao, setEspecializacao] = useState('');
   const [tipo, setTipo] = useState('');
   const [senhaAtual, setSenhaAtual] = useState('');
@@ -41,6 +42,7 @@ const MeuPerfil: React.FC = () => {
         setDataDeNascimento(d.dataDeNascimento || '');
         setEndereco(parseEndereco(d.endereco));
         setTelefone(d.telefone || '');
+        setEmail(d.email || '');
         setEspecializacao(d.especializacao || '');
         setTipo(d.tipoFuncionario || d.cargo || '');
       })
@@ -55,7 +57,7 @@ const MeuPerfil: React.FC = () => {
   const salvarDados = async () => {
     try {
       await HttpService.atualizarMeuPerfil({
-        nome, rg, cpf, dataDeNascimento, endereco: serializarEndereco(endereco), telefone, especializacao,
+        nome, rg, cpf, dataDeNascimento, endereco: serializarEndereco(endereco), telefone, email, especializacao,
       });
       showOk('Dados atualizados com sucesso.');
     } catch (e) {
@@ -94,6 +96,10 @@ const MeuPerfil: React.FC = () => {
           <div><label>RG</label><input value={rg} onChange={(e) => setRg(e.target.value)} /></div>
           <div><label>Nascimento</label><input type="date" value={dataDeNascimento} onChange={(e) => setDataDeNascimento(e.target.value)} /></div>
           <div><label>Telefone</label><input value={telefone} onChange={(e) => setTelefone(e.target.value)} /></div>
+          <div>
+            <label>E-mail</label>
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="nome@email.com" />
+          </div>
           {tipo === 'PROFESSOR' && (
             <div><label>Especialização</label><input value={especializacao} onChange={(e) => setEspecializacao(e.target.value)} /></div>
           )}

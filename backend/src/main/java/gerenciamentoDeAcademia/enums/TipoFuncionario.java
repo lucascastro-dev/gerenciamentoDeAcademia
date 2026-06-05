@@ -9,11 +9,12 @@ import java.util.stream.Collectors;
 
 /**
  * Tipos de colaboradores da instituição com segregação de funções (SoD).
- * Apenas {@link #DIRETOR} possui perfil master da plataforma (todas as permissões).
+ * Master da plataforma é definido por CPF em {@code app.master.cpf} (ver {@code ServicoMasterPlataforma}).
  */
 @Getter
 public enum TipoFuncionario {
-    DIRETOR(true, "Diretor"),
+    OPERADOR_PLATAFORMA(false, "Usuário Master"),
+    DIRETOR(false, "Diretor"),
     FINANCEIRO(false, "Financeiro"),
     RH(false, "Recursos Humanos"),
     TI(false, "Tecnologia da Informação"),
@@ -43,8 +44,6 @@ public enum TipoFuncionario {
         return switch (this) {
             case ADMINISTRADOR -> EnumSet.of(
                     PermissaoSistema.DASHBOARD_VISUALIZAR,
-                    PermissaoSistema.ACADEMIA_CONSULTAR,
-                    PermissaoSistema.ACADEMIA_GERENCIAR,
                     PermissaoSistema.FUNCIONARIO_CONSULTAR,
                     PermissaoSistema.FUNCIONARIO_CADASTRAR,
                     PermissaoSistema.FUNCIONARIO_EDITAR,
@@ -57,7 +56,6 @@ public enum TipoFuncionario {
                     PermissaoSistema.TURMA_CONSULTAR,
                     PermissaoSistema.TURMA_GERENCIAR,
                     PermissaoSistema.PLANO_INSTITUICAO_VISUALIZAR,
-                    PermissaoSistema.PLANO_INSTITUICAO_GERENCIAR,
                     PermissaoSistema.PROGRAMACAO_CONSULTAR,
                     PermissaoSistema.PROGRAMACAO_GERENCIAR
             );

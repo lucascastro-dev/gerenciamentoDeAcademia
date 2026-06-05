@@ -81,6 +81,9 @@ public class CadastradorDeFuncionario implements ICadastradorDeFuncionario {
             throw new ApplicationException("Funcionário não existe!", HttpStatus.BAD_REQUEST);
         }
 
+        if (funcionarioDto.getPermitirGerenciarFuncoes() != null) {
+            funcionarioDto.setPermitirGerenciarFuncoes(null);
+        }
         funcionario.atualizar(funcionarioDto);
         servicoAuditoria.registrar("ALTERACAO", "FUNCIONARIO", funcionario.getCpf(),
                 "Dados atualizados para " + funcionario.getNome());

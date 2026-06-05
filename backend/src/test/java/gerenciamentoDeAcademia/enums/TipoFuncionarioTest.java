@@ -10,17 +10,18 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class TipoFuncionarioTest {
 
     @Test
-    void apenasDiretorDeveSerMaster() {
-        assertTrue(TipoFuncionario.DIRETOR.isUsuarioMaster());
+    void nenhumPerfilDeveSerMasterPorTipo() {
+        assertFalse(TipoFuncionario.DIRETOR.isUsuarioMaster());
         assertFalse(TipoFuncionario.TI.isUsuarioMaster());
         assertFalse(TipoFuncionario.ADMINISTRADOR.isUsuarioMaster());
-        assertEquals(PermissaoSistema.values().length, TipoFuncionario.DIRETOR.permissoesPadrao().size());
+        assertTrue(TipoFuncionario.DIRETOR.permissoesPadrao().isEmpty());
     }
 
     @Test
-    void administradorDeveGerenciarTurmasSemSerMaster() {
+    void administradorGerenciaTurmasSemMenusPlataforma() {
         var permissoes = TipoFuncionario.ADMINISTRADOR.permissoesPadrao();
         assertTrue(permissoes.contains(PermissaoSistema.TURMA_GERENCIAR));
+        assertFalse(permissoes.contains(PermissaoSistema.ACADEMIA_CONSULTAR));
         assertFalse(TipoFuncionario.ADMINISTRADOR.isUsuarioMaster());
     }
 

@@ -10,6 +10,7 @@ import gerenciamentoDeAcademia.servicos.funcionario.ConsultaDeFuncionario;
 import gerenciamentoDeAcademia.servicos.funcionario.ExcluirFuncionario;
 import gerenciamentoDeAcademia.enums.TipoFuncionario;
 import gerenciamentoDeAcademia.infra.seguranca.UsuarioAutenticado;
+import gerenciamentoDeAcademia.servicos.master.ServicoDelegacaoSubMaster;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,6 +40,9 @@ public class GerenciarFuncionarioController {
     ConsultaDeFuncionario consultaDeFuncionario;
     @Autowired
     AlteradorSenha alteradorSenha;
+
+    @Autowired
+    ServicoDelegacaoSubMaster servicoDelegacaoSubMaster;
 
     @GetMapping("/meuPerfil")
     public Funcionario meuPerfil(@AuthenticationPrincipal UsuarioAutenticado usuario) {
@@ -87,8 +91,22 @@ public class GerenciarFuncionarioController {
     @PutMapping("/editarFuncionario")
     @PreAuthorize("@permissaoEvaluator.possui(authentication, 'funcionario:editar')")
     public ResponseEntity<String> editarFuncionario(@RequestBody FuncionarioDto funcionarioDto) {
+        funcionarioDto.setPermitirGerenciarFuncoes(null);
         cadastradorDeFuncionario.editar(funcionarioDto);
         return ResponseEntity.status(HttpStatus.OK).body("Funcionario editado com sucesso!");
+    }
+
+    @PutMapping("/{cpf}/sub-master")
+    @PreAuthorize("@permissaoEvaluator.possuiMasterRaiz(authentication)")
+    public ResponseEntity<String> definirSubMaster(
+            @AuthenticationPrincipal UsuarioAutenticado usuario,
+            @PathVariable("cpf") String cpf,
+            @RequestBody java.util.Map<String, Boolean> body) {
+        boolean habilitar = body != null && Boolean.TRUE.equals(body.get("habilitar"));
+        servicoDelegacaoSubMaster.definirSubMaster(usuario.getFuncionario(), cpf, habilitar);
+        return ResponseEntity.ok(habilitar
+                ? "Operador sub-master habilitado."
+                : "Operador sub-master desabilitado.");
     }
 
     @DeleteMapping("/excluirFuncionario/{cpf}")
@@ -100,8 +118,13 @@ public class GerenciarFuncionarioController {
 
     @GetMapping("/consultarPorCpf/{cpf}")
     @PreAuthorize("@permissaoEvaluator.possui(authentication, 'funcionario:consultar')")
-    public Funcionario consultarPorCpf(@PathVariable("cpf") String cpf) {
-        return consultaDeFuncionario.consultarFuncionarioPorCpf(cpf);
+    public Funcionario consultarPorCpf(
+            @AuthenticationPrincipal UsuarioAutenticado usuario,
+            @PathVariable("cpf") String cpf) {
+        String cpfLimpo = cpf.replaceAll("\\D", "");
+        Long instituicaoId = usuario.getInstituicaoId();
+        return consultaDeFuncionario.consultarFuncionarioPorCpfEscopo(
+                cpfLimpo, instituicaoId, usuario.isOperadorPlataforma());
     }
 
     @GetMapping("/consultarFuncionario")

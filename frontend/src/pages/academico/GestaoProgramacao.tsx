@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import FeedbackModal from '../../components/common/FeedbackModal';
 import PageShell from '../../components/common/PageShell';
-import { carregarSessao, possuiPermissao } from '../../auth/permissoes';
+import { carregarSessao, isModoPlataforma, possuiPermissao } from '../../auth/permissoes';
 import HttpService from '../../services/HttpService';
 import { extractApiMessage } from '../../utils/apiError';
+import { mapInstituicoesApi } from '../../utils/instituicao';
 import '../../theme/programacao.css';
 
 type Aba = 'itens' | 'grade' | 'salas';
@@ -95,9 +96,17 @@ const formVazio = () => ({
   sala: '',
 });
 
+interface InstituicaoOpt {
+  id: number;
+  razaoSocial: string;
+}
+
 const GestaoProgramacao: React.FC = () => {
   const sessao = carregarSessao();
-  const instituicaoId = sessao?.vinculo || '1';
+  const master = isModoPlataforma(sessao);
+  const vinculoPadrao = sessao?.vinculo && sessao.vinculo !== '0' ? sessao.vinculo : '';
+  const [instituicaoId, setInstituicaoId] = useState(vinculoPadrao || '');
+  const [instituicoes, setInstituicoes] = useState<InstituicaoOpt[]>([]);
   const podeGerenciar = possuiPermissao(sessao, 'programacao:gerenciar');
 
   const [aba, setAba] = useState<Aba>('itens');
@@ -114,25 +123,58 @@ const GestaoProgramacao: React.FC = () => {
   const [modal, setModal] = useState({ open: false, success: false, message: '' });
   const [carregando, setCarregando] = useState(false);
 
+  useEffect(() => {
+    if (master) {
+      HttpService.listarTodasInstituicoes()
+        .then((r) => setInstituicoes(mapInstituicoesApi(r.data || [])))
+        .catch(() => setInstituicoes([]));
+    } else if (vinculoPadrao) {
+      setInstituicaoId(vinculoPadrao);
+    }
+  }, [master, vinculoPadrao]);
+
+  const aoTrocarInstituicao = (novoId: string) => {
+    setInstituicaoId(novoId);
+    setItens([]);
+    setGrade([]);
+    setSalas([]);
+    setAlunos([]);
+    setTipos([]);
+    setEditId(null);
+    setForm(formVazio());
+    setConflitos([]);
+  };
+
   const carregarItens = useCallback(() => {
+    if (!instituicaoId) return;
     HttpService.programacaoListarItens(instituicaoId)
       .then((r) => setItens(r.data))
       .catch(() => setItens([]));
   }, [instituicaoId]);
 
   const carregarGrade = useCallback(() => {
+    if (!instituicaoId) return;
     HttpService.programacaoGrade(instituicaoId, semanaRef)
       .then((r) => setGrade(r.data))
       .catch(() => setGrade([]));
   }, [instituicaoId, semanaRef]);
 
   const carregarSalas = useCallback(() => {
+    if (!instituicaoId) return;
     HttpService.programacaoListarSalas(instituicaoId)
       .then((r) => setSalas(r.data))
       .catch(() => setSalas([]));
   }, [instituicaoId]);
 
   useEffect(() => {
+    if (!instituicaoId) {
+      setTipos([]);
+      setItens([]);
+      setGrade([]);
+      setSalas([]);
+      setAlunos([]);
+      return;
+    }
     HttpService.programacaoTipos(instituicaoId).then((r) => setTipos(r.data)).catch(() => undefined);
     carregarSalas();
     if (podeGerenciar) {
@@ -143,10 +185,11 @@ const GestaoProgramacao: React.FC = () => {
   }, [instituicaoId, podeGerenciar, carregarSalas]);
 
   useEffect(() => {
+    if (!instituicaoId) return;
     if (aba === 'itens') carregarItens();
     if (aba === 'grade') carregarGrade();
     if (aba === 'salas') carregarSalas();
-  }, [aba, carregarItens, carregarGrade, carregarSalas]);
+  }, [aba, instituicaoId, carregarItens, carregarGrade, carregarSalas]);
 
   const kpis = useMemo(() => {
     const conflitosGrade = grade.filter((e) => e.conflito).length;
@@ -292,6 +335,28 @@ const GestaoProgramacao: React.FC = () => {
       title="Programação e grade"
       subtitle="Organize a Minha programação dos alunos, visualize turmas na grade e evite conflitos de sala"
     >
+      {master && (
+        <div className="card" style={{ marginBottom: '1rem' }}>
+          <label>Instituição</label>
+          <select
+            value={instituicaoId}
+            onChange={(e) => aoTrocarInstituicao(e.target.value)}
+            style={{ marginTop: '0.35rem', maxWidth: 420 }}
+          >
+            <option value="">Selecione a instituição para gerenciar a programação</option>
+            {instituicoes.map((i) => (
+              <option key={i.id} value={String(i.id)}>{i.razaoSocial}</option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {!instituicaoId && master && (
+        <p className="field-hint">Escolha uma instituição para carregar itens, grade e salas.</p>
+      )}
+
+      {instituicaoId && (
+      <>
       <div className="programacao-kpis">
         <div className="programacao-kpi"><strong>{kpis.itens}</strong><span>Itens programados</span></div>
         <div className="programacao-kpi"><strong>{kpis.turmasGrade + kpis.programacaoGrade}</strong><span>Eventos na semana</span></div>
@@ -481,6 +546,8 @@ const GestaoProgramacao: React.FC = () => {
             </table>
           </div>
         </>
+      )}
+      </>
       )}
 
       <FeedbackModal open={modal.open} success={modal.success} message={modal.message} onClose={() => setModal((m) => ({ ...m, open: false }))} />

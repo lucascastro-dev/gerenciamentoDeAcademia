@@ -22,15 +22,7 @@ public class AlteradorDeFuncionario implements IAlteradorDeFuncionario {
         Funcionario funcionario = funcionarioRepository.findByCpf(funcionarioDto.getCpf());
         ExcecaoDeDominio.quandoNulo(funcionario, "Funcionário não encontrado na base de dados!");
 
-        funcionario.setNome(funcionarioDto.getNome());
-        funcionario.setRg(funcionarioDto.getRg());
-        funcionario.setDataDeNascimento(funcionarioDto.getDataDeNascimento());
-        funcionario.setEndereco(funcionarioDto.getEndereco());
-        funcionario.setTelefone(funcionarioDto.getTelefone());
-        funcionario.setCargo(funcionarioDto.getCargo());
-        funcionario.setEspecializacao(funcionarioDto.getEspecializacao());
-        funcionario.setPermitirGerenciarFuncoes(funcionarioDto.getPermitirGerenciarFuncoes());
-
+        funcionario.atualizar(funcionarioDto);
         funcionarioRepository.save(funcionario);
     }
 }

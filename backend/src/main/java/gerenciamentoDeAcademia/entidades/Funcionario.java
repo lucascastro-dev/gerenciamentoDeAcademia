@@ -40,6 +40,7 @@ public class Funcionario {
     private LocalDate dataDeNascimento;
     private String endereco;
     private String telefone;
+    private String email;
     private String cargo;
 
     @Enumerated(EnumType.STRING)
@@ -62,13 +63,12 @@ public class Funcionario {
         this.dataDeNascimento = funcionarioDto.getDataDeNascimento();
         this.endereco = funcionarioDto.getEndereco();
         this.telefone = funcionarioDto.getTelefone();
+        this.email = funcionarioDto.getEmail();
         this.tipoFuncionario = resolverTipo(funcionarioDto);
         this.cargo = this.tipoFuncionario.getDescricao();
         this.areaTerceirizado = funcionarioDto.getAreaTerceirizado();
         this.especializacao = funcionarioDto.getEspecializacao();
-        this.permitirGerenciarFuncoes = funcionarioDto.getPermitirGerenciarFuncoes() != null
-                ? funcionarioDto.getPermitirGerenciarFuncoes()
-                : this.tipoFuncionario.isUsuarioMaster();
+        this.permitirGerenciarFuncoes = Boolean.TRUE.equals(funcionarioDto.getPermitirGerenciarFuncoes());
         this.senha = funcionarioDto.getSenha();
         this.cadastroAtivo = false;
     }
@@ -105,6 +105,9 @@ public class Funcionario {
         this.dataDeNascimento = funcionarioDto.getDataDeNascimento();
         this.endereco = funcionarioDto.getEndereco();
         this.telefone = funcionarioDto.getTelefone();
+        if (funcionarioDto.getEmail() != null) {
+            this.email = funcionarioDto.getEmail().isBlank() ? null : funcionarioDto.getEmail().trim();
+        }
         if (tipoFuncionario == TipoFuncionario.PROFESSOR) {
             this.especializacao = funcionarioDto.getEspecializacao();
         }
@@ -116,6 +119,9 @@ public class Funcionario {
         this.dataDeNascimento = funcionarioDto.getDataDeNascimento();
         this.endereco = funcionarioDto.getEndereco();
         this.telefone = funcionarioDto.getTelefone();
+        if (funcionarioDto.getEmail() != null) {
+            this.email = funcionarioDto.getEmail().isBlank() ? null : funcionarioDto.getEmail().trim();
+        }
         TipoFuncionario tipo = resolverTipo(funcionarioDto);
         if (tipo != null) {
             this.tipoFuncionario = tipo;
@@ -135,8 +141,10 @@ public class Funcionario {
         this.cadastroAtivo = funcionarioDto.getCadastroAtivo();
     }
 
+    /** @deprecated Use {@link gerenciamentoDeAcademia.servicos.master.ServicoMasterPlataforma#ehOperadorPlataforma}. */
+    @Deprecated
     public boolean isUsuarioMaster() {
-        return tipoFuncionario != null && tipoFuncionario.isUsuarioMaster();
+        return Boolean.TRUE.equals(permitirGerenciarFuncoes);
     }
 
     public void ativar() {
