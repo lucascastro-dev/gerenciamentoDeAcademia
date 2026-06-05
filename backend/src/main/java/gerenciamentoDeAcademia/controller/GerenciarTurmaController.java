@@ -121,8 +121,19 @@ public class GerenciarTurmaController {
 
     @GetMapping("/listarTurmas")
     @PreAuthorize("@permissaoEvaluator.possui(authentication, 'turma:consultar')")
-    public List<Turma> listarTurma() {
-        return consultaDeTurma.listarTurmas();
+    public List<Turma> listarTurma(
+            @AuthenticationPrincipal UsuarioAutenticado usuario,
+            @RequestParam(required = false) Long instituicaoId,
+            @RequestParam(required = false) String professorCpf,
+            @RequestParam(required = false) List<String> dias) {
+        if (instituicaoId != null || (professorCpf != null && !professorCpf.isBlank())
+                || (dias != null && !dias.isEmpty())) {
+            return consultaDeTurma.listarTurmas(usuario, instituicaoId, professorCpf, dias);
+        }
+        if (usuario != null && usuario.isOperadorPlataforma()) {
+            return consultaDeTurma.listarTurmas();
+        }
+        return consultaDeTurma.listarTurmas(usuario, null, null, null);
     }
 
     @GetMapping("/consultarTurmaCodigo/{id}")

@@ -25,7 +25,7 @@ public class ConsultaDeTurmaTest {
     void deveRetornarListaDeTurmas() {
         consultaDeTurma.listarTurmas();
 
-        Mockito.verify(turmaRepository).findAll();
+        Mockito.verify(turmaRepository).findAllComInstituicaoEProfessor();
     }
 
     @Test

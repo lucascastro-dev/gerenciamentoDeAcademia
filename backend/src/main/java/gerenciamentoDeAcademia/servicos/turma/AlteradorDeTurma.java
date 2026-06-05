@@ -4,8 +4,10 @@ import gerenciamentoDeAcademia.entidades.Aluno;
 import gerenciamentoDeAcademia.entidades.Funcionario;
 import gerenciamentoDeAcademia.entidades.Turma;
 import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
+import gerenciamentoDeAcademia.enums.TipoFuncionario;
 import gerenciamentoDeAcademia.repositorios.AlunoRepository;
 import gerenciamentoDeAcademia.repositorios.FuncionarioRepository;
+import gerenciamentoDeAcademia.repositorios.InstituicaoRepository;
 import gerenciamentoDeAcademia.repositorios.TurmaRepository;
 import gerenciamentoDeAcademia.servicos.interfaces.IAlteradorDeTurma;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ import java.util.Optional;
 public class AlteradorDeTurma implements IAlteradorDeTurma {
     TurmaRepository turmaRepository;
     FuncionarioRepository funcionarioRepository;
+    InstituicaoRepository instituicaoRepository;
     AlunoRepository alunoRepository;
 
     @Override
@@ -29,10 +32,18 @@ public class AlteradorDeTurma implements IAlteradorDeTurma {
         Optional<Turma> turma = turmaRepository.findById(turmaParaAlterar.getId());
         ExcecaoDeDominio.quandoNulo(turma, "Turma não encontrada na base");
 
-        ExcecaoDeDominio.quando(turma.get().getModalidade() != turmaParaAlterar.getModalidade(), "Não é possível alterar a modalidade da turma");
-
-        turma.get().setDias(turmaParaAlterar.getDias());
-        turma.get().setHorario(turmaParaAlterar.getHorario());
+        if (StringUtils.hasText(turmaParaAlterar.getModalidade())) {
+            turma.get().setModalidade(turmaParaAlterar.getModalidade());
+        }
+        if (turmaParaAlterar.getDias() != null) {
+            turma.get().setDias(turmaParaAlterar.getDias());
+        }
+        if (StringUtils.hasText(turmaParaAlterar.getHorario())) {
+            turma.get().setHorario(turmaParaAlterar.getHorario());
+        }
+        if (turmaParaAlterar.getSala() != null) {
+            turma.get().setSala(turmaParaAlterar.getSala().isBlank() ? null : turmaParaAlterar.getSala());
+        }
 
         turmaRepository.save(turma.get());
     }
@@ -43,8 +54,15 @@ public class AlteradorDeTurma implements IAlteradorDeTurma {
         if (!StringUtils.hasText(cpfProfessor)) {
             turma.setProfessor(null);
         } else {
-            Funcionario professor = funcionarioRepository.findByCpf(cpfProfessor.replaceAll("\\D", ""));
+            String cpf = cpfProfessor.replaceAll("\\D", "");
+            Funcionario professor = funcionarioRepository.findByCpf(cpf);
             ExcecaoDeDominio.quandoNulo(professor, "Professor não encontrado na base");
+            ExcecaoDeDominio.quando(professor.getTipoFuncionario() != TipoFuncionario.PROFESSOR,
+                    "O colaborador informado não é professor.");
+            Long instituicaoId = turma.getInstituicao() != null ? turma.getInstituicao().getId() : null;
+            ExcecaoDeDominio.quando(instituicaoId == null
+                            || !instituicaoRepository.existsByCnpjAndFuncionarioCpf(instituicaoId, cpf),
+                    "Professor não vinculado à instituição desta turma.");
             turma.setProfessor(professor);
         }
         turmaRepository.save(turma);

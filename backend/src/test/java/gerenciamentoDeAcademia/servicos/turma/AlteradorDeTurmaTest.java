@@ -2,10 +2,13 @@ package gerenciamentoDeAcademia.servicos.turma;
 
 import gerenciamentoDeAcademia.entidades.Aluno;
 import gerenciamentoDeAcademia.entidades.Funcionario;
+import gerenciamentoDeAcademia.entidades.Instituicao;
 import gerenciamentoDeAcademia.entidades.Turma;
+import gerenciamentoDeAcademia.enums.TipoFuncionario;
 import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
 import gerenciamentoDeAcademia.repositorios.AlunoRepository;
 import gerenciamentoDeAcademia.repositorios.FuncionarioRepository;
+import gerenciamentoDeAcademia.repositorios.InstituicaoRepository;
 import gerenciamentoDeAcademia.repositorios.TurmaRepository;
 import org.instancio.Instancio;
 import org.junit.jupiter.api.Assertions;
@@ -35,6 +38,8 @@ public class AlteradorDeTurmaTest {
     FuncionarioRepository funcionarioRepository;
     @Mock
     AlunoRepository alunoRepository;
+    @Mock
+    InstituicaoRepository instituicaoRepository;
 
     private Turma turmaParaAlterar;
     private Turma turma;
@@ -45,7 +50,11 @@ public class AlteradorDeTurmaTest {
 
     @BeforeEach
     void init() {
-        professor = Instancio.of(Funcionario.class).create();
+        professor = Instancio.of(Funcionario.class)
+                .set(field(Funcionario::getTipoFuncionario), TipoFuncionario.PROFESSOR)
+                .create();
+        Instituicao instituicao = new Instituicao();
+        instituicao.setId(1L);
         aluno1 = Instancio.of(Aluno.class).set(field(Aluno::getCpf), "89914289088").create();
         aluno2 = Instancio.of(Aluno.class).set(field(Aluno::getCpf), "86816316088").create();
         listaAlunos.add(aluno1);
@@ -53,7 +62,10 @@ public class AlteradorDeTurmaTest {
         turmaParaAlterar = Instancio.of(Turma.class)
                 .set(field(Turma::getAlunos), listaAlunos)
                 .set(field(Turma::getModalidade), "Modalidade").create();
-        turma = Instancio.of(Turma.class).set(field(Turma::getModalidade), "Modalidade").create();
+        turma = Instancio.of(Turma.class)
+                .set(field(Turma::getModalidade), "Modalidade")
+                .set(field(Turma::getInstituicao), instituicao)
+                .create();
 
         Mockito.when(turmaRepository.findById(turmaParaAlterar.getId()))
                 .thenReturn(Optional.ofNullable(turma));
@@ -100,12 +112,14 @@ public class AlteradorDeTurmaTest {
     }
 
     @Test
-    void deveRetornarMensagemDeErroSeAlterarModalidadeDaTurma() {
+    void deveAlterarModalidadeSalaEHorarioDaTurma() {
         turmaParaAlterar.setModalidade("Modalidade alterada");
+        turmaParaAlterar.setSala("Sala 2");
+        turmaParaAlterar.setHorario("10:00-11:00");
 
-        var mensagemDeErro = Assertions.assertThrows(ExcecaoDeDominio.class, () -> alteradorDeTurma.alterarTurma(turmaParaAlterar));
+        alteradorDeTurma.alterarTurma(turmaParaAlterar);
 
-        Assertions.assertEquals("Não é possível alterar a modalidade da turma", mensagemDeErro.getMessage());
+        Mockito.verify(turmaRepository).save(any(Turma.class));
     }
 
     @Test
@@ -113,6 +127,7 @@ public class AlteradorDeTurmaTest {
         String cpfProfessor = "07757569036";
         Mockito.when(turmaRepository.findById(turma.getId())).thenReturn(Optional.of(turma));
         Mockito.when(funcionarioRepository.findByCpf(cpfProfessor)).thenReturn(professor);
+        Mockito.when(instituicaoRepository.existsByCnpjAndFuncionarioCpf(1L, cpfProfessor)).thenReturn(true);
 
         alteradorDeTurma.vincularProfessor(turma.getId(), cpfProfessor);
 

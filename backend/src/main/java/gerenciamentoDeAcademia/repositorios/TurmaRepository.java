@@ -2,6 +2,8 @@ package gerenciamentoDeAcademia.repositorios;
 
 import gerenciamentoDeAcademia.entidades.Turma;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -17,4 +19,14 @@ public interface TurmaRepository extends JpaRepository<Turma, Long> {
     List<Turma> findByInstituicao_Id(Long instituicaoId);
 
     java.util.Optional<Turma> findFirstByInstituicao_IdAndModalidadeOrderByIdAsc(Long instituicaoId, String modalidade);
+
+    /**
+     * Sem ORDER BY no SQL: PostgreSQL exige que colunas do ORDER BY apareçam no SELECT com DISTINCT.
+     * Ordenação feita em {@link gerenciamentoDeAcademia.servicos.aluno.ConsultaDeAlunos}.
+     */
+    @Query("SELECT DISTINCT t FROM Turma t JOIN FETCH t.instituicao JOIN t.alunos a WHERE a.cpf = :cpf")
+    List<Turma> findTurmasMatriculadasPorCpf(@Param("cpf") String cpf);
+
+    @Query("SELECT DISTINCT t FROM Turma t LEFT JOIN FETCH t.instituicao LEFT JOIN FETCH t.professor")
+    List<Turma> findAllComInstituicaoEProfessor();
 }

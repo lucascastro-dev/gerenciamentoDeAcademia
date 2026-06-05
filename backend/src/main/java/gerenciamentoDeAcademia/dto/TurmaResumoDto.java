@@ -1,27 +1,28 @@
 package gerenciamentoDeAcademia.dto;
 
 import gerenciamentoDeAcademia.entidades.Turma;
+import gerenciamentoDeAcademia.util.IdUtil;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import java.util.List;
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class TurmaResumoDto {
+    private Long id;
+    private String modalidade;
+    private String horario;
+    private String sala;
 
-public record TurmaResumoDto(
-        Long id,
-        String modalidade,
-        String horario,
-        List<String> dias,
-        String professorNome,
-        String professorCpf,
-        int totalAlunos
-) {
     public static TurmaResumoDto of(Turma turma) {
         return new TurmaResumoDto(
-                turma.getId(),
+                IdUtil.toLong(turma.getId()),
                 turma.getModalidade(),
                 turma.getHorario(),
-                turma.getDias(),
-                turma.getProfessor() != null ? turma.getProfessor().getNome() : null,
-                turma.getProfessor() != null ? turma.getProfessor().getCpf() : null,
-                turma.getAlunos() != null ? turma.getAlunos().size() : 0
+                turma.getSala()
         );
     }
 }
