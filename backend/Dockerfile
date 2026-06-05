@@ -2,15 +2,20 @@ FROM public.ecr.aws/docker/library/eclipse-temurin:17-jdk-alpine AS build
 
 WORKDIR /app
 
+# Certificados + shell: evita falhas de HTTPS e do mvnw no Alpine
+RUN apk add --no-cache ca-certificates bash
+
 COPY pom.xml ./
 COPY mvnw ./
-COPY .mvn .mvn
+COPY .mvn ./.mvn
 
 RUN chmod +x mvnw && sed -i 's/\r$//' mvnw
-RUN ./mvnw dependency:go-offline
+
+# go-offline falha com frequência (rede, plugins JaCoCo, etc.); resolve é mais estável
+RUN ./mvnw -B -ntp dependency:resolve dependency:resolve-plugins -DskipTests
 
 COPY src ./src
-RUN ./mvnw clean package -DskipTests
+RUN ./mvnw -B -ntp clean package -DskipTests
 
 FROM public.ecr.aws/docker/library/eclipse-temurin:17-jre-alpine
 

@@ -16,6 +16,20 @@ O projeto usa **mirror público da AWS (ECR)** para Node, Nginx, Postgres e Java
 4. Se só o túnel (`cloudflared`) falhar, a app sobe em http://localhost:5173 sem URL pública.
 5. VPN/proxy: configure em *Docker Desktop → Settings* ou teste outra rede (ex.: celular).
 
+## Erro `backend build ... mvnw dependency:go-offline`
+
+O passo antigo `dependency:go-offline` costuma falhar no Alpine (rede lenta, SSL ou download de plugins Maven).
+
+O `backend/Dockerfile` atual usa `dependency:resolve` + `resolve-plugins`, que é mais estável.
+
+1. Atualize o repositório (`git pull`) ou confira se o Dockerfile não contém mais `go-offline`.
+2. Rebuild forçado:
+   ```bash
+   docker compose build backend --no-cache
+   docker compose up -d
+   ```
+3. Se ainda falhar ao baixar dependências: teste internet/VPN e `docker compose build backend` com Docker Desktop em execução.
+
 ## Forma mais simples (Windows)
 
 1. Instale [Docker Desktop](https://www.docker.com/products/docker-desktop/) e deixe rodando.
