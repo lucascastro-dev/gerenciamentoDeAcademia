@@ -11,8 +11,23 @@ const PlanoInstituicaoGuard = () => {
   const location = useLocation();
   const path = location.pathname;
 
-  if (!sessao || isPortalAluno(sessao) || sessao.usuarioMaster || sessao.planoInstituicaoAtivo !== false) {
+  const financeiroOk = sessao?.acessoFinanceiroCompleto !== false;
+
+  if (
+    !sessao
+    || isPortalAluno(sessao)
+    || sessao.usuarioMaster
+    || (sessao.planoInstituicaoAtivo !== false && financeiroOk)
+  ) {
     return <Outlet />;
+  }
+
+  if (!financeiroOk) {
+    const liberadaPagamento = ROTAS_LIBERADAS.some((r) => path === r || path.startsWith(`${r}/`));
+    if (liberadaPagamento) {
+      return <Outlet />;
+    }
+    return <Navigate to="/arealogada/plano-instituicao" replace state={{ pagamentoPendente: true }} />;
   }
 
   const liberada = ROTAS_LIBERADAS.some((r) => path === r || path.startsWith(`${r}/`));

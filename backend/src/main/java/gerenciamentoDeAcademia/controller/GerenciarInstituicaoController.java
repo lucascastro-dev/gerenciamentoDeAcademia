@@ -1,8 +1,16 @@
 package gerenciamentoDeAcademia.controller;
 
 import gerenciamentoDeAcademia.dto.AtivacaoFuncionarioDto;
+import gerenciamentoDeAcademia.dto.AtivarCadastroInstituicaoRequest;
+import gerenciamentoDeAcademia.dto.AtivarInstituicaoRequest;
+import gerenciamentoDeAcademia.dto.AtualizarPlanoInstituicaoRequest;
+import gerenciamentoDeAcademia.dto.AtualizarStatusFinanceiroRequest;
+import gerenciamentoDeAcademia.dto.TrocarAdministradorRequest;
+import gerenciamentoDeAcademia.dto.InstituicaoDetalheDto;
 import gerenciamentoDeAcademia.dto.InstituicaoDto;
 import gerenciamentoDeAcademia.servicos.instituicao.GerenciadorDeInstituicao;
+import gerenciamentoDeAcademia.servicos.instituicao.ServicoAtivacaoInstituicao;
+import gerenciamentoDeAcademia.servicos.instituicao.ServicoConsultaInstituicaoPlataforma;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,6 +34,12 @@ public class GerenciarInstituicaoController {
     @Autowired
     private GerenciadorDeInstituicao gerenciadorDeInstituicao;
 
+    @Autowired
+    private ServicoAtivacaoInstituicao servicoAtivacaoInstituicao;
+
+    @Autowired
+    private ServicoConsultaInstituicaoPlataforma servicoConsultaInstituicaoPlataforma;
+
     @PostMapping("/registrarAcademia")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("@permissaoEvaluator.possuiMaster(authentication)")
@@ -33,16 +47,62 @@ public class GerenciarInstituicaoController {
         gerenciadorDeInstituicao.cadastrar(instituicaoDto);
     }
 
+    @PostMapping("/ativarUnidade")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("@permissaoEvaluator.possuiMaster(authentication)")
+    public InstituicaoDetalheDto ativarUnidade(@RequestBody AtivarInstituicaoRequest request) {
+        return servicoAtivacaoInstituicao.ativarUnidade(request);
+    }
+
+    @GetMapping("/detalheCnpj/{cnpjAcademia}")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("@permissaoEvaluator.possuiMaster(authentication)")
+    public InstituicaoDetalheDto consultarDetalhePorCnpj(@PathVariable("cnpjAcademia") String cnpjAcademia) {
+        return servicoConsultaInstituicaoPlataforma.consultarDetalhePorCnpj(cnpjAcademia);
+    }
+
+    @PutMapping("/statusFinanceiro")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("@permissaoEvaluator.possuiMaster(authentication)")
+    public InstituicaoDetalheDto atualizarStatusFinanceiro(@RequestBody AtualizarStatusFinanceiroRequest request) {
+        return servicoConsultaInstituicaoPlataforma.atualizarStatusFinanceiro(request);
+    }
+
+    @PutMapping("/plano")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("@permissaoEvaluator.possuiMaster(authentication)")
+    public InstituicaoDetalheDto atualizarPlano(@RequestBody AtualizarPlanoInstituicaoRequest request) {
+        return servicoConsultaInstituicaoPlataforma.atualizarPlanoPorCnpj(request);
+    }
+
     @DeleteMapping("/desativarAcademia/{cnpjAcademia}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PreAuthorize("@permissaoEvaluator.possui(authentication, 'academia:ativar-inativar')")
+    @PreAuthorize("@permissaoEvaluator.possuiMaster(authentication)")
     public void desativarAcademia(@PathVariable("cnpjAcademia") String cnpjAcademia) {
-        gerenciadorDeInstituicao.desativarInstituicao(cnpjAcademia);
+        gerenciadorDeInstituicao.desativarInstituicao(cnpjAcademia.replaceAll("\\D", ""));
+    }
+
+    @PostMapping("/ativarCadastro/{cnpjAcademia}")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("@permissaoEvaluator.possuiMaster(authentication)")
+    public InstituicaoDetalheDto ativarCadastro(
+            @PathVariable("cnpjAcademia") String cnpjAcademia,
+            @RequestBody AtivarCadastroInstituicaoRequest request) {
+        return servicoAtivacaoInstituicao.ativarCadastro(
+                cnpjAcademia,
+                request != null ? request.getPlano() : null);
+    }
+
+    @PutMapping("/administrador")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("@permissaoEvaluator.possuiMaster(authentication)")
+    public InstituicaoDetalheDto trocarAdministrador(@RequestBody TrocarAdministradorRequest request) {
+        return servicoAtivacaoInstituicao.trocarAdministrador(request);
     }
 
     @PutMapping("/atualizarDadosAcademia")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("@permissaoEvaluator.possui(authentication, 'academia:gerenciar')")
+    @PreAuthorize("@permissaoEvaluator.possuiMaster(authentication)")
     public void atualizarDadosAcademia(@RequestBody InstituicaoDto instituicaoDto) {
         gerenciadorDeInstituicao.atualizarDados(instituicaoDto);
     }
@@ -74,21 +134,21 @@ public class GerenciarInstituicaoController {
 
     @GetMapping("/consultarAcademiaCnpj/{cnpjAcademia}")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("@permissaoEvaluator.possui(authentication, 'academia:consultar')")
+    @PreAuthorize("@permissaoEvaluator.possuiMaster(authentication)")
     public InstituicaoDto consultarAcademiaPorCnpj(@PathVariable("cnpjAcademia") String cnpjAcademia) {
-        return gerenciadorDeInstituicao.consultarInstituicaoCnpj(cnpjAcademia);
+        return gerenciadorDeInstituicao.consultarInstituicaoCnpj(cnpjAcademia.replaceAll("\\D", ""));
     }
 
     @GetMapping("/consultarAcademiaId/{codAcademia}")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("@permissaoEvaluator.possui(authentication, 'academia:consultar')")
+    @PreAuthorize("isAuthenticated()")
     public InstituicaoDto consultarAcademiaPorId(@PathVariable("codAcademia") Long codAcademia) {
         return gerenciadorDeInstituicao.consultarInstituicaoId(codAcademia);
     }
 
     @GetMapping("/consultarTodasAcademias")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("@permissaoEvaluator.possui(authentication, 'academia:consultar')")
+    @PreAuthorize("@permissaoEvaluator.possuiMaster(authentication)")
     public List<InstituicaoDto> consultarTodasAcademias() {
         return new ArrayList<>(gerenciadorDeInstituicao.consultarTodasInstituicoes());
     }

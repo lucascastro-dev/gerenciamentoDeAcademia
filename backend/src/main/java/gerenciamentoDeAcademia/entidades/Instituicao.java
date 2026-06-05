@@ -1,6 +1,7 @@
 package gerenciamentoDeAcademia.entidades;
 
 import gerenciamentoDeAcademia.dto.InstituicaoDto;
+import gerenciamentoDeAcademia.enums.StatusFinanceiroInstituicao;
 import gerenciamentoDeAcademia.excecao.ApplicationException;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -9,6 +10,8 @@ import lombok.ToString;
 import org.springframework.http.HttpStatus;
 
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -33,6 +36,12 @@ public class Instituicao {
     private String endereco;
     private String telefone;
     private Boolean possuiCadastrosParaAprovar;
+    private String email;
+
+    @Enumerated(EnumType.STRING)
+    private StatusFinanceiroInstituicao statusFinanceiro;
+
+    private Boolean trialUtilizado;
 
     @ManyToMany
     @JoinTable(name = "instituicao_funcionario", joinColumns = @JoinColumn(name = "instituicao_id"), inverseJoinColumns = @JoinColumn(name = "funcionario_id"))
@@ -43,9 +52,14 @@ public class Instituicao {
     public Instituicao(InstituicaoDto instituicaoDto) {
         this.razaoSocial = instituicaoDto.getRazaoSocial();
         this.cnpj = instituicaoDto.getCnpj();
-        this.cadastroAtivo = instituicaoDto.getCadastroAtivo();
+        this.cadastroAtivo = Boolean.TRUE.equals(instituicaoDto.getCadastroAtivo());
         this.endereco = instituicaoDto.getEndereco();
         this.telefone = instituicaoDto.getTelefone();
+        this.email = instituicaoDto.getEmail();
+        this.statusFinanceiro = instituicaoDto.getStatusFinanceiro() != null
+                ? instituicaoDto.getStatusFinanceiro()
+                : StatusFinanceiroInstituicao.NAO_APLICAVEL;
+        this.trialUtilizado = Boolean.TRUE.equals(instituicaoDto.getTrialUtilizado());
     }
 
     public void validarVinculo(Funcionario funcionario) {
@@ -64,6 +78,14 @@ public class Instituicao {
         this.razaoSocial = instituicaoDto.getRazaoSocial();
         this.endereco = instituicaoDto.getEndereco();
         this.telefone = instituicaoDto.getTelefone();
-        this.cadastroAtivo = instituicaoDto.getCadastroAtivo();
+        if (instituicaoDto.getCadastroAtivo() != null) {
+            this.cadastroAtivo = instituicaoDto.getCadastroAtivo();
+        }
+        if (instituicaoDto.getEmail() != null) {
+            this.email = instituicaoDto.getEmail();
+        }
+        if (instituicaoDto.getStatusFinanceiro() != null) {
+            this.statusFinanceiro = instituicaoDto.getStatusFinanceiro();
+        }
     }
 }

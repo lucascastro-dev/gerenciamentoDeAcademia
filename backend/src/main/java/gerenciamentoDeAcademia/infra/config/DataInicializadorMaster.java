@@ -23,7 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 
 /**
- * Cria usuário master (DIRETOR) na primeira execução com PostgreSQL/Docker.
+ * Cria ou sincroniza usuário master (operador da plataforma) com PostgreSQL/Docker.
  */
 @Component
 @Profile({"docker", "local"})
@@ -51,11 +51,6 @@ public class DataInicializadorMaster {
         if (instituicaoExistente != null) {
             servicoAssinaturaPlataforma.garantirTrial(instituicaoExistente);
         }
-        if (usuarioRepository.existsByLogin(masterCpf)) {
-            log.info("Usuário master já existe (CPF: {}).", masterCpf);
-            return;
-        }
-
         Funcionario master = funcionarioRepository.findByCpf(masterCpf);
         if (master == null) {
             master = Funcionario.builder()
@@ -65,19 +60,25 @@ public class DataInicializadorMaster {
                     .dataDeNascimento(LocalDate.of(1990, 1, 1))
                     .endereco("Sede")
                     .telefone("00000000000")
-                    .tipoFuncionario(TipoFuncionario.DIRETOR)
-                    .cargo(TipoFuncionario.DIRETOR.getDescricao())
+                    .tipoFuncionario(TipoFuncionario.OPERADOR_PLATAFORMA)
+                    .cargo(TipoFuncionario.OPERADOR_PLATAFORMA.getDescricao())
                     .especializacao("Gestão")
-                    .permitirGerenciarFuncoes(true)
+                    .permitirGerenciarFuncoes(false)
                     .senha(masterPassword)
                     .cadastroAtivo(true)
                     .build();
             master = funcionarioRepository.save(master);
         } else {
-            master.setTipoFuncionario(TipoFuncionario.DIRETOR);
+            master.setTipoFuncionario(TipoFuncionario.OPERADOR_PLATAFORMA);
+            master.setCargo(TipoFuncionario.OPERADOR_PLATAFORMA.getDescricao());
             master.setCadastroAtivo(true);
-            master.setPermitirGerenciarFuncoes(true);
+            master.setPermitirGerenciarFuncoes(false);
             funcionarioRepository.save(master);
+        }
+
+        if (usuarioRepository.existsByLogin(masterCpf)) {
+            log.info("Usuário master já existe (CPF: {}); perfil sincronizado como operador da plataforma.", masterCpf);
+            return;
         }
 
         Instituicao instituicao = instituicaoRepository.findByCnpj("00000000000191");

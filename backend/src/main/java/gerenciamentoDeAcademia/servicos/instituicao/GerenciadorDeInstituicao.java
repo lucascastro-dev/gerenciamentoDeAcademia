@@ -37,11 +37,14 @@ public class GerenciadorDeInstituicao implements IGerenciadorDeInstituicao {
     private final UsuarioRepository usuarioRepository;
 
     @Override
+    @Transactional
     public void cadastrar(InstituicaoDto instituicaoDto) {
         if (instituicaoRepository.findByCnpj(instituicaoDto.getCnpj()) != null) {
             throw new ApplicationException("Instituição já cadastrada!", HttpStatus.BAD_REQUEST);
         }
-
+        if (instituicaoDto.getCadastroAtivo() == null) {
+            instituicaoDto.setCadastroAtivo(false);
+        }
         instituicaoRepository.save(new Instituicao(instituicaoDto));
     }
 
@@ -50,7 +53,7 @@ public class GerenciadorDeInstituicao implements IGerenciadorDeInstituicao {
         Instituicao instituicaoParaDesativar = instituicaoRepository.findByCnpj(cnpjInstituicao);
         ExcecaoDeDominio.quandoNulo(instituicaoParaDesativar, "Instituição não encontrada para desativar!");
 
-        if (!instituicaoParaDesativar.getCadastroAtivo()) {
+        if (!Boolean.TRUE.equals(instituicaoParaDesativar.getCadastroAtivo())) {
             throw new ApplicationException("Essa instituição já está desativada!", HttpStatus.BAD_REQUEST);
         }
 
@@ -137,7 +140,7 @@ public class GerenciadorDeInstituicao implements IGerenciadorDeInstituicao {
 
         if (!usuarioRepository.existsByLogin(cpf)) {
             String senhaCriptografada = passwordEncoder.encode(funcionario.getSenha());
-            UserRole role = funcionario.isUsuarioMaster() ? UserRole.ADMIN : UserRole.USER;
+            UserRole role = UserRole.USER;
             usuarioRepository.save(Usuario.builder()
                     .login(cpf)
                     .password(senhaCriptografada)

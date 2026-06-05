@@ -41,7 +41,7 @@ public class PlanoInstituicaoController {
     }
 
     @PutMapping("/{instituicaoId}/ativar")
-    @PreAuthorize("@permissaoEvaluator.possui(authentication, 'plano:gerenciar')")
+    @PreAuthorize("@permissaoEvaluator.possuiMaster(authentication)")
     public AssinaturaPlataformaDto ativar(
             @PathVariable Long instituicaoId,
             @RequestBody Map<String, String> body) {
