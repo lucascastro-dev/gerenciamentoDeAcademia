@@ -1,0 +1,68 @@
+.turmas-professor {
+  display: grid;
+  grid-template-columns: minmax(240px, 320px) 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .turmas-professor {
+    grid-template-columns: 1fr;
+  }
+}
+
+.turmas-professor__lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.turmas-professor__card {
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius, 8px);
+  padding: 0.85rem;
+  cursor: pointer;
+  background: #fff;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.turmas-professor__card:hover {
+  border-color: #94a3b8;
+}
+
+.turmas-professor__card--ativa {
+  border-color: var(--color-primary, #2563eb);
+  box-shadow: 0 0 0 1px var(--color-primary, #2563eb);
+}
+
+.turmas-professor__card h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+}
+
+.turmas-professor__meta {
+  margin: 0;
+  color: var(--color-muted, #64748b);
+  font-size: 0.85rem;
+}
+
+.turmas-professor__detalhe-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.turmas-professor__add-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.turmas-professor__add-row input {
+  flex: 1;
+  min-width: 180px;
+}

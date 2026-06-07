@@ -1,5 +1,6 @@
 package gerenciamentoDeAcademia.controller;
 
+import gerenciamentoDeAcademia.dto.AlunoTurmaProfessorDto;
 import gerenciamentoDeAcademia.dto.ProfessorResumoDto;
 import gerenciamentoDeAcademia.dto.TurmaDto;
 import gerenciamentoDeAcademia.dto.TurmaResumoDto;
@@ -12,6 +13,7 @@ import gerenciamentoDeAcademia.servicos.turma.AlteradorDeTurma;
 import gerenciamentoDeAcademia.servicos.turma.ConsultaDeTurma;
 import gerenciamentoDeAcademia.servicos.turma.ExluirTurma;
 import gerenciamentoDeAcademia.servicos.turma.MontadorDeTurma;
+import gerenciamentoDeAcademia.servicos.turma.ServicoTurmaProfessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -50,6 +52,8 @@ public class GerenciarTurmaController {
     TurmaRepository turmaRepository;
     @Autowired
     InstituicaoRepository instituicaoRepository;
+    @Autowired
+    ServicoTurmaProfessor servicoTurmaProfessor;
 
     @GetMapping("/professores")
     @PreAuthorize("@permissaoEvaluator.possui(authentication, 'turma:gerenciar')")
@@ -78,10 +82,30 @@ public class GerenciarTurmaController {
 
     @GetMapping("/{id}/alunos")
     @PreAuthorize("@permissaoEvaluator.possui(authentication, 'turma:consultar')")
-    public List<Aluno> alunosDaTurma(@org.springframework.web.bind.annotation.PathVariable Long id) {
-        return turmaRepository.findById(id)
-                .map(t -> t.getAlunos().stream().toList())
-                .orElse(List.of());
+    public List<AlunoTurmaProfessorDto> alunosDaTurma(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UsuarioAutenticado usuario) {
+        return servicoTurmaProfessor.listarAlunos(id, usuario);
+    }
+
+    @PostMapping("/professor/{id}/alunos")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("@permissaoEvaluator.possui(authentication, 'turma:gerenciar-alunos')")
+    public void adicionarAlunoProfessor(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body,
+            @AuthenticationPrincipal UsuarioAutenticado usuario) {
+        servicoTurmaProfessor.adicionarAluno(id, body != null ? body.get("cpf") : null, usuario);
+    }
+
+    @DeleteMapping("/professor/{id}/alunos/{cpf}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("@permissaoEvaluator.possui(authentication, 'turma:gerenciar-alunos')")
+    public void removerAlunoProfessor(
+            @PathVariable Long id,
+            @PathVariable String cpf,
+            @AuthenticationPrincipal UsuarioAutenticado usuario) {
+        servicoTurmaProfessor.removerAluno(id, cpf, usuario);
     }
 
     @PostMapping("/montarTurma")
