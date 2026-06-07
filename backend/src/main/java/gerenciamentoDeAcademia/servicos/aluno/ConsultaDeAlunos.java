@@ -1,8 +1,10 @@
 package gerenciamentoDeAcademia.servicos.aluno;
 
 import gerenciamentoDeAcademia.dto.AlunoConsultaCompletaDto;
+import gerenciamentoDeAcademia.dto.AlunoConsultaProfessorDto;
 import gerenciamentoDeAcademia.dto.AlunoMatriculaInstituicaoDto;
 import gerenciamentoDeAcademia.dto.TurmaResumoDto;
+import gerenciamentoDeAcademia.excecao.ExcecaoDeAcesso;
 import gerenciamentoDeAcademia.entidades.Aluno;
 import gerenciamentoDeAcademia.entidades.Instituicao;
 import gerenciamentoDeAcademia.entidades.Turma;
@@ -79,6 +81,34 @@ public class ConsultaDeAlunos implements IConsultaDeAlunos {
         AlunoConsultaCompletaDto dto = new AlunoConsultaCompletaDto(aluno);
         dto.setMatriculas(montarMatriculas(cpfLimpo, instituicaoFiltro));
         return dto;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public AlunoConsultaProfessorDto consultaProfessorPorCpf(String cpf, UsuarioAutenticado usuario) {
+        String cpfLimpo = CpfUtil.somenteDigitos(cpf);
+        ExcecaoDeDominio.quando(cpfLimpo.length() != 11, "CPF obrigatório com 11 dígitos para consulta do aluno.");
+
+        Aluno aluno = alunoRepository.findByCpf(cpfLimpo);
+        if (aluno == null) {
+            ExcecaoDeAcesso.naoEncontrado("Dados não encontrados.");
+        }
+
+        Long instituicaoId = usuario != null ? usuario.getInstituicaoId() : null;
+        if (instituicaoId == null || instituicaoId <= 0) {
+            ExcecaoDeAcesso.acessoNegado("Instituição não identificada na sessão.");
+        }
+
+        if (!instituicaoRepository.alunoVinculadoInstituicao(cpfLimpo, instituicaoId)) {
+            ExcecaoDeAcesso.naoEncontrado("Dados não encontrados.");
+        }
+
+        List<TurmaResumoDto> turmas = turmaRepository.findTurmasMatriculadasPorCpf(cpfLimpo).stream()
+                .filter(t -> t.getInstituicao() != null && instituicaoId.equals(IdUtil.toLong(t.getInstituicao().getId())))
+                .map(TurmaResumoDto::of)
+                .toList();
+
+        return AlunoConsultaProfessorDto.of(aluno, turmas);
     }
 
     private java.util.List<AlunoMatriculaInstituicaoDto> montarMatriculas(String cpf, Long instituicaoFiltro) {

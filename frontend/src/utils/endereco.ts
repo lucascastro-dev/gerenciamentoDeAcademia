@@ -22,7 +22,7 @@ export function parseEndereco(raw?: string | null): EnderecoCompleto {
   if (!raw?.trim()) return enderecoVazio();
   try {
     const parsed = JSON.parse(raw) as Partial<EnderecoCompleto>;
-    if (parsed && typeof parsed === 'object' && ('cep' in parsed || 'logradouro' in parsed)) {
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
       return { ...enderecoVazio(), ...parsed };
     }
   } catch {

@@ -1,6 +1,7 @@
 package gerenciamentoDeAcademia.controller;
 
 import gerenciamentoDeAcademia.dto.AlunoConsultaCompletaDto;
+import gerenciamentoDeAcademia.dto.AlunoConsultaProfessorDto;
 import gerenciamentoDeAcademia.dto.AlunoDto;
 import gerenciamentoDeAcademia.entidades.Aluno;
 import gerenciamentoDeAcademia.infra.seguranca.UsuarioAutenticado;
@@ -84,5 +85,14 @@ public class GerenciarAlunoController {
             @PathVariable("cpf") String cpf,
             @AuthenticationPrincipal UsuarioAutenticado usuario) {
         return consultaDeAlunos.consultaCompletaPorCpf(cpf.replaceAll("\\D", ""), usuario);
+    }
+
+    @GetMapping("/professor/consultar/{cpf}")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("@permissaoEvaluator.possui(authentication, 'aluno:consultar')")
+    public AlunoConsultaProfessorDto consultarProfessorPorCpf(
+            @PathVariable("cpf") String cpf,
+            @AuthenticationPrincipal UsuarioAutenticado usuario) {
+        return consultaDeAlunos.consultaProfessorPorCpf(cpf.replaceAll("\\D", ""), usuario);
     }
 }

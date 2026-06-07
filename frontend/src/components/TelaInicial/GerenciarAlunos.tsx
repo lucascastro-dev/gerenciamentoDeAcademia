@@ -10,7 +10,7 @@ import PageShell from '../common/PageShell';
 
 import CurrencyInput from '../common/CurrencyInput';
 
-import { carregarSessao, isModoPlataforma } from '../../auth/permissoes';
+import { carregarSessao, isModoPlataforma, isProfessor } from '../../auth/permissoes';
 
 import HttpService from '../../services/HttpService';
 
@@ -50,7 +50,9 @@ interface FinanceiroInstituicao {
 
 const GerenciarAlunos: React.FC = () => {
 
-  const master = isModoPlataforma(carregarSessao());
+  const sessao = carregarSessao();
+  const master = isModoPlataforma(sessao);
+  const modoProfessor = isProfessor(sessao);
 
   const [cpfBusca, setCpfBusca] = useState('');
 
@@ -71,6 +73,7 @@ const GerenciarAlunos: React.FC = () => {
   const [telefoneResponsavel, setTelefoneResponsavel] = useState('');
 
   const [matriculas, setMatriculas] = useState<MatriculaInstituicao[]>([]);
+  const [turmasProfessor, setTurmasProfessor] = useState<Array<{ id: number; modalidade: string; horario: string; sala?: string }>>([]);
 
   const [financeiroPorInstituicao, setFinanceiroPorInstituicao] = useState<Record<number, FinanceiroInstituicao>>({});
 
@@ -117,7 +120,7 @@ const GerenciarAlunos: React.FC = () => {
     setTelefoneResponsavel('');
 
     setMatriculas([]);
-
+    setTurmasProfessor([]);
     setFinanceiroPorInstituicao({});
 
     setAlunoCarregado(false);
@@ -187,41 +190,44 @@ const GerenciarAlunos: React.FC = () => {
     setCpfBusca(maskCPF(cpf));
 
     try {
+      if (modoProfessor) {
+        const r = await HttpService.consultarAlunoProfessor(cpf);
+        const d = r.data;
+        setNome(d.nome);
+        setRg(d.rgMascarado);
+        setDataDeNascimento(d.dataDeNascimento);
+        setEndereco(parseEndereco(d.enderecoResumido || ''));
+        setTelefone(d.telefoneMascarado);
+        setEmail(d.emailMascarado ?? '');
+        setNomeResponsavel(d.nomeResponsavel ?? '');
+        setTelefoneResponsavel(d.telefoneResponsavelMascarado ?? '');
+        setMatriculas([]);
+        setTurmasProfessor(d.turmasInstituicao || []);
+        setFinanceiroPorInstituicao({});
+        setAlunoCarregado(true);
+        return;
+      }
 
       const r = await HttpService.consultarAlunoPorCpf(cpf);
-
       const d = r.data;
-
       setNome(d.nome);
-
       setRg(d.rg);
-
       setDataDeNascimento(d.dataDeNascimento);
-
       setEndereco(parseEndereco(d.endereco));
-
       setTelefone(d.telefone);
-
       setEmail(d.email ?? '');
-
       setNomeResponsavel(d.nomeResponsavel ?? '');
-
       setTelefoneResponsavel(d.telefoneResponsavel ?? '');
-
       const mats = d.matriculas || [];
-
       setMatriculas(mats);
-
       aplicarFinanceiroDasMatriculas(mats);
-
       setAlunoCarregado(true);
-
     } catch (e) {
 
       setAlunoCarregado(false);
 
       setMatriculas([]);
-
+      setTurmasProfessor([]);
       setFinanceiroPorInstituicao({});
 
       setModal({ open: true, success: false, message: extractApiMessage(e, 'Aluno não encontrado.') });
@@ -328,10 +334,10 @@ const GerenciarAlunos: React.FC = () => {
 
       title="Consultar alunos"
 
-      subtitle={master
-
+      subtitle={modoProfessor
+        ? 'Consulta somente leitura de alunos matriculados na instituição'
+        : master
         ? 'Busque apenas pelo CPF para ver dados pessoais e matrículas em todas as instituições'
-
         : 'Busque pelo CPF para ver dados e matrícula na sua instituição'}
 
     >
@@ -364,11 +370,11 @@ const GerenciarAlunos: React.FC = () => {
 
           <button type="button" className="btn-secondary" onClick={limparForm}>Limpar</button>
 
-          <Link to="/arealogada/matricula" className="btn-secondary" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
-
-            Matricular novo aluno
-
-          </Link>
+          {!modoProfessor && (
+            <Link to="/arealogada/matricula" className="btn-secondary" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
+              Matricular novo aluno
+            </Link>
+          )}
 
         </div>
 
@@ -380,6 +386,20 @@ const GerenciarAlunos: React.FC = () => {
 
         <>
 
+          {modoProfessor && turmasProfessor.length > 0 && (
+            <div className="card" style={{ marginBottom: '1rem' }}>
+              <h3 style={{ marginTop: 0 }}>Turmas na instituição</h3>
+              <ul style={{ margin: 0, paddingLeft: '1.2rem' }}>
+                {turmasProfessor.map((t) => (
+                  <li key={t.id}>
+                    {t.modalidade} — {t.horario}{t.sala ? ` · ${t.sala}` : ''}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {!modoProfessor && (
           <div className="card" style={{ marginBottom: '1rem' }}>
 
             <h3 style={{ marginTop: 0 }}>Matrículas e mensalidade por instituição</h3>
@@ -471,8 +491,7 @@ const GerenciarAlunos: React.FC = () => {
             )}
 
           </div>
-
-
+          )}
 
           <div className="card" style={{ marginBottom: '1rem' }}>
 
@@ -480,30 +499,31 @@ const GerenciarAlunos: React.FC = () => {
 
             <div className="form-grid">
 
-              <div><label>Nome</label><input value={nome} onChange={(e) => setNome(e.target.value)} /></div>
+              <div><label>Nome</label><input value={nome} readOnly={modoProfessor} onChange={(e) => setNome(e.target.value)} /></div>
 
-              <div><label>RG</label><input value={rg} onChange={(e) => setRg(e.target.value)} /></div>
+              <div><label>RG</label><input value={rg} readOnly={modoProfessor} onChange={(e) => setRg(e.target.value)} /></div>
 
-              <div><label>Nascimento</label><input type="date" value={dataDeNascimento} onChange={(e) => setDataDeNascimento(e.target.value)} /></div>
+              <div><label>Nascimento</label><input type="date" value={dataDeNascimento} readOnly={modoProfessor} onChange={(e) => setDataDeNascimento(e.target.value)} /></div>
 
-              <div><label>Telefone</label><input value={telefone} onChange={(e) => setTelefone(e.target.value)} /></div>
+              <div><label>Telefone</label><input value={telefone} readOnly={modoProfessor} onChange={(e) => setTelefone(e.target.value)} /></div>
 
               <div>
 
                 <label>E-mail</label>
 
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="nome@email.com" />
+                <input type="email" value={email} readOnly={modoProfessor} onChange={(e) => setEmail(e.target.value)} placeholder="nome@email.com" />
 
               </div>
 
-              <div><label>Responsável</label><input value={nomeResponsavel} onChange={(e) => setNomeResponsavel(e.target.value)} /></div>
+              <div><label>Responsável</label><input value={nomeResponsavel} readOnly={modoProfessor} onChange={(e) => setNomeResponsavel(e.target.value)} /></div>
 
-              <div><label>Tel. responsável</label><input value={telefoneResponsavel} onChange={(e) => setTelefoneResponsavel(e.target.value)} /></div>
+              <div><label>Tel. responsável</label><input value={telefoneResponsavel} readOnly={modoProfessor} onChange={(e) => setTelefoneResponsavel(e.target.value)} /></div>
 
             </div>
 
-            <EnderecoFields value={endereco} onChange={setEndereco} />
+            <EnderecoFields value={endereco} onChange={setEndereco} disabled={modoProfessor} />
 
+            {!modoProfessor && (
             <div className="form-actions">
 
               <button type="button" className="btn-primary" onClick={salvarAlteracoes}>Salvar alterações</button>
@@ -511,6 +531,7 @@ const GerenciarAlunos: React.FC = () => {
               <button type="button" className="btn-danger" onClick={desmatricular}>Desmatricular</button>
 
             </div>
+            )}
 
           </div>
 
