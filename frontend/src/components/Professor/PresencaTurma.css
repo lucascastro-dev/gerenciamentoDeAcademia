@@ -1,0 +1,84 @@
+.presenca-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: flex-end;
+  margin-bottom: 1rem;
+}
+
+.presenca-legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.presenca-legenda span {
+  font-size: 0.8rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}
+
+.presenca-legenda .P { background: #c6efce; }
+.presenca-legenda .F { background: #375623; color: #fff; }
+.presenca-legenda .J { background: #e2d0f5; }
+.presenca-legenda .A { background: #bdd7ee; }
+
+.presenca-grid-wrap {
+  overflow: auto;
+  max-height: 65vh;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius, 8px);
+}
+
+.presenca-grid {
+  border-collapse: collapse;
+  font-size: 0.8rem;
+  min-width: 100%;
+}
+
+.presenca-grid th,
+.presenca-grid td {
+  border: 1px solid #e2e8f0;
+  padding: 0.35rem 0.45rem;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.presenca-grid th {
+  background: #f8fafc;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.presenca-grid .sticky-col {
+  position: sticky;
+  left: 0;
+  background: #fff;
+  z-index: 1;
+  text-align: left;
+  min-width: 160px;
+}
+
+.presenca-grid thead .sticky-col {
+  z-index: 3;
+  background: #f8fafc;
+}
+
+.presenca-celula {
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.presenca-celula--vazia { background: #f1f5f9; color: #94a3b8; }
+.presenca-celula--P { background: #c6efce; color: #166534; }
+.presenca-celula--F { background: #375623; color: #fff; }
+.presenca-celula--J { background: #e2d0f5; color: #5b21b6; }
+.presenca-celula--A { background: #bdd7ee; color: #1e40af; }
+.presenca-celula--off { background: #e2e8f0; cursor: not-allowed; }
