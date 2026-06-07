@@ -26,10 +26,15 @@ class TipoFuncionarioTest {
     }
 
     @Test
-    void professorNaoDeveGerenciarTurmas() {
+    @org.junit.jupiter.api.DisplayName("Dado perfil PROFESSOR, Quando listar permissões, Então permite turmas alunos e presença sem gerenciar turma")
+    void professorDeveTerPermissoesPedagogicasSemAdministrativas() {
         var permissoes = TipoFuncionario.PROFESSOR.permissoesPadrao();
         assertTrue(permissoes.contains(PermissaoSistema.CERTIFICADO_GERAR));
+        assertTrue(permissoes.contains(PermissaoSistema.TURMA_GERENCIAR_ALUNOS));
+        assertTrue(permissoes.contains(PermissaoSistema.TURMA_PRESENCA));
+        assertTrue(permissoes.contains(PermissaoSistema.PROGRAMACAO_GERENCIAR_ITENS));
         assertFalse(permissoes.contains(PermissaoSistema.TURMA_GERENCIAR));
+        assertFalse(permissoes.contains(PermissaoSistema.PROGRAMACAO_GERENCIAR));
         assertFalse(permissoes.contains(PermissaoSistema.FINANCEIRO_VISUALIZAR));
     }
 
