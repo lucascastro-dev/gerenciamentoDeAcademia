@@ -7,6 +7,18 @@ import org.springframework.stereotype.Component;
 @Component("permissaoEvaluator")
 public class PermissaoEvaluator {
 
+    public boolean possuiAlguma(Authentication authentication, String... codigos) {
+        if (codigos == null) {
+            return false;
+        }
+        for (String codigo : codigos) {
+            if (possui(authentication, codigo)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public boolean possui(Authentication authentication, String codigoPermissao) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return false;

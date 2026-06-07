@@ -67,13 +67,13 @@ public class ProgramacaoInstituicaoController {
 
     @PostMapping("/itens")
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("@permissaoEvaluator.possui(authentication, 'programacao:gerenciar')")
+    @PreAuthorize("@permissaoEvaluator.possuiAlguma(authentication, 'programacao:gerenciar', 'programacao:gerenciar-itens')")
     public ItemProgramacaoDto criarItem(@PathVariable Long instituicaoId, @RequestBody ItemProgramacaoFormDto form) {
         return servicoProgramacao.criar(instituicaoId, form);
     }
 
     @PutMapping("/itens/{id}")
-    @PreAuthorize("@permissaoEvaluator.possui(authentication, 'programacao:gerenciar')")
+    @PreAuthorize("@permissaoEvaluator.possuiAlguma(authentication, 'programacao:gerenciar', 'programacao:gerenciar-itens')")
     public ItemProgramacaoDto atualizarItem(
             @PathVariable Long instituicaoId,
             @PathVariable Long id,
@@ -83,13 +83,13 @@ public class ProgramacaoInstituicaoController {
 
     @DeleteMapping("/itens/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PreAuthorize("@permissaoEvaluator.possui(authentication, 'programacao:gerenciar')")
+    @PreAuthorize("@permissaoEvaluator.possuiAlguma(authentication, 'programacao:gerenciar', 'programacao:gerenciar-itens')")
     public void excluirItem(@PathVariable Long instituicaoId, @PathVariable Long id) {
         servicoProgramacao.excluir(instituicaoId, id);
     }
 
     @PostMapping("/itens/validar-conflito")
-    @PreAuthorize("@permissaoEvaluator.possui(authentication, 'programacao:gerenciar')")
+    @PreAuthorize("@permissaoEvaluator.possuiAlguma(authentication, 'programacao:gerenciar', 'programacao:gerenciar-itens')")
     public List<ConflitoHorarioDto> validarConflito(
             @PathVariable Long instituicaoId,
             @RequestBody ItemProgramacaoFormDto form,

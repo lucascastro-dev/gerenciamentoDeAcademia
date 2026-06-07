@@ -107,7 +107,9 @@ const GestaoProgramacao: React.FC = () => {
   const vinculoPadrao = sessao?.vinculo && sessao.vinculo !== '0' ? sessao.vinculo : '';
   const [instituicaoId, setInstituicaoId] = useState(vinculoPadrao || '');
   const [instituicoes, setInstituicoes] = useState<InstituicaoOpt[]>([]);
-  const podeGerenciar = possuiPermissao(sessao, 'programacao:gerenciar');
+  const podeGerenciarItens = possuiPermissao(sessao, 'programacao:gerenciar')
+    || possuiPermissao(sessao, 'programacao:gerenciar-itens');
+  const podeGerenciarSalas = possuiPermissao(sessao, 'programacao:gerenciar');
 
   const [aba, setAba] = useState<Aba>('itens');
   const [tipos, setTipos] = useState<TipoProgramacao[]>([]);
@@ -177,12 +179,12 @@ const GestaoProgramacao: React.FC = () => {
     }
     HttpService.programacaoTipos(instituicaoId).then((r) => setTipos(r.data)).catch(() => undefined);
     carregarSalas();
-    if (podeGerenciar) {
+    if (podeGerenciarItens) {
       HttpService.listarAlunos(instituicaoId)
         .then((r) => setAlunos((r.data || []).map((a: AlunoOpt) => ({ cpf: a.cpf, nome: a.nome }))))
         .catch(() => setAlunos([]));
     }
-  }, [instituicaoId, podeGerenciar, carregarSalas]);
+  }, [instituicaoId, podeGerenciarItens, carregarSalas]);
 
   useEffect(() => {
     if (!instituicaoId) return;
@@ -258,7 +260,7 @@ const GestaoProgramacao: React.FC = () => {
   };
 
   const salvarItem = async () => {
-    if (!podeGerenciar) return;
+    if (!podeGerenciarItens) return;
     setCarregando(true);
     try {
       const msgsConflito = await validarConflitos();
@@ -378,7 +380,7 @@ const GestaoProgramacao: React.FC = () => {
 
       {aba === 'itens' && (
         <>
-          {podeGerenciar && (
+          {podeGerenciarItens && (
             <div className="programacao-form-panel">
               <h3 style={{ marginTop: 0 }}>{editId ? 'Editar item' : 'Novo item para o aluno'}</h3>
               <p className="field-hint">
@@ -447,12 +449,12 @@ const GestaoProgramacao: React.FC = () => {
                   <th>Título</th>
                   <th>Quando</th>
                   <th>Sala</th>
-                  {podeGerenciar && <th />}
+                  {podeGerenciarItens && <th />}
                 </tr>
               </thead>
               <tbody>
                 {itens.length === 0 && (
-                  <tr><td colSpan={podeGerenciar ? 6 : 5}>Nenhum item cadastrado.</td></tr>
+                  <tr><td colSpan={podeGerenciarItens ? 6 : 5}>Nenhum item cadastrado.</td></tr>
                 )}
                 {itens.map((item) => (
                   <tr key={item.id}>
@@ -461,7 +463,7 @@ const GestaoProgramacao: React.FC = () => {
                     <td>{item.titulo}</td>
                     <td>{item.dataPrevista}{item.horario ? ` · ${item.horario}` : ''}</td>
                     <td>{item.sala || '—'}</td>
-                    {podeGerenciar && (
+                    {podeGerenciarItens && (
                       <td style={{ whiteSpace: 'nowrap' }}>
                         <button type="button" className="btn-secondary" style={{ marginRight: 6 }} onClick={() => preencherEdicao(item)}>Editar</button>
                         <button type="button" className="btn-secondary" onClick={() => excluirItem(item.id)}>Excluir</button>
@@ -516,7 +518,7 @@ const GestaoProgramacao: React.FC = () => {
 
       {aba === 'salas' && (
         <>
-          {podeGerenciar && (
+          {podeGerenciarSalas && (
             <div className="programacao-form-panel">
               <h3 style={{ marginTop: 0 }}>Nova sala</h3>
               <div className="form-grid">
@@ -530,14 +532,14 @@ const GestaoProgramacao: React.FC = () => {
           )}
           <div className="card">
             <table className="programacao-table">
-              <thead><tr><th>Sala</th><th>Capacidade</th><th>Status</th>{podeGerenciar ? <th>Ações</th> : null}</tr></thead>
+              <thead><tr><th>Sala</th><th>Capacidade</th><th>Status</th>{podeGerenciarSalas ? <th>Ações</th> : null}</tr></thead>
               <tbody>
                 {salas.map((s) => (
                   <tr key={s.id}>
                     <td>{s.nome}</td>
                     <td>{s.capacidade ?? '—'}</td>
                     <td>{s.ativa !== false ? 'Ativa' : 'Inativa'}</td>
-                    {podeGerenciar && (
+                    {podeGerenciarSalas && (
                       <td><button type="button" className="btn-secondary" onClick={() => excluirSala(s.id)}>Excluir</button></td>
                     )}
                   </tr>
