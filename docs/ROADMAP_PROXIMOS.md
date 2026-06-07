@@ -4,14 +4,18 @@ Planejamento unificado em **[ROADMAP.md](./ROADMAP.md)**.
 
 ## Concluído (jun/2026)
 
-**Operador master da plataforma** — gestão de instituições, planos SaaS, dashboard financeiro global, consulta de alunos/turmas cross-tenant, mensalidade por instituição.
+**Operador master da plataforma** — instituições, planos SaaS, dashboard financeiro global, consulta cross-tenant, mensalidade por instituição.
 
-## Em andamento
+## Concluído (jul/2026)
 
-**Perfil Professor** — ver tabela *Fase atual — perfil Professor* em [ROADMAP.md](./ROADMAP.md).
+**Perfil Professor** — minhas turmas unificadas, presença com PDF, certificados, consulta aluno somente leitura (LGPD), programação (itens editáveis / salas leitura), menus e permissões.
 
-Prioridades:
-1. Minhas turmas com dados completos
-2. Presença/chamada (MVP)
-3. Alunos da turma (leitura)
-4. Programação e permissões de menu
+## Próximo foco (ago/2026)
+
+1. **DIRETOR / ADMINISTRADOR** — revisão de menus e SoD
+2. **RECEPÇÃO / RH** — matrícula e ativação de cadastros
+3. **FINANCEIRO** — cobrança e gateway
+4. **LGPD** — auditoria de consulta PII e exportação de dados
+5. **Infra** — SMTP, backup, rate limiting
+
+Detalhes e lacunas por perfil: tabelas em [ROADMAP.md](./ROADMAP.md).

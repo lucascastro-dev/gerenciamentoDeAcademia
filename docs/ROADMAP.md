@@ -1,6 +1,6 @@
 # Roadmap — EduGestão Inteligente
 
-Documento único de planejamento. Histórico na seção **Entregue**; prioridade atual em **Fase atual — Perfil Professor**.
+Documento único de planejamento. Histórico na seção **Entregue**; prioridade atual em **Próxima fase**.
 
 ## Entregue (base + evolução até mai/2026)
 
@@ -38,7 +38,7 @@ Documento único de planejamento. Histórico na seção **Entregue**; prioridade
 
 ## Entregue — operador master da plataforma (jun/2026)
 
-Objetivo desta fase: o **OPERADOR_PLATAFORMA** gerencia instituições, planos SaaS, visão financeira global e consultas cross-tenant sem depender do perfil DIRETOR da instituição.
+Objetivo desta fase: o **OPERADOR_PLATAFORMA** gerencia instituições, planos SaaS, visão financeira global e consultas cross-tenant.
 
 ### Identidade e acesso
 - Master via `APP_MASTER_CPF` / `APP_MASTER_PASSWORD` (vínculo **Plataforma — Operação master**, ID `0`)
@@ -47,90 +47,114 @@ Objetivo desta fase: o **OPERADOR_PLATAFORMA** gerencia instituições, planos S
 - Login com listagem de vínculos; instituições inativas não selecionáveis
 
 ### Instituições e plano SaaS
-- **Nova instituição**: cadastro de dados básicos **sem** plano (cadastro inativo)
-- **Ativar cadastro**: plano obrigatório (trial 7 dias, mensal, semestral, anual); trial **uma vez** por instituição (`trialUtilizado`)
-- **Consultar instituições** e **Ativar / desativar**: plano, status financeiro manual, administrador e ativação/desativação
-- Data de vigência do plano em formato **dd/MM/yyyy** na UI
-- Renovação/alteração de plano com assinatura em `tb_assinatura_plataforma`
+- **Nova instituição**: cadastro sem plano (cadastro inativo); plano na **ativação**
+- Trial **uma vez** por instituição (`trialUtilizado`)
+- **Consultar / Ativar instituições**, plano, status financeiro, administrador
+- Data de vigência em **dd/MM/yyyy** na UI
 
 ### Financeiro plataforma
-- Dashboard financeiro master: planos vencidos, pagamentos pendentes, destaques
-- Páginas **Planos expirados** e **Pagamentos pendentes**
-- Contador de planos vencidos alinhado à regra `!assinatura.isVigente()`
+- Dashboard financeiro master, **Planos expirados**, **Pagamentos pendentes**
 
 ### Alunos (visão master)
-- **Consultar alunos** por CPF com matrículas em **todas** as instituições
-- **Mensalidade e dia de vencimento por instituição** (`tb_matricula_instituicao`)
-- Máscara **R$** em matrícula e consulta; cobrança/login usam a instituição do vínculo
-- Matrícula master com busca de instituição por CNPJ
+- Consulta CPF com matrículas em **todas** as instituições
+- Mensalidade e vencimento **por instituição** (`tb_matricula_instituicao`)
 
 ### Turmas (visão master)
-- **Consultar turmas** com filtros combináveis: instituição (master), professor e dias de aula
-- Escopo automático por instituição para usuários não master
+- **Consultar turmas** com filtros: instituição, professor, dias
 
-### Colaboradores e outros
-- Pré-cadastro / consulta de funcionários com cargo em dropdown
-- Política de senha forte (cadastro e alteração)
-- Correções: consulta aluno CPF (SQL DISTINCT), login bloqueado sem assinatura vigente
-
----
-
-## Fase atual — perfil Professor (jul/2026)
-
-Próximo foco de desenvolvimento. O master está funcional para operação da plataforma; agora refinamos a experiência do **PROFESSOR** vinculado à instituição.
-
-| # | Item | Backend | Frontend | Notas |
-|---|------|---------|----------|-------|
-| 1 | **Minhas turmas** — listagem completa (dias, alunos, sala) | enriquecer `TurmaResumoDto` / endpoint professor | `MinhasTurmas.tsx` | hoje faltam campos no DTO |
-| 2 | **Chamada / presença** por turma e data | entidade presença, API registrar | tela simples de marcação | MVP sem QR |
-| 3 | **Consulta de alunos** da turma (somente leitura) | endpoint escopo professor + turma | lista na turma | sem editar mensalidade |
-| 4 | **Programação** — visão do professor (itens + conflitos) | reutilizar `ServicoProgramacaoAluno` / grade | calendário ou lista semanal | |
-| 5 | **Permissões** — revisar menu e guards só com `turma:consultar` / leitura | `TipoFuncionario.PROFESSOR` | `menuConfig.ts`, rotas | |
-| 6 | Testes e roteiro | testes de serviço | [CENARIOS_TESTE.md](./CENARIOS_TESTE.md) | CPF professor nos seeds |
+### Cenários validados (master)
+| Menu | Status | Lacunas conhecidas |
+|------|--------|-------------------|
+| Instituições / plano SaaS | OK | Renovação automática por gateway (backlog) |
+| Financeiro plataforma | OK | Checkout PIX/cartão (backlog) |
+| Consultar alunos (cross-tenant) | OK | — |
+| Consultar turmas (filtros) | OK | — |
+| Matricular aluno (master) | OK | — |
 
 ---
 
-## Pendente (após fase Professor)
+## Entregue — perfil Professor (jul/2026)
 
-1. **Pagamentos** — checkout (PIX/cartão), e-mail instituição/admin, webhook para status financeiro
-2. **Login/cadastro** — recuperação com e-mail real, rate limiting, MFA (ver itens 1–6 da fase login abaixo)
-3. **Grade** — filtro por sala, exportação PDF
-4. **Limpeza de dados** — `MIGRACAO_DEDUP_ALUNO_CPF.sql` em bancos legados
-5. **Backup automatizado** do PostgreSQL
-6. **LGPD** — consentimento e exportação de dados
+Objetivo: experiência pedagógica do **PROFESSOR** vinculado à instituição, com escopo por turma e LGPD.
 
-### Fase login e infra (backlog próximo)
-- Fluxo unificado login / cadastro / esqueci senha
-- Recuperação de senha com e-mail (SMTP)
-- JWT atualizado após renovar plano
-- Rate limiting em endpoints públicos
+### Menus visíveis
+| Seção | Itens |
+|-------|-------|
+| **Geral** | Início, Meu cadastro |
+| **Área do professor** | Minhas turmas, Presença, Gerar certificados |
+| **Acadêmico** | Consultar alunos, Programação e grade |
+
+**Oculto:** Consultar turmas (instituição), Cadastrar turma, Matricular aluno, Financeiro, Administrativo.
+
+### Minhas turmas
+- Tela unificada (lista + detalhe): modalidade, sala, horário, dias, total de alunos
+- Adicionar aluno por CPF (valida matrícula na instituição)
+- Remover aluno da turma (sem desmatricular da instituição)
+- API: `turma:gerenciar-alunos`, escopo por CPF do professor
+
+### Presença
+- Planilha mensal (P/F/J/A) por dias de aula da turma
+- Salvar em lote + **PDF** (OpenPDF)
+- `DiaSemanaUtil` aceita dias curtos (`Terça`, `Quinta`) e por extenso
+
+### Gerar certificados
+- Professor = usuário logado (sem dropdown)
+- TXT por envio com alunos, faixas e quantidades; download automático
+- Arquivo novo por data/hora (envios parciais preservados)
+
+### Consultar alunos (professor)
+- Somente leitura; qualquer aluno **matriculado na instituição** (opção B)
+- Dados mascarados (CPF, telefone, e-mail, RG); sem aba financeira
+- Endereço JSON parseado corretamente nos campos
+
+### Programação e grade
+- Professor: criar/editar/excluir **itens** (`programacao:gerenciar-itens`)
+- Grade e **salas** somente leitura (sem cadastrar/excluir sala)
+
+### Permissões novas
+- `turma:gerenciar-alunos`, `programacao:gerenciar-itens`
+
+### Testes backend (BDD)
+- Padrão `@DisplayName("Dado … Quando … Então …")` e métodos `deveRealizarTalCoisa`
+- Cobertura: escopo professor, turmas, presença, consulta LGPD, permissões, utilitários
+
+### Cenários validados (professor)
+| Menu | Status | Lacunas conhecidas |
+|------|--------|-------------------|
+| Minhas turmas | OK | — |
+| Presença + PDF | OK | QR code (backlog) |
+| Gerar certificados | OK | — |
+| Consultar alunos | OK | Log de auditoria LGPD (backlog) |
+| Programação (itens) | OK | — |
+| Programação (salas) | Leitura | — |
+
+**Login teste:** CPF `61482582007` / senha `123` — ver [USUARIOS_TESTE.md](./USUARIOS_TESTE.md). **Re-login** após deploy para carregar novas permissões no JWT.
 
 ---
 
-## Backlog (fases futuras)
+## Próxima fase — perfis institucionais (ago/2026)
 
-### Acadêmico
-- [ ] Presença por QR/code
-- [ ] Boletim e histórico escolar
-- [ ] Comunicados para responsáveis (e-mail/SMS)
-- [ ] Biblioteca de materiais (LMS leve)
+Prioridade sugerida após Professor e Master estáveis:
 
-### Financeiro
-- [ ] Gateway de pagamento
-- [ ] Descontos automatizados
-- [ ] Nota fiscal / recibo
-- [ ] DRE e fluxo de caixa consolidado
+| # | Perfil / área | Itens |
+|---|---------------|-------|
+| 1 | **DIRETOR / ADMIN** | Revisão de menus vs permissões (SoD) |
+| 2 | **RECEPÇÃO / RH** | Matrícula, ativação de cadastros, consultas |
+| 3 | **FINANCEIRO** | Mensalidades, inadimplência, integração pagamento |
+| 4 | **Portal aluno** | Pagamento online, notificações |
+| 5 | **LGPD** | Consentimento, exportação, auditoria de consulta PII |
+| 6 | **Infra** | Backup PostgreSQL, e-mail (SMTP), rate limiting |
 
-### RH e operação
-- [ ] Folha de ponto
-- [ ] Férias e substituições
-- [ ] Avaliação de desempenho
-- [ ] Contratos e documentos
+---
 
-### Comercial / multi-unidade
-- [ ] Multi-tenant (franquias)
-- [ ] CRM de leads
-- [ ] App mobile
+## Pendente (backlog técnico)
+
+1. **Pagamentos** — checkout (PIX/cartão), webhook
+2. **Login/cadastro** — recuperação com e-mail real, MFA
+3. **Grade** — filtro por sala, exportação PDF institucional
+4. **Presença** — QR/code, consolidação multi-envio
+5. **Limpeza de dados** — `MIGRACAO_DEDUP_ALUNO_CPF.sql`
+6. **Backup automatizado** do PostgreSQL
 
 ---
 
@@ -139,6 +163,7 @@ Próximo foco de desenvolvimento. O master está funcional para operação da pl
 1. `docker compose up postgres -d` (porta **5435** no host)
 2. Migrações SQL na ordem, se o banco já existia — ver [README.md](./README.md)
 3. Backend perfil `local` ou `docker compose up -d --build`
-4. Roteiro master: [CENARIOS_TESTE.md](./CENARIOS_TESTE.md) e [USUARIOS_TESTE.md](./USUARIOS_TESTE.md)
+4. Roteiros: [CENARIOS_TESTE.md](./CENARIOS_TESTE.md) e [USUARIOS_TESTE.md](./USUARIOS_TESTE.md)
 
-**Master:** CPF `00000000191`, senha `Master@2024!`, vínculo Plataforma (`0`).
+**Master:** CPF `00000000191`, senha `Master@2024!`, vínculo Plataforma (`0`).  
+**Professor:** CPF `61482582007`, senha `123`, Instituição Master.

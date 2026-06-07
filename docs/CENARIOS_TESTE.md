@@ -73,6 +73,50 @@ O aluno **Teste Portal Aluno** (`12345678909`) fica vinculado à turma de Judô 
 
 1. **Programação e grade → Salas**: liste as 3 salas seedadas; cadastre uma nova e use no formulário de turma/programação.
 
+### 6. Perfil Professor — Minhas turmas
+
+1. Login: **Professor** `61482582007` / senha `123` / Instituição Master. **Re-login** após deploy para carregar permissões no JWT.
+2. Menu **Área do professor → Minhas turmas**.
+3. Confira turmas `[Demo] Judô` e `[Demo] Karatê` (professor seedado): modalidade, sala, horário, dias e total de alunos.
+4. Abra uma turma e **adicione** um aluno matriculado na instituição (ex.: `12345678909`).
+5. **Remova** o aluno da turma (não desmatricula da instituição).
+6. Tente CPF de aluno não matriculado → mensagem de erro.
+
+### 7. Perfil Professor — Presença
+
+1. Mesmo login do professor.
+2. **Área do professor → Presença**: selecione turma `[Demo] Karatê` (Terça/Quinta).
+3. Navegue o mês: colunas devem aparecer nos dias de aula (não vazio).
+4. Marque P/F/J/A para alguns alunos e **Salvar**.
+5. **Gerar PDF** e confira o arquivo baixado.
+
+### 8. Perfil Professor — Gerar certificados
+
+1. **Área do professor → Gerar certificados**.
+2. Professor já preenchido com o usuário logado (sem dropdown).
+3. Informe alunos/faixas e gere o resumo TXT; download automático.
+4. Gere outro envio parcial → novo arquivo com sufixo data/hora (sem sobrescrever).
+
+### 9. Perfil Professor — Consultar alunos
+
+1. **Acadêmico → Consultar alunos**.
+2. Busque `12345678909`: dados mascarados (CPF, telefone, e-mail).
+3. Endereço exibido nos campos (JSON parseado).
+4. Sem aba financeira; sem botões Salvar / Desmatricular / Matricular.
+
+### 10. Perfil Professor — Programação e grade
+
+1. **Acadêmico → Programação e grade**.
+2. Aba **Itens**: criar, editar e excluir item de programação.
+3. Aba **Grade horária**: visualização somente leitura.
+4. Aba **Salas**: listagem somente leitura (sem cadastrar/excluir).
+
+### 11. Operador master (regressão)
+
+1. Login: `00000000191` / `Master@2024!` / vínculo Plataforma (`0`).
+2. Consultar alunos cross-tenant, consultar turmas com filtros, matricular, instituições e financeiro plataforma.
+3. Confirme que menus exclusivos do master permanecem invisíveis para o professor.
+
 ---
 
 ## Reiniciar massa de demo

@@ -40,3 +40,28 @@ Após matricular qualquer aluno novo, o portal usa automaticamente os **6 primei
 | Terceirizado | 45449941013 | Teste Terceirizado |
 
 No login: informe o CPF, aguarde carregar a instituição e use a senha `123` (ou a do master).
+
+---
+
+## Perfil Professor (`61482582007`)
+
+Após alterações de permissão, faça **logout e login** para renovar o JWT.
+
+### Menus visíveis
+
+| Seção | Itens |
+|-------|-------|
+| Geral | Início, Meu cadastro |
+| Área do professor | Minhas turmas, Presença, Gerar certificados |
+| Acadêmico | Consultar alunos, Programação e grade |
+
+### Oculto para professor
+
+Consultar turmas (instituição), Cadastrar turma, Matricular aluno, Financeiro, Administrativo.
+
+### Turmas seedadas do professor
+
+- `[Demo] Judô — turma portal` — Segunda/Quarta, Dojo 1
+- `[Demo] Karatê — conflito Dojo 1` — Terça/Quinta, Dojo 1
+
+Roteiro detalhado: [CENARIOS_TESTE.md](./CENARIOS_TESTE.md) (seções 6–10).

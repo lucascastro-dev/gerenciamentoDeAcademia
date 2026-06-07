@@ -99,7 +99,8 @@ JWT + `@PreAuthorize`; ações críticas em `tb_auditoria`.
 
 - Índice da documentação: **[docs/README.md](docs/README.md)**
 - Planejamento completo: **[docs/ROADMAP.md](docs/ROADMAP.md)**  
-- **Em andamento:** login, cadastro, recuperação de senha (e-mail), política de senha, MFA e endurecimento de infra.
+- **Concluído:** operador master (jun/2026) e perfil **Professor** (jul/2026) — turmas, presença, certificados, consulta LGPD, programação.
+- **Próximo:** perfis DIRETOR/ADMIN, RECEPÇÃO/RH, FINANCEIRO e LGPD — ver [docs/ROADMAP_PROXIMOS.md](docs/ROADMAP_PROXIMOS.md).
 
 ## Testes backend
 
