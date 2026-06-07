@@ -124,8 +124,7 @@ export function obterMenus(sessao: SessaoUsuario | null): MenuSection[] {
 
   const itensProfessor: MenuItem[] = [
     { label: 'Minhas turmas', path: '/arealogada/professor/turmas' },
-    { label: 'Alunos das turmas', path: '/arealogada/professor/alunos' },
-    { label: 'Presença (em breve)', path: '/arealogada/professor/presenca', permissao: 'turma:presenca' },
+    { label: 'Presença', path: '/arealogada/professor/presenca', permissao: 'turma:presenca' },
   ];
   if (pode('certificado:gerar') && ehProfessor) {
     itensProfessor.splice(2, 0, { label: 'Gerar certificados', path: '/arealogada/professor/certificados' });
@@ -136,7 +135,7 @@ export function obterMenus(sessao: SessaoUsuario | null): MenuSection[] {
 
   const itensAcademico: MenuItem[] = [
     { label: 'Consultar alunos', path: '/arealogada/alunos', permissao: 'aluno:consultar' },
-    { label: 'Consultar turmas', path: '/arealogada/turmas', permissao: 'turma:consultar' },
+    ...(ehProfessor ? [] : [{ label: 'Consultar turmas', path: '/arealogada/turmas', permissao: 'turma:consultar' }]),
     { label: 'Cadastrar turma', path: '/arealogada/turmas/gerenciar', permissao: 'turma:gerenciar' },
     { label: 'Matricular aluno', path: '/arealogada/matricula', permissao: 'aluno:matricular' },
     { label: 'Programação e grade', path: '/arealogada/programacao', permissao: 'programacao:consultar' },

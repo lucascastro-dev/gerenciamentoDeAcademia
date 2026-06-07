@@ -28,6 +28,7 @@ public enum PermissaoSistema {
 
     TURMA_CONSULTAR("turma:consultar"),
     TURMA_GERENCIAR("turma:gerenciar"),
+    TURMA_GERENCIAR_ALUNOS("turma:gerenciar-alunos"),
     TURMA_PRESENCA("turma:presenca"),
     TURMA_AVALIACAO("turma:avaliacao"),
 
@@ -51,7 +52,8 @@ public enum PermissaoSistema {
     ALUNO_PORTAL_PROGRAMACAO("aluno-portal:programacao"),
 
     PROGRAMACAO_CONSULTAR("programacao:consultar"),
-    PROGRAMACAO_GERENCIAR("programacao:gerenciar");
+    PROGRAMACAO_GERENCIAR("programacao:gerenciar"),
+    PROGRAMACAO_GERENCIAR_ITENS("programacao:gerenciar-itens");
 
     private final String codigo;
 

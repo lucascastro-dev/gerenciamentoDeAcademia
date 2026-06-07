@@ -39,6 +39,10 @@ export function isModoPlataforma(sessao: SessaoUsuario | null): boolean {
   return !!sessao?.usuarioMaster;
 }
 
+export function isProfessor(sessao: SessaoUsuario | null): boolean {
+  return sessao?.tipoFuncionario === 'PROFESSOR';
+}
+
 export function labelPerfil(sessao: SessaoUsuario | null): string {
   if (!sessao) return '—';
   if (sessao.perfilExibicao) return sessao.perfilExibicao;

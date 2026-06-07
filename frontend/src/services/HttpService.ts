@@ -228,6 +228,38 @@ const HttpService = {
 
   alunosDaTurma: (id: string | number) => api.get(`/turma/${id}/alunos`),
 
+  adicionarAlunoTurmaProfessor: (turmaId: string | number, cpf: string) =>
+    api.post(`/turma/professor/${turmaId}/alunos`, { cpf: cpf.replace(/\D/g, '') }),
+
+  removerAlunoTurmaProfessor: (turmaId: string | number, cpf: string) =>
+    api.delete(`/turma/professor/${turmaId}/alunos/${cpf.replace(/\D/g, '')}`),
+
+  consultarAlunoProfessor: (cpf: string) =>
+    api.get<{
+      nome: string;
+      cpfMascarado: string;
+      rgMascarado: string;
+      dataDeNascimento: string;
+      enderecoResumido: string;
+      telefoneMascarado: string;
+      emailMascarado: string;
+      nomeResponsavel?: string;
+      telefoneResponsavelMascarado?: string;
+      turmasInstituicao: Array<{ id: number; modalidade: string; horario: string; sala?: string }>;
+    }>(`/aluno/professor/consultar/${cpf.replace(/\D/g, '')}`),
+
+  presencaConsultar: (turmaId: string | number, ano: number, mes: number) =>
+    api.get(`/turma/professor/${turmaId}/presenca`, { params: { ano, mes } }),
+
+  presencaSalvar: (turmaId: string | number, data: Record<string, unknown>) =>
+    api.put(`/turma/professor/${turmaId}/presenca`, data),
+
+  presencaPdf: (turmaId: string | number, ano: number, mes: number) =>
+    api.get(`/turma/professor/${turmaId}/presenca/pdf`, {
+      params: { ano, mes },
+      responseType: 'blob',
+    }),
+
   dashboardResumo: () => api.get('/dashboard/resumo'),
 
   financeiroDashboard: () => api.get('/financeiro/dashboard/resumo'),
@@ -237,7 +269,11 @@ const HttpService = {
   financeiroInadimplentes: () => api.get('/financeiro/inadimplentes'),
 
   gerarCertificados: (data: Record<string, unknown>) =>
-    api.post('/certificado/gerarCertificadoJudo', data),
+    api.post<{
+      mensagem: string;
+      nomeArquivoResumo: string;
+      conteudoResumo: string;
+    }>('/certificado/gerarCertificadoJudo', data),
 
   meuPerfil: () => api.get('/funcionario/meuPerfil'),
 

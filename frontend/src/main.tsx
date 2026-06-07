@@ -24,8 +24,8 @@ import GerenciarTurmas from "./components/TelaInicial/GerenciarTurmas";
 import FinanceiroLayout from "./components/Financeiro/FinanceiroLayout";
 import Mensalidades from "./components/Financeiro/Mensalidades";
 import Inadimplencia from "./components/Financeiro/Inadimplencia";
-import MinhasTurmas from "./components/Professor/MinhasTurmas";
-import MeusAlunos from "./components/Professor/MeusAlunos";
+import TurmasProfessor from "./components/Professor/TurmasProfessor";
+import PresencaTurma from "./components/Professor/PresencaTurma";
 import GestaoCadastros from "./components/Administrativo/GestaoCadastros";
 import GestaoAcademias from "./components/Administrativo/GestaoAcademias";
 import MatriculaAluno from "./components/Academico/MatriculaAluno";
@@ -103,16 +103,16 @@ root.render(
             </Route>
 
             <Route path="professor/turmas" element={
-              <PermissaoRoute permissao="turma:consultar"><MinhasTurmas /></PermissaoRoute>
+              <PermissaoRoute permissao="turma:consultar"><TurmasProfessor /></PermissaoRoute>
             } />
             <Route path="professor/alunos" element={
-              <PermissaoRoute permissao="turma:consultar"><MeusAlunos /></PermissaoRoute>
+              <Navigate to="/arealogada/professor/turmas" replace />
             } />
             <Route path="professor/certificados" element={
               <PermissaoRoute permissao="certificado:gerar"><GeradorCertificados /></PermissaoRoute>
             } />
             <Route path="professor/presenca" element={
-              <div className="card"><h2>Presença</h2><p>Em desenvolvimento.</p></div>
+              <PermissaoRoute permissao="turma:presenca"><PresencaTurma /></PermissaoRoute>
             } />
 
             <Route path="alunos" element={

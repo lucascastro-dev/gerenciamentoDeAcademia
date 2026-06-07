@@ -99,12 +99,13 @@ public enum TipoFuncionario {
             );
             case PROFESSOR -> EnumSet.of(
                     PermissaoSistema.TURMA_CONSULTAR,
+                    PermissaoSistema.TURMA_GERENCIAR_ALUNOS,
                     PermissaoSistema.TURMA_PRESENCA,
                     PermissaoSistema.TURMA_AVALIACAO,
                     PermissaoSistema.CERTIFICADO_GERAR,
                     PermissaoSistema.ALUNO_CONSULTAR,
                     PermissaoSistema.PROGRAMACAO_CONSULTAR,
-                    PermissaoSistema.PROGRAMACAO_GERENCIAR
+                    PermissaoSistema.PROGRAMACAO_GERENCIAR_ITENS
             );
             case ESTAGIARIO -> EnumSet.of(
                     PermissaoSistema.ALUNO_CONSULTAR,
