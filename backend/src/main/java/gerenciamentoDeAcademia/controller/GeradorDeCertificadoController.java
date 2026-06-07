@@ -1,6 +1,7 @@
 package gerenciamentoDeAcademia.controller;
 
 import gerenciamentoDeAcademia.dto.DadosCertificadoDto;
+import gerenciamentoDeAcademia.dto.ResultadoGeracaoCertificadoDto;
 import gerenciamentoDeAcademia.servicos.GeradorDeCertificados;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,8 +23,7 @@ public class GeradorDeCertificadoController {
 
     @PostMapping("/gerarCertificadoJudo")
     @PreAuthorize("@permissaoEvaluator.possui(authentication, 'certificado:gerar')")
-    public ResponseEntity<String> gerarCertificado(@RequestBody DadosCertificadoDto dadosCertificado) {
-        geradorDeCertificado.gerarCertificado(dadosCertificado);
-        return ResponseEntity.ok("Certificados gerados com sucesso.");
+    public ResponseEntity<ResultadoGeracaoCertificadoDto> gerarCertificado(@RequestBody DadosCertificadoDto dadosCertificado) {
+        return ResponseEntity.ok(geradorDeCertificado.gerarCertificado(dadosCertificado));
     }
 }

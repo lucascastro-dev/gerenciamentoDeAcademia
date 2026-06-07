@@ -1,6 +1,7 @@
 package gerenciamentoDeAcademia.servicos;
 
 import gerenciamentoDeAcademia.dto.DadosCertificadoDto;
+import gerenciamentoDeAcademia.dto.ResultadoGeracaoCertificadoDto;
 import gerenciamentoDeAcademia.servicos.interfaces.IGeradorDeCertificados;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
@@ -19,11 +20,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Service
@@ -40,12 +42,14 @@ public class GeradorDeCertificados implements IGeradorDeCertificados {
     private static final Set<String> CONECTIVOS = Set.of("de", "da", "do", "dos", "das", "e");
 
     private static final String FORMATO_DATA = "dd/MM/yyyy";
+    private static final DateTimeFormatter FORMATO_DATA_HORA_ARQUIVO = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
+    private static final DateTimeFormatter FORMATO_DATA_HORA_TEXTO = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
     private final Font FONTE_PADRAO = carregarFonte("/fonts/BrushScriptMT.ttf", 130f);
     private final Font FONTE_DATA = carregarFonte("/fonts/Arial.ttf", 70f);
     private final Font FONT_TEXT = carregarFonte("/fonts/TimesNewRoman.ttf", 105f);
 
     @Override
-    public void gerarCertificado(DadosCertificadoDto dadosCertificado) {
+    public ResultadoGeracaoCertificadoDto gerarCertificado(DadosCertificadoDto dadosCertificado) {
         if (dadosCertificado == null) {
             throw new IllegalArgumentException("Dados do certificado não podem ser nulos.");
         }
@@ -60,7 +64,13 @@ public class GeradorDeCertificados implements IGeradorDeCertificados {
             salvarCertificado(imagemCertificado, caminhoPastaProfessor, aluno.getNome());
         });
 
-        gerarResumoDeFaixas(dadosCertificado, caminhoPastaProfessor);
+        ResumoDeFaixasGerado resumo = gerarResumoDeFaixas(dadosCertificado, caminhoPastaProfessor);
+
+        ResultadoGeracaoCertificadoDto resultado = new ResultadoGeracaoCertificadoDto();
+        resultado.setMensagem("Certificados gerados com sucesso.");
+        resultado.setNomeArquivoResumo(resumo.nomeArquivo());
+        resultado.setConteudoResumo(resumo.conteudo());
+        return resultado;
     }
 
     private String criarDiretorioProfessor(String nomeProfessor) {
@@ -243,41 +253,83 @@ public class GeradorDeCertificados implements IGeradorDeCertificados {
         return imagemAltaResolucao;
     }
 
-    private void gerarResumoDeFaixas(DadosCertificadoDto dadosCertificado, String caminhoPasta) {
-        Map<String, Map<String, Integer>> resumo = new HashMap<>();
+    private record ResumoDeFaixasGerado(String nomeArquivo, String conteudo) {}
+
+    private ResumoDeFaixasGerado gerarResumoDeFaixas(DadosCertificadoDto dadosCertificado, String caminhoPasta) {
+        Map<String, Map<String, Integer>> resumo = new LinkedHashMap<>();
 
         dadosCertificado.getAlunos().forEach(aluno -> {
             String faixa = aluno.getFaixa();
             String tamanho = aluno.getMedida();
 
-            resumo.computeIfAbsent(faixa, k -> new HashMap<>())
+            resumo.computeIfAbsent(faixa, k -> new LinkedHashMap<>())
                     .merge(tamanho, 1, Integer::sum);
         });
 
-        StringBuilder conteudo = new StringBuilder();
-        resumo.forEach((faixa, tamanhos) -> {
-            conteudo.append(faixa).append(":\n");
-            tamanhos.forEach((tamanho, quantidade) ->
-                    conteudo.append(tamanho).append(" - ").append(quantidade).append(" unidades\n")
-            );
-            conteudo.append("\n");
-        });
-
-        Path caminhoArquivo;
-
-        if (dadosCertificado.getPersonalizado()) {
-            caminhoArquivo = Path.of(caminhoPasta,
-                    "pedido_faixas_".concat(dadosCertificado.getProfessor()).concat("_").concat(dadosCertificado.getProjeto()).concat(".txt"));
-        } else {
-            caminhoArquivo = Path.of(caminhoPasta,
-                    "pedido_faixas_".concat(dadosCertificado.getProfessor()).concat(".txt"));
-        }
+        LocalDateTime momentoEnvio = LocalDateTime.now();
+        String conteudo = montarConteudoResumoDeFaixas(dadosCertificado, resumo, momentoEnvio);
+        String nomeArquivo = nomeArquivoResumoDeFaixas(dadosCertificado, momentoEnvio);
+        Path caminhoArquivo = Path.of(caminhoPasta, nomeArquivo);
 
         try {
-            Files.writeString(caminhoArquivo, conteudo.toString(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            Files.writeString(caminhoArquivo, conteudo, StandardOpenOption.CREATE_NEW);
         } catch (IOException e) {
             throw new RuntimeException("Erro ao salvar o resumo de faixas.", e);
         }
+
+        return new ResumoDeFaixasGerado(nomeArquivo, conteudo);
+    }
+
+    /**
+     * Cada envio parcial gera um arquivo novo com data/hora, evitando sobrescrever pedidos anteriores
+     * e eliminando risco de erro ao reler/somar arquivos de texto para o mercado de faixas.
+     */
+    static String nomeArquivoResumoDeFaixas(DadosCertificadoDto dadosCertificado, LocalDateTime momentoEnvio) {
+        String sufixoData = momentoEnvio.format(FORMATO_DATA_HORA_ARQUIVO);
+        String prefixo = "pedido_faixas_".concat(dadosCertificado.getProfessor());
+        if (Boolean.TRUE.equals(dadosCertificado.getPersonalizado()) && dadosCertificado.getProjeto() != null) {
+            return prefixo.concat("_").concat(dadosCertificado.getProjeto())
+                    .concat("_").concat(sufixoData).concat(".txt");
+        }
+        return prefixo.concat("_").concat(sufixoData).concat(".txt");
+    }
+
+    static String montarConteudoResumoDeFaixas(
+            DadosCertificadoDto dadosCertificado,
+            Map<String, Map<String, Integer>> resumo,
+            LocalDateTime momentoEnvio) {
+        StringBuilder conteudo = new StringBuilder();
+        conteudo.append("Resumo exame de graduação\n");
+        conteudo.append("Professor: ").append(dadosCertificado.getProfessor()).append('\n');
+        if (Boolean.TRUE.equals(dadosCertificado.getPersonalizado()) && dadosCertificado.getProjeto() != null) {
+            conteudo.append("Projeto: ").append(dadosCertificado.getProjeto()).append('\n');
+        }
+        if (dadosCertificado.getDataEvento() != null) {
+            conteudo.append("Data do evento: ")
+                    .append(dadosCertificado.getDataEvento().format(DateTimeFormatter.ofPattern(FORMATO_DATA)))
+                    .append('\n');
+        }
+        conteudo.append("Gerado em: ").append(momentoEnvio.format(FORMATO_DATA_HORA_TEXTO)).append("\n");
+        conteudo.append("---\n");
+        conteudo.append("Alunos:\n");
+        dadosCertificado.getAlunos().forEach(aluno ->
+                conteudo.append(aluno.getNome())
+                        .append(" - ")
+                        .append(aluno.getFaixa())
+                        .append(" - ")
+                        .append(aluno.getMedida())
+                        .append('\n')
+        );
+        conteudo.append("---\n");
+
+        resumo.forEach((faixa, tamanhos) -> {
+            conteudo.append("Faixa ").append(faixa).append(":\n");
+            tamanhos.forEach((tamanho, quantidade) ->
+                    conteudo.append(tamanho).append(" - ").append(quantidade).append(" unidades\n")
+            );
+            conteudo.append('\n');
+        });
+        return conteudo.toString().stripTrailing() + "\n";
     }
 
     private String ajustarNomeParaCabecalho(String nome, FontMetrics metricsNome, int larguraTextoInicial, int larguraDisponivel) {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { carregarSessao } from '../../auth/permissoes';
 import HttpService from '../../services/HttpService';
 import FeedbackModal from '../common/FeedbackModal';
@@ -11,12 +11,23 @@ interface AlunoCert {
   medida: string;
 }
 
-const PROFESSORES = ['Marcelo', 'Junior', 'Lucas', 'Kessia'];
 const FAIXAS = [
   'Branca Ponta Cinza', 'Cinza', 'Cinza Ponta Azul', 'Azul', 'Azul Ponta Amarela',
   'Amarela', 'Amarela Ponta Laranja', 'Laranja', 'Verde', 'Roxa', 'Marrom', 'Preta',
 ];
 const MEDIDAS = ['M000', 'M00', 'M0', 'M1', 'M2', 'M3', 'M4', 'A1', 'A2', 'A3', 'A4'];
+const baixarArquivoTexto = (nomeArquivo: string, conteudo: string) => {
+  const blob = new Blob([conteudo], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = nomeArquivo;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+};
+
 const PROJETOS = [
   { value: 'AMADOM', label: 'AMADOM' },
   { value: 'SCTJ', label: 'SC Team Judô' },
@@ -24,7 +35,7 @@ const PROJETOS = [
 ];
 
 const GeradorCertificados: React.FC = () => {
-  const [professor, setProfessor] = useState('');
+  const [professor] = useState(() => carregarSessao()?.nome ?? '');
   const [dataEvento, setDataEvento] = useState('');
   const [personalizado, setPersonalizado] = useState(false);
   const [projeto, setProjeto] = useState('AMADOM');
@@ -36,19 +47,9 @@ const GeradorCertificados: React.FC = () => {
   const [modal, setModal] = useState({ open: false, success: false, message: '' });
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const sessao = carregarSessao();
-    if (sessao?.nome && sessao.tipoFuncionario === 'PROFESSOR' && !professor) {
-      const match = PROFESSORES.find((p) => p.toLowerCase() === sessao.nome.split(' ')[0]?.toLowerCase());
-      if (match) setProfessor(match);
-    }
-  }, []);
-
-  const professorBloqueado = alunos.length > 0;
-
   const adicionarAluno = () => {
     if (!professor) {
-      setModal({ open: true, success: false, message: 'Selecione o professor antes de adicionar alunos.' });
+      setModal({ open: true, success: false, message: 'Usuário não identificado. Faça login novamente.' });
       return;
     }
     if (!nomeAluno.trim() || !faixa || !medida) {
@@ -80,7 +81,7 @@ const GeradorCertificados: React.FC = () => {
 
   const gerar = async () => {
     if (!professor || !dataEvento || alunos.length === 0) {
-      setModal({ open: true, success: false, message: 'Selecione professor, data e adicione ao menos um aluno.' });
+      setModal({ open: true, success: false, message: 'Informe a data do evento e adicione ao menos um aluno.' });
       return;
     }
     setLoading(true);
@@ -88,15 +89,17 @@ const GeradorCertificados: React.FC = () => {
       const { data } = await HttpService.gerarCertificados({
         professor, dataEvento, personalizado, projeto: personalizado ? projeto : null, alunos,
       });
+      if (data.nomeArquivoResumo && data.conteudoResumo) {
+        baixarArquivoTexto(data.nomeArquivoResumo, data.conteudoResumo);
+      }
       setModal({
         open: true,
         success: true,
-        message: typeof data === 'string' ? data : 'Certificados gerados com sucesso.',
+        message: data.mensagem || 'Certificados gerados com sucesso.',
       });
       setAlunos([]);
       setDataEvento('');
       setPersonalizado(false);
-      setProfessor('');
     } catch {
       setModal({ open: true, success: false, message: 'Falha ao gerar. Verifique login, templates e permissões.' });
     } finally {
@@ -110,10 +113,7 @@ const GeradorCertificados: React.FC = () => {
         <div className="form-grid form-grid--cert">
           <div>
             <label htmlFor="professor">Professor</label>
-            <select id="professor" value={professor} disabled={professorBloqueado} onChange={(e) => setProfessor(e.target.value)}>
-              <option value="" disabled>Selecione o professor</option>
-              {PROFESSORES.map((p) => <option key={p} value={p}>{p}</option>)}
-            </select>
+            <input id="professor" type="text" value={professor} readOnly aria-readonly />
           </div>
           <div>
             <label htmlFor="nome">Nome do aluno</label>

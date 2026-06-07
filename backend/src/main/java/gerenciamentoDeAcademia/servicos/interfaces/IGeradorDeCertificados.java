@@ -1,7 +1,8 @@
 package gerenciamentoDeAcademia.servicos.interfaces;
 
 import gerenciamentoDeAcademia.dto.DadosCertificadoDto;
+import gerenciamentoDeAcademia.dto.ResultadoGeracaoCertificadoDto;
 
 public interface IGeradorDeCertificados {
-    void gerarCertificado(DadosCertificadoDto dadosCertificado);
+    ResultadoGeracaoCertificadoDto gerarCertificado(DadosCertificadoDto dadosCertificado);
 }
