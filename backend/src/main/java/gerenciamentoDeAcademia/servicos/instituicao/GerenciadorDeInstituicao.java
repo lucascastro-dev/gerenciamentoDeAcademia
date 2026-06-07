@@ -19,8 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import javax.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -71,18 +70,20 @@ public class GerenciadorDeInstituicao implements IGerenciadorDeInstituicao {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public InstituicaoDto consultarInstituicaoCnpj(String cnpjInstituicao) {
         Instituicao instituicao = instituicaoRepository.findByCnpj(cnpjInstituicao);
         ExcecaoDeDominio.quandoNulo(instituicao, "Instituição não encontrada");
 
-        return new InstituicaoDto(instituicao);
+        return InstituicaoDto.resumo(instituicao);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<InstituicaoDto> consultarTodasInstituicoes() {
         return instituicaoRepository.findAll()
                 .stream()
-                .map(InstituicaoDto::new)
+                .map(InstituicaoDto::resumo)
                 .collect(Collectors.toList());
     }
 
@@ -187,9 +188,10 @@ public class GerenciadorDeInstituicao implements IGerenciadorDeInstituicao {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public InstituicaoDto consultarInstituicaoId(Long codInstituicao) {
         return instituicaoRepository.findById(codInstituicao)
-                .map(InstituicaoDto::new)
+                .map(InstituicaoDto::resumo)
                 .orElseThrow(() -> new ApplicationException("Instituição não encontrada", HttpStatus.NOT_FOUND));
     }
 

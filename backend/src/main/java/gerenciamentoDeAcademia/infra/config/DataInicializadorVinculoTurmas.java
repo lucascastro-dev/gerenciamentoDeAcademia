@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 
 import org.slf4j.LoggerFactory;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 
 import org.springframework.context.annotation.Profile;
@@ -45,6 +46,8 @@ import java.util.List;
 @Component
 
 @Profile({"docker", "local"})
+
+@ConditionalOnProperty(name = "app.seed.demo-enabled", havingValue = "true", matchIfMissing = true)
 
 @RequiredArgsConstructor
 

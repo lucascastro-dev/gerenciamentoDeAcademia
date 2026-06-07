@@ -13,6 +13,13 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./infra/docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    command: >
+      postgres
+      -c shared_buffers=64MB
+      -c max_connections=50
+      -c work_mem=4MB
+    mem_limit: ${POSTGRES_MEM_LIMIT:-384m}
+    cpus: ${POSTGRES_CPUS:-0.5}
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U academia_app -d gerenciamento_academia"]
       interval: 5s
@@ -28,15 +35,22 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      SPRING_PROFILES_ACTIVE: docker
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-docker}
+      JAVA_OPTS: ${JAVA_OPTS:--XX:+UseContainerSupport -Xms256m -Xmx512m -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+ExitOnOutOfMemoryError -Djava.security.egd=file:/dev/./urandom}
       JWT_SECRET: ${JWT_SECRET:-change-me-in-production-min-32-chars!!}
       APP_MASTER_CPF: ${APP_MASTER_CPF:-00000000191}
       APP_MASTER_PASSWORD: ${APP_MASTER_PASSWORD:-Master@2024!}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-academia_dev_secret}
+      APP_SEED_DEMO: ${APP_SEED_DEMO:-true}
+      APP_BOOTSTRAP_MASTER: ${APP_BOOTSTRAP_MASTER:-true}
     ports:
       - "127.0.0.1:8000:8000"
     volumes:
       - certificados_data:/app/certificados
+    mem_limit: ${BACKEND_MEM_LIMIT:-768m}
+    memswap_limit: ${BACKEND_MEM_LIMIT:-768m}
+    cpus: ${BACKEND_CPUS:-1.5}
+    init: true
 
   frontend:
     build:

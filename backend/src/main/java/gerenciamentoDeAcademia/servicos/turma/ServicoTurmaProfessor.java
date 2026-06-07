@@ -1,6 +1,7 @@
 package gerenciamentoDeAcademia.servicos.turma;
 
 import gerenciamentoDeAcademia.dto.AlunoTurmaProfessorDto;
+import gerenciamentoDeAcademia.dto.TurmaResumoDto;
 import gerenciamentoDeAcademia.entidades.Aluno;
 import gerenciamentoDeAcademia.entidades.Turma;
 import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
@@ -25,6 +26,13 @@ public class ServicoTurmaProfessor {
     private final AlunoRepository alunoRepository;
     private final InstituicaoRepository instituicaoRepository;
     private final ServicoEscopoProfessor servicoEscopoProfessor;
+
+    @Transactional(readOnly = true)
+    public List<TurmaResumoDto> listarMinhasTurmas(String cpfProfessor) {
+        return turmaRepository.findByProfessor_Cpf(cpfProfessor).stream()
+                .map(TurmaResumoDto::of)
+                .toList();
+    }
 
     @Transactional(readOnly = true)
     public List<AlunoTurmaProfessorDto> listarAlunos(Long turmaId, UsuarioAutenticado usuario) {

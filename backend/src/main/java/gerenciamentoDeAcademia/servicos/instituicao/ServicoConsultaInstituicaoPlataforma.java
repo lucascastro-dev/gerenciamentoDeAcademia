@@ -19,6 +19,7 @@ public class ServicoConsultaInstituicaoPlataforma {
     private final InstituicaoRepository instituicaoRepository;
     private final ServicoAssinaturaPlataforma servicoAssinaturaPlataforma;
 
+    @Transactional(readOnly = true)
     public InstituicaoDetalheDto consultarDetalhePorCnpj(String cnpj) {
         Instituicao instituicao = instituicaoRepository.findByCnpj(normalizarCnpj(cnpj));
         ExcecaoDeDominio.quandoNulo(instituicao, "Instituição não cadastrada na plataforma.");

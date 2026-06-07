@@ -74,10 +74,7 @@ public class GerenciarTurmaController {
     @GetMapping("/professor/minhas")
     @PreAuthorize("@permissaoEvaluator.possui(authentication, 'turma:consultar')")
     public List<TurmaResumoDto> minhasTurmas(@AuthenticationPrincipal UsuarioAutenticado usuario) {
-        String cpf = usuario.getUsername();
-        return turmaRepository.findByProfessor_Cpf(cpf).stream()
-                .map(TurmaResumoDto::of)
-                .collect(Collectors.toList());
+        return servicoTurmaProfessor.listarMinhasTurmas(usuario.getUsername());
     }
 
     @GetMapping("/{id}/alunos")

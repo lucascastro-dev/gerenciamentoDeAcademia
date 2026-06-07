@@ -14,18 +14,29 @@
         <file>logs/${appName}.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>logs/${appName}.%d{yyyy-MM-dd}.log</fileNamePattern>
-            <maxHistory>30</maxHistory>
+            <maxHistory>14</maxHistory>
         </rollingPolicy>
         <encoder>
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
 
-    <logger name="gerenciamentoDeAcademia" level="DEBUG"/>
-    <logger name="org.hibernate.SQL" level="WARN"/>
+    <!-- Docker/produção: só console, menos I/O e CPU -->
+    <springProfile name="docker,prod">
+        <logger name="gerenciamentoDeAcademia" level="INFO"/>
+        <logger name="org.hibernate.SQL" level="WARN"/>
+        <root level="WARN">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
 
-    <root level="INFO">
-        <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="FILE"/>
-    </root>
+    <!-- Desenvolvimento local / testes H2 -->
+    <springProfile name="local,h2,default">
+        <logger name="gerenciamentoDeAcademia" level="DEBUG"/>
+        <logger name="org.hibernate.SQL" level="WARN"/>
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
+        </root>
+    </springProfile>
 </configuration>

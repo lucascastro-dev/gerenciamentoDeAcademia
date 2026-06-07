@@ -21,7 +21,8 @@ FROM public.ecr.aws/docker/library/eclipse-temurin:17-jre-alpine
 
 WORKDIR /app
 
-RUN addgroup -S app && adduser -S app -G app
+RUN apk add --no-cache curl \
+    && addgroup -S app && adduser -S app -G app
 
 COPY --from=build /app/target/*.jar app.jar
 
@@ -31,6 +32,10 @@ USER app
 
 EXPOSE 8000
 
-ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
+# Heap fixo + G1: evita consumir toda a RAM do host quando o container não tem limite
+ENV JAVA_OPTS="-XX:+UseContainerSupport -Xms256m -Xmx512m -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+ExitOnOutOfMemoryError -Djava.security.egd=file:/dev/./urandom"
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=5 \
+  CMD curl -fsS http://localhost:8000/srv-gerenciaracademia/actuator/health || exit 1
 
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]

@@ -46,6 +46,7 @@ O serviço **`tunnel`** (Cloudflare Quick Tunnel) gera uma URL pública sem conf
 
 - `docker compose up -d --build` sobe app + túnel automaticamente.
 - A URL muda a cada `docker compose down` / `up` (ex.: `https://xxx.trycloudflare.com`).
+- Após reiniciar só o túnel, execute **`atualizar-url-publica.bat`** para atualizar `URL_PUBLICA.txt` (o script usa a URL **mais recente** dos logs, não a primeira da história).
 
 API e frontend usam o **mesmo host** (nginx faz proxy) — funciona para quem acessa de qualquer lugar.
 
@@ -63,7 +64,9 @@ docker compose -f docker-compose.yml -f docker-compose.ngrok.yml up -d --build
 
 | Arquivo | Função |
 |---------|--------|
-| `subir.bat` | Verifica Docker, portas, sobe compose, mostra URL pública |
+| `subir.bat` | Verifica Docker, portas, sobe compose dev/teste + túnel público |
+| `subir-prod.bat` | Produção: `docker,prod`, sem seeds demo, sem túnel |
+| `atualizar-url-publica.bat` | Regrava `URL_PUBLICA.txt` com a URL **mais recente** do túnel |
 | `scripts/configurar-portas.py` | Portas livres + firewall Windows |
 | `scripts/aguardar-url-publica.py` | Lê logs do túnel → `URL_PUBLICA.txt` |
 | `scripts/subir-docker.ps1` | Mesmo fluxo em PowerShell |
@@ -92,6 +95,48 @@ docker compose up -d postgres backend frontend
 ```
 
 Frontend dev: `frontend/.env.local` com `VITE_API_URL=http://localhost:8000/srv-gerenciaracademia`.
+
+## Performance (CPU e memória)
+
+O backend Spring Boot costumava consumir quase toda a RAM do host porque a JVM usava `MaxRAMPercentage` **sem limite no container**.
+
+### Ajustes aplicados
+
+| Área | O que mudou |
+|------|-------------|
+| **JVM** | Heap fixo (`-Xms256m -Xmx512m` dev, `-Xmx768m` prod) + G1GC |
+| **Docker** | `mem_limit` / `cpus` no backend e postgres (`.env`: `BACKEND_MEM_LIMIT`, `BACKEND_CPUS`) |
+| **Logging** | Docker/prod: só console, nível WARN/INFO (sem arquivo `logs/`) |
+| **Startup** | `lazy-initialization` no profile docker; seeds demo desligáveis |
+| **JPA/Tomcat** | Pool Hikari e threads Tomcat reduzidos em dev; `open-in-view=false` |
+| **Produção** | Profile `prod`: `ddl-auto=validate`, sem Swagger, sem massa demo |
+
+### Produção
+
+**Windows:** execute **`subir-prod.bat`** na raiz do projeto.
+
+**Linha de comando:**
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+```
+
+Variáveis úteis no `.env`:
+
+| Variável | Padrão dev | Produção |
+|----------|------------|----------|
+| `BACKEND_MEM_LIMIT` | `768m` | `1024m` |
+| `APP_SEED_DEMO` | `true` | `false` (via overlay prod) |
+| `SPRING_PROFILES_ACTIVE` | `docker` | `docker,prod` |
+
+### Monitorar uso
+
+```bash
+docker stats academia-backend academia-postgres
+curl -s http://localhost:8000/srv-gerenciaracademia/actuator/health
+```
+
+Se a máquina for fraca (4 GB RAM), reduza no `.env`: `BACKEND_MEM_LIMIT=512m` e `JAVA_OPTS=-Xms128m -Xmx384m ...`.
 
 ## Parar
 

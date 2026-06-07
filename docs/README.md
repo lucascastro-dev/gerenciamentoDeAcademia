@@ -16,7 +16,7 @@
 
 | Documento | Conteúdo |
 |-----------|----------|
-| [DEPLOY_DOCKER.md](./DEPLOY_DOCKER.md) | Docker, túnel Cloudflare, ngrok, variáveis `.env` |
+| [DEPLOY_DOCKER.md](./DEPLOY_DOCKER.md) | Docker, túnel Cloudflare, ngrok, variáveis `.env`, **limites de CPU/RAM** |
 | [USUARIOS_TESTE.md](./USUARIOS_TESTE.md) | CPFs, senhas e perfis para teste |
 | [CENARIOS_TESTE.md](./CENARIOS_TESTE.md) | Roteiro manual (grade, portal, cobrança, turmas) |
 

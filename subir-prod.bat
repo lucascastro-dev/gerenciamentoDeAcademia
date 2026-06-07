@@ -1,11 +1,14 @@
 @echo off
 chcp 65001 >nul
 cd /d "%~dp0"
-title EduGestao - Subir aplicacao
+title EduGestao - Subir aplicacao (PRODUCAO)
+
+set COMPOSE_CMD=docker compose -f docker-compose.yml -f docker-compose.prod.yml
 
 echo.
-echo  EduGestao - Deploy Docker + tunel publico
-echo  ==========================================
+echo  EduGestao - Deploy Docker PRODUCAO
+echo  ==================================
+echo  Profile: docker,prod  ^|  Sem seeds demo  ^|  Sem tunel publico
 echo.
 
 where docker >nul 2>&1
@@ -24,7 +27,15 @@ if errorlevel 1 (
 
 if not exist ".env" (
     copy /Y ".env.example" ".env" >nul
-    echo [OK] Arquivo .env criado. Edite senhas se for ambiente publico.
+    echo [OK] Arquivo .env criado a partir do exemplo.
+    echo [AVISO] Edite JWT_SECRET, POSTGRES_PASSWORD e APP_MASTER_PASSWORD antes de expor na internet.
+    echo.
+)
+
+findstr /C:"change-me-in-production" .env >nul 2>&1
+if not errorlevel 1 (
+    echo [AVISO] JWT_SECRET ainda parece ser o valor de exemplo no .env.
+    echo         Troque antes de usar em producao real.
     echo.
 )
 
@@ -35,19 +46,18 @@ if errorlevel 1 (
     python scripts\configurar-portas.py
     if errorlevel 1 (
         echo.
-        echo Corrija as portas e execute subir.bat novamente.
+        echo Corrija as portas e execute subir-prod.bat novamente.
         pause
         exit /b 1
     )
 )
 
 echo.
-echo Baixando imagens base (evita erro de metadata no build)...
+echo Baixando imagens base...
 echo.
 
 where powershell >nul 2>&1
 if errorlevel 1 (
-    echo [AVISO] PowerShell nao encontrado; tentando pull via mirror AWS...
     docker pull public.ecr.aws/docker/library/node:20-alpine
     docker pull public.ecr.aws/docker/library/nginx:alpine
     docker pull public.ecr.aws/docker/library/postgres:16-alpine
@@ -56,27 +66,24 @@ if errorlevel 1 (
     if errorlevel 1 (
         echo.
         echo Teste: docker pull public.ecr.aws/docker/library/node:20-alpine
-        echo Depois execute subir.bat novamente.
+        echo Depois execute subir-prod.bat novamente.
         pause
         exit /b 1
     )
 )
 
 echo.
-echo Subindo containers (build na primeira vez pode demorar)...
+echo Subindo postgres + backend + frontend (producao)...
+echo Build na primeira vez pode demorar alguns minutos.
 echo.
 
-docker compose up -d --build
+%COMPOSE_CMD% up -d --build
 
 if errorlevel 1 (
     echo.
     echo ================= ERRO DETALHADO =================
-    echo Se apareceu timeout no Docker Hub:
-    echo   - Teste: docker pull public.ecr.aws/docker/library/node:20-alpine
-    echo   - Reinicie o Docker Desktop e rode subir.bat de novo
-    echo.
-    docker compose logs frontend
-    docker compose logs backend
+    %COMPOSE_CMD% logs frontend
+    %COMPOSE_CMD% logs backend
     echo =================================================
     echo.
     pause
@@ -84,30 +91,20 @@ if errorlevel 1 (
 )
 
 echo.
-echo Aguardando backend e tunel...
-timeout /t 15 /nobreak >nul
-
-where python >nul 2>&1
-if not errorlevel 1 (
-    python scripts\aguardar-url-publica.py
-    if errorlevel 1 (
-        echo.
-        echo [AVISO] URL publica nao gravada. Apos o tunel subir, execute:
-        echo   atualizar-url-publica.bat
-    )
-) else (
-    echo.
-    echo Obtenha a URL publica com:
-    echo   docker compose logs tunnel --tail 30
-    echo   ou execute atualizar-url-publica.bat apos instalar Python
-)
+echo Aguardando backend ficar pronto...
+timeout /t 20 /nobreak >nul
 
 for /f "tokens=2 delims==" %%a in ('findstr /B "APP_PORT=" .env 2^>nul') do set APP_PORT=%%a
 if not defined APP_PORT set APP_PORT=5173
 
 echo.
-echo  Local:  http://localhost:%APP_PORT%
-echo  Logs:   docker compose logs -f backend
-echo  Parar:  docker compose down
+echo  App:     http://localhost:%APP_PORT%
+echo  Health:  http://localhost:8000/srv-gerenciaracademia/actuator/health
+echo  Logs:    %COMPOSE_CMD% logs -f backend
+echo  Stats:   docker stats academia-backend academia-postgres
+echo  Parar:   %COMPOSE_CMD% down
+echo.
+echo  Tunel publico (opcional, nao recomendado em prod):
+echo    %COMPOSE_CMD% --profile tunnel up -d tunnel
 echo.
 pause

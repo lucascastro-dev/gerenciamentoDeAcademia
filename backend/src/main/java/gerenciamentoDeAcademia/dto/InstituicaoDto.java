@@ -38,6 +38,26 @@ public class InstituicaoDto {
     }
 
     public InstituicaoDto(Instituicao instituicao) {
+        this(instituicao, true);
+    }
+
+    public InstituicaoDto(Instituicao instituicao, boolean incluirFuncionarios) {
+        preencherCamposBasicos(instituicao);
+        if (incluirFuncionarios) {
+            this.funcionarios = Optional.ofNullable(instituicao.getFuncionarios())
+                    .orElse(Collections.emptySet())
+                    .stream()
+                    .map(FuncionarioDto::new)
+                    .collect(Collectors.toList());
+        }
+    }
+
+    /** Resumo sem carregar vínculos ManyToMany (uso em home/layout). */
+    public static InstituicaoDto resumo(Instituicao instituicao) {
+        return new InstituicaoDto(instituicao, false);
+    }
+
+    private void preencherCamposBasicos(Instituicao instituicao) {
         this.registroInstituicao = instituicao.getId();
         this.razaoSocial = instituicao.getRazaoSocial();
         this.cnpj = instituicao.getCnpj();
@@ -48,11 +68,5 @@ public class InstituicaoDto {
         this.email = instituicao.getEmail();
         this.statusFinanceiro = instituicao.getStatusFinanceiro();
         this.trialUtilizado = instituicao.getTrialUtilizado();
-
-        this.funcionarios = Optional.ofNullable(instituicao.getFuncionarios())
-                .orElse(Collections.emptySet())
-                .stream()
-                .map(FuncionarioDto::new)
-                .collect(Collectors.toList());
     }
 }
