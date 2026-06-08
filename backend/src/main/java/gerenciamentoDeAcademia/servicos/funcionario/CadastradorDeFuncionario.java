@@ -84,8 +84,12 @@ public class CadastradorDeFuncionario implements ICadastradorDeFuncionario {
         if (funcionarioDto.getPermitirGerenciarFuncoes() != null) {
             funcionarioDto.setPermitirGerenciarFuncoes(null);
         }
-        funcionario.atualizar(funcionarioDto);
+        funcionario.atualizarDadosPessoais(funcionarioDto);
+        if (funcionarioDto.getCadastroAtivo() != null) {
+            funcionario.setCadastroAtivo(funcionarioDto.getCadastroAtivo());
+        }
+        funcionarioRepository.save(funcionario);
         servicoAuditoria.registrar("ALTERACAO", "FUNCIONARIO", funcionario.getCpf(),
-                "Dados atualizados para " + funcionario.getNome());
+                "Dados pessoais atualizados para " + funcionario.getNome());
     }
 }

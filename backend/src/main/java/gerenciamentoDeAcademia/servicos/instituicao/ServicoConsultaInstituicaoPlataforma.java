@@ -4,20 +4,41 @@ import gerenciamentoDeAcademia.dto.AssinaturaPlataformaDto;
 import gerenciamentoDeAcademia.dto.AtualizarPlanoInstituicaoRequest;
 import gerenciamentoDeAcademia.dto.AtualizarStatusFinanceiroRequest;
 import gerenciamentoDeAcademia.dto.InstituicaoDetalheDto;
+import gerenciamentoDeAcademia.dto.InstituicaoListagemDto;
+import gerenciamentoDeAcademia.entidades.AssinaturaPlataforma;
 import gerenciamentoDeAcademia.entidades.Instituicao;
 import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
+import gerenciamentoDeAcademia.repositorios.AssinaturaPlataformaRepository;
 import gerenciamentoDeAcademia.repositorios.InstituicaoRepository;
 import gerenciamentoDeAcademia.servicos.plano.ServicoAssinaturaPlataforma;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class ServicoConsultaInstituicaoPlataforma {
 
     private final InstituicaoRepository instituicaoRepository;
+    private final AssinaturaPlataformaRepository assinaturaRepository;
     private final ServicoAssinaturaPlataforma servicoAssinaturaPlataforma;
+
+    @Transactional(readOnly = true)
+    public List<InstituicaoListagemDto> listarParaListagem() {
+        Map<Long, AssinaturaPlataforma> assinaturasPorInstituicao = assinaturaRepository.findAllComInstituicao().stream()
+                .filter(a -> a.getInstituicao() != null && a.getInstituicao().getId() != null)
+                .collect(Collectors.toMap(a -> a.getInstituicao().getId(), a -> a, (a, b) -> a));
+        return instituicaoRepository.findAll().stream()
+                .sorted(Comparator.comparing(Instituicao::getRazaoSocial,
+                        Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)))
+                .map(i -> InstituicaoListagemDto.de(i, assinaturasPorInstituicao.get(i.getId())))
+                .toList();
+    }
 
     @Transactional(readOnly = true)
     public InstituicaoDetalheDto consultarDetalhePorCnpj(String cnpj) {

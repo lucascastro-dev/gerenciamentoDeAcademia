@@ -7,6 +7,8 @@ const BASE_URL =
 
 const api = axios.create({ baseURL: BASE_URL });
 
+const limparCnpj = (cnpj: string) => cnpj.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+
 api.interceptors.request.use((config) => {
   const sessao = carregarSessao();
   const token = sessao?.token || localStorage.getItem('@App:token');
@@ -107,19 +109,33 @@ const HttpService = {
     api.post(`/instituicao/instituicao/${instituicaoId}/inativarFuncionario/${cpf.replace(/\D/g, '')}`),
 
   desativarInstituicao: (cnpj: string) =>
-    api.delete(`/instituicao/desativarAcademia/${cnpj.replace(/\D/g, '')}`),
+    api.delete(`/instituicao/desativarAcademia/${limparCnpj(cnpj)}`),
 
   ativarCadastroInstituicao: (cnpj: string, plano: string) =>
-    api.post(`/instituicao/ativarCadastro/${cnpj.replace(/\D/g, '')}`, { plano }),
+    api.post(`/instituicao/ativarCadastro/${limparCnpj(cnpj)}`, { plano }),
 
   trocarAdministradorInstituicao: (data: { cnpj: string; cpfAdministrador: string }) =>
     api.put('/instituicao/administrador', {
-      cnpj: data.cnpj.replace(/\D/g, ''),
+      cnpj: limparCnpj(data.cnpj),
       cpfAdministrador: data.cpfAdministrador.replace(/\D/g, ''),
     }),
 
+  listarInstituicoesResumo: () =>
+    api.get<Array<{
+      id: number;
+      razaoSocial: string;
+      cnpj?: string;
+      cnpjExibicao?: string;
+      plano?: string;
+      planoExibicao?: string;
+      statusFinanceiro?: string;
+      statusFinanceiroExibicao?: string;
+      cadastroAtivo?: boolean;
+      statusCadastroExibicao?: string;
+    }>>('/instituicao/lista'),
+
   consultarInstituicaoDetalheCnpj: (cnpj: string) =>
-    api.get(`/instituicao/detalheCnpj/${cnpj.replace(/\D/g, '')}`),
+    api.get(`/instituicao/detalheCnpj/${limparCnpj(cnpj)}`),
 
   ativarInstituicao: (data: { cnpj: string; cpfAdministrador: string; plano: string }) =>
     api.post('/instituicao/ativarUnidade', data),
@@ -129,7 +145,7 @@ const HttpService = {
 
   atualizarPlanoInstituicao: (data: { cnpj: string; plano: string }) =>
     api.put('/instituicao/plano', {
-      cnpj: data.cnpj.replace(/\D/g, ''),
+      cnpj: limparCnpj(data.cnpj),
       plano: data.plano,
     }),
 
@@ -149,11 +165,46 @@ const HttpService = {
   consultarAcademia: (instituicaoId: string | number) =>
     api.get(`/instituicao/consultarAcademiaId/${instituicaoId}`),
 
+  listarFuncionariosResumo: () =>
+    api.get<Array<{
+      id: number;
+      vinculoId?: number;
+      nome: string;
+      cpf?: string;
+      cpfExibicao?: string;
+      dataDeNascimento?: string;
+      cargo?: string;
+      instituicaoId?: number;
+      instituicaoNome?: string;
+    }>>('/funcionario/lista'),
+
   consultarFuncionarioPorCpf: (cpf: string) =>
-    api.get(`/funcionario/consultarPorCpf/${cpf}`),
+    api.get<{
+      nome: string;
+      rg: string;
+      cpf: string;
+      dataDeNascimento: string;
+      endereco: string;
+      telefone: string;
+      email?: string;
+      cadastroAtivo?: boolean;
+      permitirGerenciarFuncoes?: boolean;
+      vinculos?: Array<{
+        vinculoId?: number;
+        instituicaoId: number;
+        razaoSocial: string;
+        tipoFuncionario: string;
+        areaTerceirizado?: string;
+        especializacao?: string;
+        cargo?: string;
+      }>;
+    }>(`/funcionario/consultarPorCpf/${cpf}`),
 
   editarPessoa: (data: Record<string, unknown>) =>
     api.put('/funcionario/editarFuncionario', data),
+
+  atualizarVinculoFuncionario: (data: Record<string, unknown>) =>
+    api.put('/funcionario/vinculo', data),
 
   consultarInstituicaoPorCnpj: (cnpj: string) =>
     api.get(`/instituicao/consultarAcademiaCnpj/${cnpj}`),
@@ -171,6 +222,9 @@ const HttpService = {
 
   listarAlunos: (instituicaoId: string | number) =>
     api.get('/aluno/consultarAluno', { params: { instituicaoId } }),
+
+  listarAlunosResumo: () =>
+    api.get<Array<{ id: number; nome: string; cpf?: string; cpfExibicao?: string; dataDeNascimento?: string }>>('/aluno/lista'),
 
   consultarAluno: (cpf: string, instituicaoId: string | number) =>
     api.get(`/aluno/consultarAluno/${cpf.replace(/\D/g, '')}`, { params: { instituicaoId } }),
@@ -247,6 +301,20 @@ const HttpService = {
       telefoneResponsavelMascarado?: string;
       turmasInstituicao: Array<{ id: number; modalidade: string; horario: string; sala?: string }>;
     }>(`/aluno/professor/consultar/${cpf.replace(/\D/g, '')}`),
+
+  consultarAlunoProfessorPorId: (alunoId: number) =>
+    api.get<{
+      nome: string;
+      cpfMascarado: string;
+      rgMascarado: string;
+      dataDeNascimento: string;
+      enderecoResumido: string;
+      telefoneMascarado: string;
+      emailMascarado: string;
+      nomeResponsavel?: string;
+      telefoneResponsavelMascarado?: string;
+      turmasInstituicao: Array<{ id: number; modalidade: string; horario: string; sala?: string }>;
+    }>(`/aluno/professor/consultar/id/${alunoId}`),
 
   presencaConsultar: (turmaId: string | number, ano: number, mes: number) =>
     api.get(`/turma/professor/${turmaId}/presenca`, { params: { ano, mes } }),

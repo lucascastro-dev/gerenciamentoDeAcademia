@@ -42,6 +42,8 @@ class ConsultaDeAlunosTest {
     TurmaRepository turmaRepository;
     @Mock
     ServicoMatriculaInstituicao servicoMatriculaInstituicao;
+    @Mock
+    gerenciamentoDeAcademia.repositorios.MatriculaInstituicaoRepository matriculaInstituicaoRepository;
 
     @org.junit.jupiter.api.BeforeEach
     void configurarMigracaoLegado() {

@@ -13,6 +13,7 @@ import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
 import gerenciamentoDeAcademia.repositorios.FuncionarioRepository;
 import gerenciamentoDeAcademia.repositorios.InstituicaoRepository;
 import gerenciamentoDeAcademia.repositorios.UsuarioRepository;
+import gerenciamentoDeAcademia.servicos.funcionario.ServicoVinculoFuncionarioInstituicao;
 import gerenciamentoDeAcademia.servicos.interfaces.IGerenciadorDeInstituicao;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +35,7 @@ public class GerenciadorDeInstituicao implements IGerenciadorDeInstituicao {
     private final InstituicaoRepository instituicaoRepository;
     private final FuncionarioRepository funcionarioRepository;
     private final UsuarioRepository usuarioRepository;
+    private final ServicoVinculoFuncionarioInstituicao servicoVinculoFuncionario;
 
     @Override
     @Transactional
@@ -101,34 +103,18 @@ public class GerenciadorDeInstituicao implements IGerenciadorDeInstituicao {
         Instituicao instituicao = instituicaoRepository.findById(instituicaoId)
                 .orElseThrow(() -> new ExcecaoDeDominio("Instituição não encontrada"));
         Funcionario funcionario = buscarFuncionario(cpf);
-        aplicarFuncaoNaInstituicao(funcionario, dados);
+        ExcecaoDeDominio.quandoNulo(dados, "Informe a função do colaborador na instituição.");
+        ExcecaoDeDominio.quandoNulo(dados.getTipoFuncionario(), "Tipo de funcionário é obrigatório na ativação.");
+        servicoVinculoFuncionario.aplicarFuncaoNaInstituicao(
+                funcionario,
+                instituicao,
+                dados.getTipoFuncionario(),
+                dados.getAreaTerceirizado(),
+                dados.getEspecializacao());
         if (!instituicao.getFuncionarios().contains(funcionario)) {
             instituicao.getFuncionarios().add(funcionario);
         }
         ativarFuncionarioInterno(instituicao, funcionario);
-    }
-
-    private void aplicarFuncaoNaInstituicao(Funcionario funcionario, AtivacaoFuncionarioDto dados) {
-        ExcecaoDeDominio.quandoNulo(dados, "Informe a função do colaborador na instituição.");
-        ExcecaoDeDominio.quandoNulo(dados.getTipoFuncionario(), "Tipo de funcionário é obrigatório na ativação.");
-        if (dados.getTipoFuncionario() == TipoFuncionario.DIRETOR) {
-            throw new ExcecaoDeDominio("Perfil Diretor não pode ser atribuído por esta tela.");
-        }
-        if (dados.getTipoFuncionario() == TipoFuncionario.TERCEIRIZADO) {
-            ExcecaoDeDominio.quandoNulo(dados.getAreaTerceirizado(),
-                    "Informe a área do terceirizado (RH, professor substituto ou TI).");
-            funcionario.setAreaTerceirizado(dados.getAreaTerceirizado());
-        } else {
-            funcionario.setAreaTerceirizado(null);
-        }
-        if (dados.getTipoFuncionario() == TipoFuncionario.PROFESSOR) {
-            ExcecaoDeDominio.quandoNuloOuVazio(dados.getEspecializacao(),
-                    "Especialização é obrigatória para professores.");
-            funcionario.setEspecializacao(dados.getEspecializacao());
-        }
-        funcionario.setTipoFuncionario(dados.getTipoFuncionario());
-        funcionario.setCargo(dados.getTipoFuncionario().getDescricao());
-        funcionarioRepository.save(funcionario);
     }
 
     private void ativarFuncionarioInterno(Instituicao instituicao, Funcionario funcionario) {

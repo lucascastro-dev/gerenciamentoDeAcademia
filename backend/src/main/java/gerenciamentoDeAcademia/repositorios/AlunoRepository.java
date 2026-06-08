@@ -19,4 +19,6 @@ public interface AlunoRepository extends JpaRepository<Aluno, Long> {
     boolean existsByCpf(String cpf);
 
     List<Aluno> findDistinctByTurma_Instituicao_IdOrderByNomeAsc(Long instituicaoId);
+
+    List<Aluno> findAllByOrderByNomeAsc();
 }

@@ -8,6 +8,7 @@ import gerenciamentoDeAcademia.dto.AtualizarStatusFinanceiroRequest;
 import gerenciamentoDeAcademia.dto.TrocarAdministradorRequest;
 import gerenciamentoDeAcademia.dto.InstituicaoDetalheDto;
 import gerenciamentoDeAcademia.dto.InstituicaoDto;
+import gerenciamentoDeAcademia.dto.InstituicaoListagemDto;
 import gerenciamentoDeAcademia.servicos.instituicao.GerenciadorDeInstituicao;
 import gerenciamentoDeAcademia.servicos.instituicao.ServicoAtivacaoInstituicao;
 import gerenciamentoDeAcademia.servicos.instituicao.ServicoConsultaInstituicaoPlataforma;
@@ -52,6 +53,13 @@ public class GerenciarInstituicaoController {
     @PreAuthorize("@permissaoEvaluator.possuiMaster(authentication)")
     public InstituicaoDetalheDto ativarUnidade(@RequestBody AtivarInstituicaoRequest request) {
         return servicoAtivacaoInstituicao.ativarUnidade(request);
+    }
+
+    @GetMapping("/lista")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("@permissaoEvaluator.possuiMaster(authentication)")
+    public List<InstituicaoListagemDto> listarResumo() {
+        return servicoConsultaInstituicaoPlataforma.listarParaListagem();
     }
 
     @GetMapping("/detalheCnpj/{cnpjAcademia}")

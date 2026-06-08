@@ -1,12 +1,16 @@
 package gerenciamentoDeAcademia.controller;
 
+import gerenciamentoDeAcademia.dto.AtualizarVinculoFuncionarioDto;
+import gerenciamentoDeAcademia.dto.FuncionarioConsultaCompletaDto;
 import gerenciamentoDeAcademia.dto.FuncionarioDto;
+import gerenciamentoDeAcademia.dto.PessoaListagemDto;
 import gerenciamentoDeAcademia.entidades.Funcionario;
 import gerenciamentoDeAcademia.dto.AlterarSenhaDto;
 import gerenciamentoDeAcademia.dto.AuditoriaRevisionDto;
 import gerenciamentoDeAcademia.servicos.funcionario.AlteradorSenha;
 import gerenciamentoDeAcademia.servicos.funcionario.CadastradorDeFuncionario;
 import gerenciamentoDeAcademia.servicos.funcionario.ConsultaDeFuncionario;
+import gerenciamentoDeAcademia.servicos.funcionario.ServicoVinculoFuncionarioInstituicao;
 import gerenciamentoDeAcademia.servicos.funcionario.ExcluirFuncionario;
 import gerenciamentoDeAcademia.enums.TipoFuncionario;
 import gerenciamentoDeAcademia.infra.seguranca.UsuarioAutenticado;
@@ -43,6 +47,8 @@ public class GerenciarFuncionarioController {
 
     @Autowired
     ServicoDelegacaoSubMaster servicoDelegacaoSubMaster;
+    @Autowired
+    ServicoVinculoFuncionarioInstituicao servicoVinculoFuncionario;
 
     @GetMapping("/meuPerfil")
     public Funcionario meuPerfil(@AuthenticationPrincipal UsuarioAutenticado usuario) {
@@ -118,13 +124,29 @@ public class GerenciarFuncionarioController {
 
     @GetMapping("/consultarPorCpf/{cpf}")
     @PreAuthorize("@permissaoEvaluator.possui(authentication, 'funcionario:consultar')")
-    public Funcionario consultarPorCpf(
+    public FuncionarioConsultaCompletaDto consultarPorCpf(
             @AuthenticationPrincipal UsuarioAutenticado usuario,
             @PathVariable("cpf") String cpf) {
         String cpfLimpo = cpf.replaceAll("\\D", "");
         Long instituicaoId = usuario.getInstituicaoId();
-        return consultaDeFuncionario.consultarFuncionarioPorCpfEscopo(
+        return consultaDeFuncionario.consultarCompletoPorCpf(
                 cpfLimpo, instituicaoId, usuario.isOperadorPlataforma());
+    }
+
+    @PutMapping("/vinculo")
+    @PreAuthorize("@permissaoEvaluator.possui(authentication, 'funcionario:editar')")
+    public ResponseEntity<String> atualizarVinculoInstituicao(
+            @AuthenticationPrincipal UsuarioAutenticado usuario,
+            @RequestBody AtualizarVinculoFuncionarioDto dto) {
+        servicoVinculoFuncionario.atualizarVinculo(
+                dto, usuario.getInstituicaoId(), usuario.isOperadorPlataforma());
+        return ResponseEntity.ok("Função na instituição atualizada com sucesso!");
+    }
+
+    @GetMapping("/lista")
+    @PreAuthorize("@permissaoEvaluator.possui(authentication, 'funcionario:consultar')")
+    public List<PessoaListagemDto> listarResumo(@AuthenticationPrincipal UsuarioAutenticado usuario) {
+        return consultaDeFuncionario.listarParaListagem(usuario);
     }
 
     @GetMapping("/consultarFuncionario")

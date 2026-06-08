@@ -1,0 +1,96 @@
+.lista-consulta__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-end;
+  margin-bottom: 1rem;
+}
+
+.lista-consulta__toolbar .field-grow {
+  flex: 1 1 220px;
+  min-width: 180px;
+}
+
+.lista-consulta__toolbar .field-page-size {
+  flex: 0 0 auto;
+  min-width: 120px;
+}
+
+.lista-consulta__toolbar label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+
+.lista-consulta__sort-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.lista-consulta__sort-btn:hover {
+  color: var(--color-primary, #2563eb);
+}
+
+.lista-consulta__sort-icon {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+.lista-consulta__sort-icon--ativo {
+  opacity: 1;
+  color: var(--color-primary, #2563eb);
+}
+
+.lista-consulta__acao {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.35rem 0.5rem;
+  border-radius: 6px;
+  color: var(--color-primary, #2563eb);
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.lista-consulta__acao:hover {
+  background: #eff6ff;
+}
+
+.lista-consulta__paginacao {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #e2e8f0;
+  font-size: 0.88rem;
+  color: var(--color-muted, #64748b);
+}
+
+.lista-consulta__paginacao-btns {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.lista-consulta__vazio {
+  text-align: center;
+  padding: 1.5rem;
+  color: var(--color-muted, #64748b);
+}
+
+.lista-consulta__contador {
+  font-size: 0.85rem;
+  color: var(--color-muted, #64748b);
+  margin: 0 0 0.75rem;
+}

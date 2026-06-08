@@ -18,4 +18,7 @@ public interface AssinaturaPlataformaRepository extends JpaRepository<Assinatura
             WHERE a.ativo = true AND a.dataFim < CURRENT_DATE
             """)
     List<AssinaturaPlataforma> findAssinaturasVencidas();
+
+    @Query("SELECT a FROM AssinaturaPlataforma a JOIN FETCH a.instituicao")
+    List<AssinaturaPlataforma> findAllComInstituicao();
 }

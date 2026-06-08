@@ -81,9 +81,11 @@ const GestaoCadastros: React.FC = () => {
       setNome(d.nome || '');
       setRg(d.rg || '');
       setCadastroAtivo(!!d.cadastroAtivo);
-      if (d.tipoFuncionario) setTipoFuncionario(d.tipoFuncionario);
-      if (d.areaTerceirizado) setAreaTerceirizado(d.areaTerceirizado);
-      if (d.especializacao) setEspecializacao(d.especializacao);
+      const idAlvo = master ? instituicaoId : instituicaoIdPadrao;
+      const vinculo = d.vinculos?.find((v) => String(v.instituicaoId) === String(idAlvo));
+      if (vinculo?.tipoFuncionario) setTipoFuncionario(vinculo.tipoFuncionario);
+      if (vinculo?.areaTerceirizado) setAreaTerceirizado(vinculo.areaTerceirizado);
+      if (vinculo?.especializacao) setEspecializacao(vinculo.especializacao);
     } catch (e) {
       setNome('');
       setRg('');

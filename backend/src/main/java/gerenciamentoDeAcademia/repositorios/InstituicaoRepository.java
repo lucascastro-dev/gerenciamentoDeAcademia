@@ -30,8 +30,18 @@ public interface InstituicaoRepository extends JpaRepository<Instituicao, Long> 
 
     long countByStatusFinanceiro(StatusFinanceiroInstituicao statusFinanceiro);
 
-    @Query("SELECT DISTINCT f FROM Instituicao a JOIN a.funcionarios f WHERE a.id = :instituicaoId AND f.tipoFuncionario = gerenciamentoDeAcademia.enums.TipoFuncionario.PROFESSOR AND f.cadastroAtivo = true ORDER BY f.nome")
+    @Query("""
+            SELECT DISTINCT f FROM gerenciamentoDeAcademia.entidades.VinculoFuncionarioInstituicao v
+            JOIN v.funcionario f
+            WHERE v.instituicao.id = :instituicaoId
+            AND v.tipoFuncionario = gerenciamentoDeAcademia.enums.TipoFuncionario.PROFESSOR
+            AND f.cadastroAtivo = true
+            ORDER BY f.nome
+            """)
     List<gerenciamentoDeAcademia.entidades.Funcionario> findProfessoresAtivosPorInstituicao(@Param("instituicaoId") Long instituicaoId);
+
+    @Query("SELECT DISTINCT f FROM Instituicao i JOIN i.funcionarios f WHERE i.id = :instituicaoId ORDER BY f.nome")
+    List<gerenciamentoDeAcademia.entidades.Funcionario> findFuncionariosPorInstituicao(@Param("instituicaoId") Long instituicaoId);
 
     @Query("""
             SELECT DISTINCT a FROM Instituicao a

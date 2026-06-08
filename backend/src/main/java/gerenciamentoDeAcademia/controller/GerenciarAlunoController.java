@@ -3,6 +3,7 @@ package gerenciamentoDeAcademia.controller;
 import gerenciamentoDeAcademia.dto.AlunoConsultaCompletaDto;
 import gerenciamentoDeAcademia.dto.AlunoConsultaProfessorDto;
 import gerenciamentoDeAcademia.dto.AlunoDto;
+import gerenciamentoDeAcademia.dto.PessoaListagemDto;
 import gerenciamentoDeAcademia.entidades.Aluno;
 import gerenciamentoDeAcademia.infra.seguranca.UsuarioAutenticado;
 import gerenciamentoDeAcademia.servicos.aluno.AlteadorDeDadosDoAluno;
@@ -62,6 +63,13 @@ public class GerenciarAlunoController {
         alteadorDeDadosDoAluno.alterarAluno(alunoDto);
     }
 
+    @GetMapping("/lista")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("@permissaoEvaluator.possui(authentication, 'aluno:consultar')")
+    public List<PessoaListagemDto> listarResumo(@AuthenticationPrincipal UsuarioAutenticado usuario) {
+        return consultaDeAlunos.listarParaListagem(usuario);
+    }
+
     @GetMapping("/consultarAluno")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("@permissaoEvaluator.possui(authentication, 'aluno:consultar')")
@@ -94,5 +102,14 @@ public class GerenciarAlunoController {
             @PathVariable("cpf") String cpf,
             @AuthenticationPrincipal UsuarioAutenticado usuario) {
         return consultaDeAlunos.consultaProfessorPorCpf(cpf.replaceAll("\\D", ""), usuario);
+    }
+
+    @GetMapping("/professor/consultar/id/{alunoId}")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("@permissaoEvaluator.possui(authentication, 'aluno:consultar')")
+    public AlunoConsultaProfessorDto consultarProfessorPorId(
+            @PathVariable Long alunoId,
+            @AuthenticationPrincipal UsuarioAutenticado usuario) {
+        return consultaDeAlunos.consultaProfessorPorId(alunoId, usuario);
     }
 }

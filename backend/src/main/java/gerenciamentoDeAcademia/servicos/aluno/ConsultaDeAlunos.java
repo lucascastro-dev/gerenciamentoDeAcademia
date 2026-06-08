@@ -3,7 +3,10 @@ package gerenciamentoDeAcademia.servicos.aluno;
 import gerenciamentoDeAcademia.dto.AlunoConsultaCompletaDto;
 import gerenciamentoDeAcademia.dto.AlunoConsultaProfessorDto;
 import gerenciamentoDeAcademia.dto.AlunoMatriculaInstituicaoDto;
+import gerenciamentoDeAcademia.dto.PessoaListagemDto;
 import gerenciamentoDeAcademia.dto.TurmaResumoDto;
+import gerenciamentoDeAcademia.enums.TipoFuncionario;
+import gerenciamentoDeAcademia.repositorios.MatriculaInstituicaoRepository;
 import gerenciamentoDeAcademia.excecao.ExcecaoDeAcesso;
 import gerenciamentoDeAcademia.entidades.Aluno;
 import gerenciamentoDeAcademia.entidades.Instituicao;
@@ -34,12 +37,35 @@ public class ConsultaDeAlunos implements IConsultaDeAlunos {
     private final AlunoRepository alunoRepository;
     private final InstituicaoRepository instituicaoRepository;
     private final TurmaRepository turmaRepository;
+    private final MatriculaInstituicaoRepository matriculaInstituicaoRepository;
     private final ServicoMatriculaInstituicao servicoMatriculaInstituicao;
 
     @Override
     public List<Aluno> listarAlunos(Long instituicaoId) {
         ExcecaoDeDominio.quandoNulo(instituicaoId, "Instituição é obrigatória para listar alunos.");
         return alunoRepository.findDistinctByTurma_Instituicao_IdOrderByNomeAsc(instituicaoId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PessoaListagemDto> listarParaListagem(UsuarioAutenticado usuario) {
+        boolean mascarar = ehProfessor(usuario);
+        boolean master = usuario != null && usuario.isOperadorPlataforma();
+
+        if (master) {
+            return alunoRepository.findAllByOrderByNomeAsc().stream()
+                    .map(a -> PessoaListagemDto.deAluno(a, false))
+                    .toList();
+        }
+
+        Long instituicaoId = usuario != null ? usuario.getInstituicaoId() : null;
+        ExcecaoDeDominio.quandoNulo(instituicaoId, "Instituição não identificada na sessão.");
+
+        return matriculaInstituicaoRepository.findByInstituicao_IdOrderByAluno_NomeAsc(instituicaoId).stream()
+                .map(m -> m.getAluno())
+                .filter(a -> a != null)
+                .map(a -> PessoaListagemDto.deAluno(a, mascarar))
+                .toList();
     }
 
     @Override
@@ -109,6 +135,23 @@ public class ConsultaDeAlunos implements IConsultaDeAlunos {
                 .toList();
 
         return AlunoConsultaProfessorDto.of(aluno, turmas);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public AlunoConsultaProfessorDto consultaProfessorPorId(Long alunoId, UsuarioAutenticado usuario) {
+        ExcecaoDeDominio.quandoNulo(alunoId, "Aluno não informado.");
+        Aluno aluno = alunoRepository.findById(alunoId).orElse(null);
+        if (aluno == null) {
+            ExcecaoDeAcesso.naoEncontrado("Dados não encontrados.");
+        }
+        return consultaProfessorPorCpf(aluno.getCpf(), usuario);
+    }
+
+    private boolean ehProfessor(UsuarioAutenticado usuario) {
+        return usuario != null
+                && usuario.getFuncionario() != null
+                && usuario.getFuncionario().getTipoFuncionario() == TipoFuncionario.PROFESSOR;
     }
 
     private java.util.List<AlunoMatriculaInstituicaoDto> montarMatriculas(String cpf, Long instituicaoFiltro) {

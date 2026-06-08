@@ -1,10 +1,16 @@
 package gerenciamentoDeAcademia.servicos.funcionario;
 
 import gerenciamentoDeAcademia.dto.AuditoriaRevisionDto;
+import gerenciamentoDeAcademia.dto.FuncionarioConsultaCompletaDto;
+import gerenciamentoDeAcademia.dto.FuncionarioVinculoInstituicaoDto;
+import gerenciamentoDeAcademia.dto.PessoaListagemDto;
 import gerenciamentoDeAcademia.entidades.Funcionario;
+import gerenciamentoDeAcademia.entidades.VinculoFuncionarioInstituicao;
 import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
+import gerenciamentoDeAcademia.infra.seguranca.UsuarioAutenticado;
 import gerenciamentoDeAcademia.repositorios.FuncionarioRepository;
 import gerenciamentoDeAcademia.repositorios.InstituicaoRepository;
+import gerenciamentoDeAcademia.repositorios.VinculoFuncionarioInstituicaoRepository;
 import gerenciamentoDeAcademia.servicos.interfaces.IConsultaDeFuncionario;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +18,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.history.Revision;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,10 +30,45 @@ import java.util.stream.StreamSupport;
 public class ConsultaDeFuncionario implements IConsultaDeFuncionario {
     private final FuncionarioRepository funcionarioRepository;
     private final InstituicaoRepository instituicaoRepository;
+    private final VinculoFuncionarioInstituicaoRepository vinculoRepository;
 
     @Override
     public List<Funcionario> listarFuncionarios() {
         return funcionarioRepository.findAll();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PessoaListagemDto> listarParaListagem(UsuarioAutenticado usuario) {
+        boolean master = usuario != null && usuario.isOperadorPlataforma();
+        List<VinculoFuncionarioInstituicao> vinculos;
+        if (master) {
+            vinculos = vinculoRepository.findAllComDetalhes();
+        } else {
+            Long instituicaoId = usuario != null ? usuario.getInstituicaoId() : null;
+            ExcecaoDeDominio.quandoNulo(instituicaoId, "Instituição não identificada na sessão.");
+            vinculos = vinculoRepository.findByInstituicaoIdComDetalhes(instituicaoId);
+        }
+        return vinculos.stream()
+                .map(PessoaListagemDto::deVinculoFuncionario)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public FuncionarioConsultaCompletaDto consultarCompletoPorCpf(String cpf, Long instituicaoId,
+                                                                  boolean operadorPlataforma) {
+        Funcionario funcionario = consultarFuncionarioPorCpfEscopo(cpf, instituicaoId, operadorPlataforma);
+        FuncionarioConsultaCompletaDto dto = new FuncionarioConsultaCompletaDto(funcionario);
+        List<VinculoFuncionarioInstituicao> vinculos = vinculoRepository
+                .findByFuncionarioCpfOrderByInstituicaoRazaoSocialAsc(cpf);
+        if (!operadorPlataforma && instituicaoId != null && instituicaoId > 0) {
+            vinculos = vinculos.stream()
+                    .filter(v -> instituicaoId.equals(v.getInstituicao().getId()))
+                    .toList();
+        }
+        dto.setVinculos(vinculos.stream().map(FuncionarioVinculoInstituicaoDto::de).toList());
+        return dto;
     }
 
     @Override
