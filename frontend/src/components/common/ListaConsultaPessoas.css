@@ -94,3 +94,7 @@
   color: var(--color-muted, #64748b);
   margin: 0 0 0.75rem;
 }
+
+.lista-consulta__linha--ativa td {
+  background: #eff6ff;
+}

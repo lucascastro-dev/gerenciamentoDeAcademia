@@ -3,6 +3,7 @@ package gerenciamentoDeAcademia.controller;
 import gerenciamentoDeAcademia.dto.AlunoTurmaProfessorDto;
 import gerenciamentoDeAcademia.dto.ProfessorResumoDto;
 import gerenciamentoDeAcademia.dto.TurmaDto;
+import gerenciamentoDeAcademia.dto.TurmaListagemDto;
 import gerenciamentoDeAcademia.dto.TurmaResumoDto;
 import gerenciamentoDeAcademia.repositorios.InstituicaoRepository;
 import gerenciamentoDeAcademia.entidades.Aluno;
@@ -142,19 +143,21 @@ public class GerenciarTurmaController {
 
     @GetMapping("/listarTurmas")
     @PreAuthorize("@permissaoEvaluator.possui(authentication, 'turma:consultar')")
-    public List<Turma> listarTurma(
+    public List<TurmaListagemDto> listarTurma(
             @AuthenticationPrincipal UsuarioAutenticado usuario,
             @RequestParam(required = false) Long instituicaoId,
             @RequestParam(required = false) String professorCpf,
             @RequestParam(required = false) List<String> dias) {
+        List<Turma> turmas;
         if (instituicaoId != null || (professorCpf != null && !professorCpf.isBlank())
                 || (dias != null && !dias.isEmpty())) {
-            return consultaDeTurma.listarTurmas(usuario, instituicaoId, professorCpf, dias);
+            turmas = consultaDeTurma.listarTurmas(usuario, instituicaoId, professorCpf, dias);
+        } else if (usuario != null && usuario.isOperadorPlataforma()) {
+            turmas = consultaDeTurma.listarTurmas();
+        } else {
+            turmas = consultaDeTurma.listarTurmas(usuario, null, null, null);
         }
-        if (usuario != null && usuario.isOperadorPlataforma()) {
-            return consultaDeTurma.listarTurmas();
-        }
-        return consultaDeTurma.listarTurmas(usuario, null, null, null);
+        return turmas.stream().map(TurmaListagemDto::of).collect(Collectors.toList());
     }
 
     @GetMapping("/consultarTurmaCodigo/{id}")

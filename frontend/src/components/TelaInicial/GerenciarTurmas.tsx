@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import FeedbackModal from '../common/FeedbackModal';
+import ListaConsultaTurmas, { TurmaListagemItem } from '../common/ListaConsultaTurmas';
 import PageShell from '../common/PageShell';
 import DiasSemanaMultiSelect from '../common/DiasSemanaMultiSelect';
 import { carregarSessao, isModoPlataforma, possuiPermissao } from '../../auth/permissoes';
@@ -76,9 +77,11 @@ const GerenciarTurmas: React.FC<Props> = ({ modo }) => {
   const [instituicaoCadastro, setInstituicaoCadastro] = useState(vinculoInst);
   const [instituicoes, setInstituicoes] = useState<Array<{ id: number; razaoSocial: string }>>([]);
   const [filtroInstituicao, setFiltroInstituicao] = useState('');
-  const [filtroProfessor, setFiltroProfessor] = useState('');
-  const [filtroDias, setFiltroDias] = useState<string[]>([]);
   const [professoresFiltro, setProfessoresFiltro] = useState<Professor[]>([]);
+  const [tela, setTela] = useState<'lista' | 'detalhe'>('lista');
+  const [carregandoLista, setCarregandoLista] = useState(false);
+  const [erroLista, setErroLista] = useState<string | null>(null);
+  const [turmaSelecionadaId, setTurmaSelecionadaId] = useState<number | null>(null);
 
   const MODALIDADE_MATRICULA = 'Matrícula institucional';
   const instituicaoIdAtiva = master && somenteCadastro ? instituicaoCadastro : vinculoInst;
@@ -87,15 +90,65 @@ const GerenciarTurmas: React.FC<Props> = ({ modo }) => {
     : vinculoInst;
 
   const reload = () => {
-    const params: { instituicaoId?: number; professorCpf?: string; dias?: string[] } = {};
+    setCarregandoLista(true);
+    setErroLista(null);
+    const params: { instituicaoId?: number } = {};
     if (master && filtroInstituicao) params.instituicaoId = Number(filtroInstituicao);
-    if (filtroProfessor) params.professorCpf = filtroProfessor;
-    if (filtroDias.length > 0) params.dias = filtroDias;
-    const usaFiltroBackend = !master || !!filtroInstituicao || !!filtroProfessor || filtroDias.length > 0;
-    return HttpService.listarTurmas(usaFiltroBackend ? params : undefined).then((r) => {
-      const lista = (r.data || []).filter((t: TurmaItem) => t.modalidade !== MODALIDADE_MATRICULA);
-      setTurmas(lista);
-    });
+    const usaParams = !master || !!filtroInstituicao;
+    return HttpService.listarTurmas(usaParams ? params : undefined)
+      .then((r) => {
+        const lista = (r.data || []).filter((t: TurmaItem) => t.modalidade !== MODALIDADE_MATRICULA);
+        setTurmas(lista);
+        if (turmaSelecionadaId && !lista.some((t: TurmaItem) => t.id === turmaSelecionadaId)) {
+          setTurmaSelecionadaId(null);
+          setTurmaEmEdicao(null);
+        }
+      })
+      .catch((e) => {
+        setTurmas([]);
+        setErroLista(extractApiMessage(e, 'Falha ao carregar turmas.'));
+      })
+      .finally(() => setCarregandoLista(false));
+  };
+
+  const turmasListagem: TurmaListagemItem[] = useMemo(
+    () => turmas.map((t) => ({
+      id: t.id,
+      modalidade: t.modalidade,
+      horario: t.horario,
+      sala: t.sala,
+      dias: t.dias,
+      professorNome: t.professor?.nome,
+      professorCpf: t.professor?.cpf,
+      instituicaoNome: t.instituicao?.razaoSocial,
+    })),
+    [turmas],
+  );
+
+  const turmaSelecionada = turmas.find((t) => t.id === turmaSelecionadaId) ?? null;
+
+  const voltarLista = () => {
+    setTurmaSelecionadaId(null);
+    setTurmaEmEdicao(null);
+    setTela('lista');
+  };
+
+  const abrirDetalhe = (item: TurmaListagemItem) => {
+    setTurmaSelecionadaId(item.id);
+    setTurmaEmEdicao(null);
+    setTela('detalhe');
+    const turma = turmas.find((t) => t.id === item.id);
+    if (!turma) return;
+    if (master) carregarProfessoresTurma(turma);
+    const instId = instituicaoIdTurma(turma);
+    if (instId) {
+      HttpService.professoresInstituicao(instId)
+        .then((r) => setProfessores(r.data))
+        .catch(() => setProfessores([]));
+      HttpService.programacaoListarSalas(instId)
+        .then((r) => setSalas(r.data))
+        .catch(() => setSalas([]));
+    }
   };
 
   const instituicaoIdTurma = (turma: TurmaItem) =>
@@ -178,7 +231,7 @@ const GerenciarTurmas: React.FC<Props> = ({ modo }) => {
 
   useEffect(() => {
     if (!somenteCadastro) reload();
-  }, [somenteCadastro, filtroInstituicao, filtroProfessor, filtroDias]);
+  }, [somenteCadastro, filtroInstituicao]);
 
   useEffect(() => {
     const id = instituicaoIdFiltroProf;
@@ -258,18 +311,27 @@ const GerenciarTurmas: React.FC<Props> = ({ modo }) => {
     try {
       await HttpService.excluirTurma(id);
       setModal({ open: true, success: true, message: 'Turma excluída.' });
+      voltarLista();
       reload();
     } catch (e) {
       setModal({ open: true, success: false, message: extractApiMessage(e) });
     }
   };
 
+  const tituloConsulta = tela === 'detalhe' && turmaSelecionada
+    ? turmaSelecionada.modalidade
+    : 'Consultar turmas';
+  const subtituloConsulta = tela === 'detalhe'
+    ? 'Detalhes e gestão da turma selecionada'
+    : 'Lista das turmas da instituição — busca, filtros e paginação';
+
   return (
     <PageShell
-      title={somenteCadastro ? 'Cadastrar turma' : 'Consultar turmas'}
+      title={somenteCadastro ? 'Cadastrar turma' : tituloConsulta}
       subtitle={somenteCadastro
         ? 'Cadastre novas turmas com horário, sala e professor'
-        : 'Lista das turmas da instituição — altere professor ou exclua quando necessário'}
+        : subtituloConsulta}
+      showBack={somenteCadastro || tela === 'lista'}
     >
       {somenteCadastro ? (
           <div className="card turmas-form-section">
@@ -344,156 +406,135 @@ const GerenciarTurmas: React.FC<Props> = ({ modo }) => {
               <button type="button" className="btn-primary" onClick={criar}>Criar turma</button>
             </div>
           </div>
-      ) : (
+      ) : tela === 'lista' ? (
         <div className="turmas-layout">
-        <div className="card" style={{ gridColumn: '1 / -1', marginBottom: '1rem' }}>
-          <h3 style={{ marginTop: 0 }}>Filtros</h3>
-          <div className="form-grid">
-            {master && (
-              <div>
-                <label>Instituição</label>
-                <select
-                  value={filtroInstituicao}
-                  onChange={(e) => {
-                    setFiltroInstituicao(e.target.value);
-                    setFiltroProfessor('');
-                  }}
-                >
-                  <option value="">Todas</option>
-                  {instituicoes.map((i) => (
-                    <option key={i.id} value={String(i.id)}>{i.razaoSocial}</option>
-                  ))}
-                </select>
+          {master && (
+            <div className="card" style={{ gridColumn: '1 / -1', marginBottom: '1rem' }}>
+              <h3 style={{ marginTop: 0 }}>Instituição</h3>
+              <div className="form-grid">
+                <div>
+                  <label>Filtrar por instituição</label>
+                  <select
+                    value={filtroInstituicao}
+                    onChange={(e) => setFiltroInstituicao(e.target.value)}
+                  >
+                    <option value="">Todas</option>
+                    {instituicoes.map((i) => (
+                      <option key={i.id} value={String(i.id)}>{i.razaoSocial}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
-            )}
-            <div>
-              <label>Professor</label>
-              <select
-                value={filtroProfessor}
-                onChange={(e) => setFiltroProfessor(e.target.value)}
-                disabled={!instituicaoIdFiltroProf && master}
-              >
-                <option value="">Todos</option>
-                {professoresFiltro.map((p) => (
-                  <option key={p.cpf} value={p.cpf}>{p.nome}</option>
-                ))}
-              </select>
             </div>
+          )}
+
+          <div className="card" style={{ gridColumn: '1 / -1' }}>
+            {erroLista && <p className="password-field--mismatch" role="alert">{erroLista}</p>}
+            <ListaConsultaTurmas
+              itens={turmasListagem}
+              carregando={carregandoLista}
+              exibirInstituicao={master}
+              professores={professoresFiltro}
+              onVerDetalhes={abrirDetalhe}
+            />
           </div>
-          <DiasSemanaMultiSelect value={filtroDias} onChange={setFiltroDias} />
-          <div className="form-actions form-actions--compact">
-            <button
-              type="button"
-              className="btn-secondary"
-              onClick={() => {
-                setFiltroInstituicao('');
-                setFiltroProfessor('');
-                setFiltroDias([]);
-              }}
-            >
-              Limpar filtros
+        </div>
+      ) : turmaSelecionada ? (
+        <>
+          <div className="form-actions" style={{ marginBottom: '1rem' }}>
+            <button type="button" className="btn-secondary" onClick={voltarLista}>
+              ← Voltar à lista
             </button>
           </div>
-        </div>
-        <div className="card turmas-list-card" style={{ gridColumn: '1 / -1' }}>
-          <h3>Turmas ({turmas.length})</h3>
-          {turmas.length === 0 && <p className="field-hint">Nenhuma turma cadastrada.</p>}
-          {turmas.map((t) => (
-            <div key={t.id} className="turmas-item">
-              <strong>{t.modalidade}</strong>
-              {master && t.instituicao?.razaoSocial && (
-                <p className="field-hint" style={{ margin: '0.25rem 0' }}>
-                  Instituição: {t.instituicao.razaoSocial}
-                </p>
-              )}
-              <div className="turmas-item__meta">
-                <span className="turmas-badge">{t.horario}</span>
-                {t.sala && <span className="turmas-badge">{t.sala}</span>}
-                {t.dias?.map((d) => <span key={d} className="turmas-badge">{d}</span>)}
-                <span className="turmas-badge">Prof.: {t.professor?.nome || 'Não vinculado'}</span>
-              </div>
-              {podeGerenciar && (
-                <>
-                  {turmaEmEdicao === t.id ? (
-                    <div className="card" style={{ marginTop: '0.75rem', padding: '1rem' }}>
-                      <h4 style={{ marginTop: 0 }}>Editar turma</h4>
-                      <div className="form-grid">
-                        <div>
-                          <label>Modalidade</label>
-                          <input value={editModalidade} onChange={(e) => setEditModalidade(e.target.value)} />
-                        </div>
-                        <div>
-                          <label>Sala</label>
-                          <select value={editSala} onChange={(e) => setEditSala(e.target.value)}>
-                            <option value="">Sem sala definida</option>
-                            {(master ? salasPorTurma[t.id] : salas).map((s) => (
-                              <option key={s.id} value={s.nome}>{s.nome}</option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-                      <div className="horario-range" style={{ marginTop: '0.5rem' }}>
-                        <label>Horário da aula</label>
-                        <div className="turmas-horario-row">
-                          <div>
-                            <span className="horario-range__legend">Início</span>
-                            <input type="time" value={editHoraInicio} onChange={(e) => setEditHoraInicio(e.target.value)} />
-                          </div>
-                          <span className="horario-range__sep">até</span>
-                          <div>
-                            <span className="horario-range__legend">Término</span>
-                            <input type="time" value={editHoraFim} onChange={(e) => setEditHoraFim(e.target.value)} />
-                          </div>
-                        </div>
-                      </div>
-                      <DiasSemanaMultiSelect value={editDias} onChange={setEditDias} />
-                      <div className="form-actions form-actions--compact">
-                        <button type="button" className="btn-primary" onClick={() => salvarEdicaoTurma(t.id)}>Salvar dados</button>
-                        <button type="button" className="btn-secondary" onClick={cancelarEdicao}>Cancelar</button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="form-actions form-actions--compact" style={{ marginTop: '0.5rem' }}>
-                      <button
-                        type="button"
-                        className="btn-secondary"
-                        onClick={() => {
-                          iniciarEdicao(t);
-                          if (!master && sessao?.vinculo) {
-                            HttpService.programacaoListarSalas(sessao.vinculo)
-                              .then((r) => setSalas(r.data))
-                              .catch(() => setSalas([]));
-                          }
-                        }}
-                      >
-                        Editar dados
-                      </button>
-                    </div>
-                  )}
-                  <div className="form-grid" style={{ marginTop: '0.75rem', maxWidth: 420 }}>
-                    <div>
-                      <label>Vincular professor</label>
-                      <select
-                        value={vinculoProfTurma[t.id] ?? t.professor?.cpf ?? ''}
-                        onFocus={() => master && carregarProfessoresTurma(t)}
-                        onChange={(e) => setVinculoProfTurma((prev) => ({ ...prev, [t.id]: e.target.value }))}
-                      >
-                        <option value="">Remover professor</option>
-                        {(master ? professoresPorTurma[t.id] : professores)?.map((p) => (
-                          <option key={p.cpf} value={p.cpf}>{p.nome}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                  <div className="form-actions form-actions--compact">
-                    <button type="button" className="btn-secondary" onClick={() => vincularProfessor(t.id)}>Salvar professor</button>
-                    <button type="button" className="btn-danger" onClick={() => excluir(t.id)}>Excluir</button>
-                  </div>
-                </>
-              )}
+
+          <div className="card turmas-list-card">
+            <h3 style={{ marginTop: 0 }}>Dados da turma</h3>
+            {master && turmaSelecionada.instituicao?.razaoSocial && (
+              <p className="field-hint" style={{ margin: '0 0 0.75rem' }}>
+                Instituição: {turmaSelecionada.instituicao.razaoSocial}
+              </p>
+            )}
+            <div className="turmas-item__meta">
+              <span className="turmas-badge">{turmaSelecionada.horario}</span>
+              {turmaSelecionada.sala && <span className="turmas-badge">{turmaSelecionada.sala}</span>}
+              {turmaSelecionada.dias?.map((d) => <span key={d} className="turmas-badge">{d}</span>)}
+              <span className="turmas-badge">Prof.: {turmaSelecionada.professor?.nome || 'Não vinculado'}</span>
             </div>
-          ))}
-        </div>
+
+            {podeGerenciar && (
+              <>
+                {turmaEmEdicao === turmaSelecionada.id ? (
+                  <div className="card" style={{ marginTop: '0.75rem', padding: '1rem' }}>
+                    <h4 style={{ marginTop: 0 }}>Editar turma</h4>
+                    <div className="form-grid">
+                      <div>
+                        <label>Modalidade</label>
+                        <input value={editModalidade} onChange={(e) => setEditModalidade(e.target.value)} />
+                      </div>
+                      <div>
+                        <label>Sala</label>
+                        <select value={editSala} onChange={(e) => setEditSala(e.target.value)}>
+                          <option value="">Sem sala definida</option>
+                          {(master ? salasPorTurma[turmaSelecionada.id] : salas).map((s) => (
+                            <option key={s.id} value={s.nome}>{s.nome}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    <div className="horario-range" style={{ marginTop: '0.5rem' }}>
+                      <label>Horário da aula</label>
+                      <div className="turmas-horario-row">
+                        <div>
+                          <span className="horario-range__legend">Início</span>
+                          <input type="time" value={editHoraInicio} onChange={(e) => setEditHoraInicio(e.target.value)} />
+                        </div>
+                        <span className="horario-range__sep">até</span>
+                        <div>
+                          <span className="horario-range__legend">Término</span>
+                          <input type="time" value={editHoraFim} onChange={(e) => setEditHoraFim(e.target.value)} />
+                        </div>
+                      </div>
+                    </div>
+                    <DiasSemanaMultiSelect value={editDias} onChange={setEditDias} />
+                    <div className="form-actions form-actions--compact">
+                      <button type="button" className="btn-primary" onClick={() => salvarEdicaoTurma(turmaSelecionada.id)}>Salvar dados</button>
+                      <button type="button" className="btn-secondary" onClick={cancelarEdicao}>Cancelar</button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="form-actions form-actions--compact" style={{ marginTop: '0.75rem' }}>
+                    <button type="button" className="btn-secondary" onClick={() => iniciarEdicao(turmaSelecionada)}>
+                      Editar dados
+                    </button>
+                  </div>
+                )}
+                <div className="form-grid" style={{ marginTop: '0.75rem', maxWidth: 420 }}>
+                  <div>
+                    <label>Vincular professor</label>
+                    <select
+                      value={vinculoProfTurma[turmaSelecionada.id] ?? turmaSelecionada.professor?.cpf ?? ''}
+                      onFocus={() => master && carregarProfessoresTurma(turmaSelecionada)}
+                      onChange={(e) => setVinculoProfTurma((prev) => ({ ...prev, [turmaSelecionada.id]: e.target.value }))}
+                    >
+                      <option value="">Remover professor</option>
+                      {(master ? professoresPorTurma[turmaSelecionada.id] : professores)?.map((p) => (
+                        <option key={p.cpf} value={p.cpf}>{p.nome}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div className="form-actions form-actions--compact">
+                  <button type="button" className="btn-secondary" onClick={() => vincularProfessor(turmaSelecionada.id)}>Salvar professor</button>
+                  <button type="button" className="btn-danger" onClick={() => excluir(turmaSelecionada.id)}>Excluir</button>
+                </div>
+              </>
+            )}
+          </div>
+        </>
+      ) : (
+        <div className="card">
+          <p className="field-hint">Turma não encontrada.</p>
+          <button type="button" className="btn-secondary" onClick={voltarLista}>← Voltar à lista</button>
         </div>
       )}
 

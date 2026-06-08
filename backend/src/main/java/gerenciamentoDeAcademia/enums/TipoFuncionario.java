@@ -44,6 +44,9 @@ public enum TipoFuncionario {
         return switch (this) {
             case ADMINISTRADOR -> EnumSet.of(
                     PermissaoSistema.DASHBOARD_VISUALIZAR,
+                    PermissaoSistema.FINANCEIRO_VISUALIZAR,
+                    PermissaoSistema.FINANCEIRO_COBRANCA,
+                    PermissaoSistema.FINANCEIRO_RELATORIO,
                     PermissaoSistema.FUNCIONARIO_CONSULTAR,
                     PermissaoSistema.FUNCIONARIO_CADASTRAR,
                     PermissaoSistema.FUNCIONARIO_EDITAR,

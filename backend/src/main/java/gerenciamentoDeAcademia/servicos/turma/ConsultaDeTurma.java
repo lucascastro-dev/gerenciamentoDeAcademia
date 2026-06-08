@@ -10,7 +10,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -23,11 +25,15 @@ public class ConsultaDeTurma implements IConsultaDeTurma {
     private final TurmaRepository turmaRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public List<Turma> listarTurmas() {
-        return turmaRepository.findAllComInstituicaoEProfessor();
+        List<Turma> turmas = turmaRepository.findAllComInstituicaoEProfessor();
+        materializarColecoes(turmas);
+        return turmas;
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Turma> listarTurmas(
             UsuarioAutenticado usuario,
             Long instituicaoIdFiltro,
@@ -39,15 +45,28 @@ public class ConsultaDeTurma implements IConsultaDeTurma {
                 ? dias.stream().filter(d -> d != null && !d.isBlank()).collect(Collectors.toSet())
                 : Set.of();
 
-        return turmaRepository.findAllComInstituicaoEProfessor().stream()
+        List<Turma> base = escopoInstituicao != null
+                ? turmaRepository.findByInstituicao_IdComDetalhes(escopoInstituicao)
+                : turmaRepository.findAllComInstituicaoEProfessor();
+
+        materializarColecoes(base);
+
+        return base.stream()
                 .filter(t -> !ServicoVinculoAlunoInstituicao.MODALIDADE_MATRICULA.equals(t.getModalidade()))
-                .filter(t -> escopoInstituicao == null
-                        || (t.getInstituicao() != null && escopoInstituicao.equals(t.getInstituicao().getId())))
                 .filter(t -> cpfProfessor == null
                         || (t.getProfessor() != null && cpfProfessor.equals(t.getProfessor().getCpf())))
                 .filter(t -> diasFiltro.isEmpty()
                         || (t.getDias() != null && t.getDias().stream().anyMatch(diasFiltro::contains)))
+                .sorted(Comparator.comparing(Turma::getModalidade, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)))
                 .toList();
+    }
+
+    private void materializarColecoes(List<Turma> turmas) {
+        turmas.forEach(t -> {
+            if (t.getDias() != null) {
+                t.getDias().size();
+            }
+        });
     }
 
     private Long resolverEscopoInstituicao(UsuarioAutenticado usuario, Long instituicaoIdFiltro) {

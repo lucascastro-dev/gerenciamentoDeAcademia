@@ -5,7 +5,6 @@ import HttpService from '../../services/HttpService';
 interface ResumoInstituicao {
   totalAlunos: number;
   funcionariosAtivos: number;
-  funcionariosPendentesAtivacao: number;
   totalTurmas: number;
 }
 
@@ -61,7 +60,7 @@ const DashboardAdmin: React.FC = () => {
           </div>
           <div className="stat-card" style={{ background: 'linear-gradient(135deg,#64748b,#475569)' }}>
             <h3>{resumoPlat.instituicoesInativas}</h3>
-            <p>Aguardando ativação</p>
+            <p>Instituições inativas</p>
           </div>
           <div className="stat-card" style={{ background: 'linear-gradient(135deg,#0369a1,#075985)' }}>
             <h3>{resumoPlat.colaboradoresAtivos}</h3>
@@ -92,8 +91,7 @@ const DashboardAdmin: React.FC = () => {
     <div>
       <h2 style={{ marginTop: 0 }}>Painel administrativo</h2>
       <p style={{ color: 'var(--color-muted)' }}>
-        Visão geral da operação da instituição. Colaboradores ativos são quem já podem acessar o sistema;
-        pendentes aguardam ativação pelo RH.
+        Visão geral da operação da sua instituição.
       </p>
       <div className="dashboard-grid">
         <div className="stat-card">
@@ -103,10 +101,6 @@ const DashboardAdmin: React.FC = () => {
         <div className="stat-card" style={{ background: 'linear-gradient(135deg,#059669,#047857)' }}>
           <h3>{resumoInst.funcionariosAtivos}</h3>
           <p>Colaboradores ativos</p>
-        </div>
-        <div className="stat-card" style={{ background: 'linear-gradient(135deg,#ea580c,#c2410c)' }}>
-          <h3>{resumoInst.funcionariosPendentesAtivacao}</h3>
-          <p>Aguardando ativação</p>
         </div>
         <div className="stat-card" style={{ background: 'linear-gradient(135deg,#7c3aed,#5b21b6)' }}>
           <h3>{resumoInst.totalTurmas}</h3>

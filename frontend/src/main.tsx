@@ -84,7 +84,9 @@ root.render(
             } />
             <Route path="meu-perfil" element={<MeuPerfil />} />
 
-            <Route path="dashboard" element={<DashboardAdmin />} />
+            <Route path="dashboard" element={
+              <PermissaoRoute permissao="dashboard:visualizar"><DashboardAdmin /></PermissaoRoute>
+            } />
 
             <Route path="financeiro" element={<FinanceiroLayout />}>
               <Route index element={<DashboardFinanceiro />} />

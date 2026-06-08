@@ -129,7 +129,7 @@ export function obterMenus(sessao: SessaoUsuario | null): MenuSection[] {
   if (pode('certificado:gerar') && ehProfessor) {
     itensProfessor.splice(2, 0, { label: 'Gerar certificados', path: '/arealogada/professor/certificados' });
   }
-  if (pode('turma:consultar', ['PROFESSOR'])) {
+  if (ehProfessor) {
     sections.push({ titulo: 'Área do professor', itens: filtrarItens(itensProfessor) });
   }
 

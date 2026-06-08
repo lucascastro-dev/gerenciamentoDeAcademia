@@ -29,4 +29,12 @@ public interface TurmaRepository extends JpaRepository<Turma, Long> {
 
     @Query("SELECT DISTINCT t FROM Turma t LEFT JOIN FETCH t.instituicao LEFT JOIN FETCH t.professor")
     List<Turma> findAllComInstituicaoEProfessor();
+
+    @Query("""
+            SELECT DISTINCT t FROM Turma t
+            LEFT JOIN FETCH t.instituicao
+            LEFT JOIN FETCH t.professor
+            WHERE t.instituicao.id = :instituicaoId
+            """)
+    List<Turma> findByInstituicao_IdComDetalhes(@Param("instituicaoId") Long instituicaoId);
 }
