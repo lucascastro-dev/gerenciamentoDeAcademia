@@ -132,18 +132,67 @@ Objetivo: experiência pedagógica do **PROFESSOR** vinculado à instituição, 
 
 ---
 
+## Entregue — perfil Administrativo (jun/2026)
+
+Objetivo: o **ADMINISTRADOR** da instituição com visão operacional completa (exceto funções exclusivas do operador master da plataforma).
+
+### Menus visíveis
+| Seção | Itens |
+|-------|-------|
+| **Geral** | Início, Meu cadastro, Dashboard administrativo |
+| **Financeiro** | Dashboard financeiro, Mensalidades, Inadimplência |
+| **Acadêmico** | Consultar alunos, Consultar turmas, Cadastrar turma, Matricular aluno, Programação e grade |
+| **Administrativo** | Funcionários, Ativar cadastros, Plano da instituição |
+
+**Oculto:** Área do professor, Consultar/nova/ativar instituição (master), Auditoria global.
+
+### Permissões
+- Financeiro institucional: `financeiro:visualizar`, `financeiro:cobranca`, `financeiro:relatorio`
+- Demais permissões acadêmicas e administrativas já existentes (funcionários, turmas, alunos, programação, plano)
+- Rota do dashboard protegida por `dashboard:visualizar`
+
+### Dashboard administrativo (instituição)
+- Indicadores **escopados à instituição** logada (alunos, colaboradores ativos, turmas)
+- Removido card **Aguardando ativação** (ativação por CPF na instituição não é mais o fluxo principal)
+
+### Consultar turmas
+- Listagem por instituição via `TurmaListagemDto` (sem lazy load na API)
+- Busca por nome da turma, filtro por professor, paginação 5/15/25/50/100
+- Detalhe em **tela separada** (padrão alunos/funcionários): editar dados, vincular professor, excluir
+
+### Pré-cadastro colaborador
+- Campo **e-mail** obrigatório com validação (`PoliticaEmail` backend + `emailPolicy` frontend)
+
+### Consultar alunos (professor) — correção
+- Listagem unifica alunos por **matrícula** e **turma** na instituição
+- CPF completo na listagem para uso em Minhas turmas
+
+### Cenários validados (administrador)
+| Menu | Status | Lacunas conhecidas |
+|------|--------|-------------------|
+| Dashboard instituição | OK | — |
+| Financeiro (mensalidades / inadimplência) | OK | Gateway PIX/cartão (backlog) |
+| Consultar alunos | OK | — |
+| Consultar turmas | OK | — |
+| Funcionários / ativar cadastros | OK | — |
+
+**Re-login** após deploy para carregar permissões financeiras no JWT.
+
+---
+
 ## Próxima fase — perfis institucionais (ago/2026)
 
-Prioridade sugerida após Professor e Master estáveis:
+Prioridade sugerida após Administrador estável:
 
 | # | Perfil / área | Itens |
 |---|---------------|-------|
-| 1 | **DIRETOR / ADMIN** | Revisão de menus vs permissões (SoD) |
-| 2 | **RECEPÇÃO / RH** | Matrícula, ativação de cadastros, consultas |
-| 3 | **FINANCEIRO** | Mensalidades, inadimplência, integração pagamento |
+| 1 | **DIRETOR** | Menus e SoD alinhados ao papel estratégico |
+| 2 | **RECEPÇÃO / RH** | Refino de matrícula, ativação e fluxos de cadastro |
+| 3 | **FINANCEIRO** | Gateway de pagamento, relatórios avançados |
 | 4 | **Portal aluno** | Pagamento online, notificações |
 | 5 | **LGPD** | Consentimento, exportação, auditoria de consulta PII |
 | 6 | **Infra** | Backup PostgreSQL, e-mail (SMTP), rate limiting |
+| 7 | **Cantina** | Ver seção dedicada no roadmap |
 
 ---
 
