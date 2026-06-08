@@ -66,8 +66,8 @@ class ConsultaDeAlunosListagemTest {
     }
 
     @Test
-    @DisplayName("Dado professor Quando listar Então mascara CPF na listagem")
-    void deveMascararCpfParaProfessor() {
+    @DisplayName("Dado professor Quando listar Então exibe CPF completo para uso em turmas")
+    void deveExibirCpfCompletoParaProfessorNaListagem() {
         Aluno aluno = new Aluno();
         aluno.setId(2L);
         aluno.setNome("Bruno");
@@ -75,13 +75,33 @@ class ConsultaDeAlunosListagemTest {
         MatriculaInstituicao mat = new MatriculaInstituicao();
         mat.setAluno(aluno);
         when(matriculaInstituicaoRepository.findByInstituicao_IdOrderByAluno_NomeAsc(1L)).thenReturn(List.of(mat));
+        when(alunoRepository.findDistinctByTurma_Instituicao_IdOrderByNomeAsc(1L)).thenReturn(List.of());
 
         UsuarioAutenticado professor = usuarioProfessor();
 
         List<PessoaListagemDto> lista = consultaDeAlunos.listarParaListagem(professor);
 
-        assertThat(lista.get(0).getCpf()).isNull();
-        assertThat(lista.get(0).getCpfExibicao()).startsWith("***");
+        assertThat(lista.get(0).getCpf()).isEqualTo("61482582007");
+        assertThat(lista.get(0).getCpfExibicao()).contains("614");
+    }
+
+    @Test
+    @DisplayName("Dado admin instituição Quando listar Então inclui aluno só em turma sem matrícula")
+    void deveIncluirAlunoSomenteEmTurma() {
+        Aluno alunoTurma = new Aluno();
+        alunoTurma.setId(3L);
+        alunoTurma.setNome("Carla");
+        alunoTurma.setCpf("39053344705");
+        when(matriculaInstituicaoRepository.findByInstituicao_IdOrderByAluno_NomeAsc(1L)).thenReturn(List.of());
+        when(alunoRepository.findDistinctByTurma_Instituicao_IdOrderByNomeAsc(1L)).thenReturn(List.of(alunoTurma));
+
+        UsuarioAutenticado professor = usuarioProfessor();
+
+        List<PessoaListagemDto> lista = consultaDeAlunos.listarParaListagem(professor);
+
+        assertThat(lista).hasSize(1);
+        assertThat(lista.get(0).getNome()).isEqualTo("Carla");
+        assertThat(lista.get(0).getCpf()).isEqualTo("39053344705");
     }
 
     private UsuarioAutenticado usuarioMaster() {

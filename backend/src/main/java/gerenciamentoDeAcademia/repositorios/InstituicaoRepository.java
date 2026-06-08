@@ -54,8 +54,12 @@ public interface InstituicaoRepository extends JpaRepository<Instituicao, Long> 
 
     @Query("""
             SELECT CASE WHEN COUNT(al) > 0 THEN true ELSE false END
-            FROM Turma t JOIN t.alunos al
-            WHERE al.cpf = :cpf AND t.instituicao.id = :instituicaoId
+            FROM Aluno al
+            WHERE al.cpf = :cpf
+            AND (
+                EXISTS (SELECT 1 FROM Turma t JOIN t.alunos a WHERE a = al AND t.instituicao.id = :instituicaoId)
+                OR EXISTS (SELECT 1 FROM MatriculaInstituicao m WHERE m.aluno = al AND m.instituicao.id = :instituicaoId)
+            )
             """)
     boolean alunoVinculadoInstituicao(@Param("cpf") String cpf, @Param("instituicaoId") Long instituicaoId);
 

@@ -26,8 +26,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Component
 @Service
@@ -49,7 +52,6 @@ public class ConsultaDeAlunos implements IConsultaDeAlunos {
     @Override
     @Transactional(readOnly = true)
     public List<PessoaListagemDto> listarParaListagem(UsuarioAutenticado usuario) {
-        boolean mascarar = ehProfessor(usuario);
         boolean master = usuario != null && usuario.isOperadorPlataforma();
 
         if (master) {
@@ -61,10 +63,30 @@ public class ConsultaDeAlunos implements IConsultaDeAlunos {
         Long instituicaoId = usuario != null ? usuario.getInstituicaoId() : null;
         ExcecaoDeDominio.quandoNulo(instituicaoId, "Instituição não identificada na sessão.");
 
-        return matriculaInstituicaoRepository.findByInstituicao_IdOrderByAluno_NomeAsc(instituicaoId).stream()
-                .map(m -> m.getAluno())
-                .filter(a -> a != null)
-                .map(a -> PessoaListagemDto.deAluno(a, mascarar))
+        boolean mascararCpf = false;
+        return alunosVinculadosInstituicao(instituicaoId).stream()
+                .map(a -> PessoaListagemDto.deAluno(a, mascararCpf))
+                .toList();
+    }
+
+    /**
+     * Alunos com matrícula na instituição ou vinculados a turmas da unidade
+     * (mesmo critério operacional de Minhas turmas / adicionar aluno).
+     */
+    private List<Aluno> alunosVinculadosInstituicao(Long instituicaoId) {
+        Map<Long, Aluno> porId = new LinkedHashMap<>();
+
+        matriculaInstituicaoRepository.findByInstituicao_IdOrderByAluno_NomeAsc(instituicaoId).stream()
+                .map(MatriculaInstituicao::getAluno)
+                .filter(a -> a != null && a.getId() != null)
+                .forEach(a -> porId.putIfAbsent(a.getId(), a));
+
+        alunoRepository.findDistinctByTurma_Instituicao_IdOrderByNomeAsc(instituicaoId).stream()
+                .filter(a -> a != null && a.getId() != null)
+                .forEach(a -> porId.putIfAbsent(a.getId(), a));
+
+        return new ArrayList<>(porId.values()).stream()
+                .sorted(Comparator.comparing(Aluno::getNome, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)))
                 .toList();
     }
 
