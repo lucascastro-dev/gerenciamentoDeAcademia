@@ -9,6 +9,8 @@ import gerenciamentoDeAcademia.servicos.auditoria.ServicoAuditoria;
 import org.instancio.Instancio;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import java.time.LocalDate;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -33,6 +35,19 @@ public class CadastradorDeFuncionarioTest {
                 .set(field(FuncionarioDto::getTipoFuncionario), TipoFuncionario.PROFESSOR)
                 .set(field(FuncionarioDto::getEspecializacao), "Judô")
                 .create();
+    }
+
+    private FuncionarioDto dtoPreCadastroValido() {
+        FuncionarioDto dto = new FuncionarioDto();
+        dto.setNome("Colaborador Teste");
+        dto.setRg("1234567");
+        dto.setCpf("39053344705");
+        dto.setDataDeNascimento(LocalDate.of(1990, 5, 10));
+        dto.setEndereco("Rua A, 10");
+        dto.setTelefone("21999998888");
+        dto.setEmail("colaborador@castro.edu.br");
+        dto.setSenha("Senha@123");
+        return dto;
     }
 
     @Test
@@ -120,6 +135,30 @@ public class CadastradorDeFuncionarioTest {
         var mensagemDeErro = Assertions.assertThrows(ExcecaoDeDominio.class, () -> cadastradorDeFuncionario.cadastrar(funcionarioDto));
 
         Assertions.assertEquals("Tipo de funcionário é obrigatório!", mensagemDeErro.getMessage());
+    }
+
+    @Test
+    void deveCadastrarPreCadastroComEmailValido() {
+        FuncionarioDto dto = dtoPreCadastroValido();
+        Mockito.when(funcionarioRepository.findByCpf(dto.getCpf())).thenReturn(null);
+        Mockito.when(funcionarioRepository.save(any(Funcionario.class)))
+                .thenAnswer(inv -> inv.getArgument(0));
+
+        cadastradorDeFuncionario.cadastrarPreCadastro(dto);
+
+        Mockito.verify(funcionarioRepository).save(Mockito.argThat(f ->
+                "colaborador@castro.edu.br".equals(f.getEmail()) && Boolean.FALSE.equals(f.getCadastroAtivo())));
+    }
+
+    @Test
+    void deveRejeitarPreCadastroComEmailInvalido() {
+        FuncionarioDto dto = dtoPreCadastroValido();
+        dto.setEmail("email-invalido");
+        Mockito.when(funcionarioRepository.findByCpf(dto.getCpf())).thenReturn(null);
+
+        var erro = Assertions.assertThrows(ExcecaoDeDominio.class, () -> cadastradorDeFuncionario.cadastrarPreCadastro(dto));
+
+        Assertions.assertTrue(erro.getMessage().contains("formato inválido"));
     }
 
     @Test

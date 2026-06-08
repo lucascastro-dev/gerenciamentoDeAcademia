@@ -8,6 +8,7 @@ import '../common/PasswordFields.css';
 import HttpService from '../../services/HttpService';
 import { extractApiMessage } from '../../utils/apiError';
 import { EnderecoCompleto, enderecoVazio, serializarEndereco } from '../../utils/endereco';
+import { isEmailValido } from '../../utils/emailPolicy';
 import { isSenhaForte } from '../../utils/passwordPolicy';
 import './Login.css';
 
@@ -17,6 +18,7 @@ const Cadastro: React.FC = () => {
   const [rg, setRg] = useState('');
   const [dataDeNascimento, setDataDeNascimento] = useState('');
   const [telefone, setTelefone] = useState('');
+  const [email, setEmail] = useState('');
   const [endereco, setEndereco] = useState<EnderecoCompleto>(enderecoVazio());
   const [senha, setSenha] = useState('');
   const [senhaConfirmacao, setSenhaConfirmacao] = useState('');
@@ -47,12 +49,15 @@ const Cadastro: React.FC = () => {
     endereco.cidade.trim() !== '' &&
     endereco.uf.trim().length === 2;
 
+  const emailValido = isEmailValido(email);
+
   const isFormValid =
     nome.trim() !== '' &&
     cpfLimpo.length === 11 &&
     rg.trim() !== '' &&
     dataDeNascimento !== '' &&
     telefoneLimpo.length >= 10 &&
+    emailValido &&
     enderecoValido &&
     isSenhaForte(senha) &&
     senhasConferem;
@@ -75,6 +80,7 @@ const Cadastro: React.FC = () => {
         dataDeNascimento,
         endereco: serializarEndereco(endereco),
         telefone: telefoneLimpo,
+        email: email.trim(),
         senha,
       });
       setModal({
@@ -156,6 +162,21 @@ const Cadastro: React.FC = () => {
               onChange={(e) => setTelefone(maskPhone(e.target.value))}
               autoComplete="tel"
             />
+
+            <label className="login-label" htmlFor="cad-email">E-mail</label>
+            <input
+              id="cad-email"
+              type="email"
+              placeholder="nome@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
+            />
+            {email.trim().length > 0 && !emailValido && (
+              <p className="password-field--mismatch" role="alert">
+                Informe um e-mail válido (ex.: nome@dominio.com).
+              </p>
+            )}
           </fieldset>
 
           <fieldset className="auth-form-section">

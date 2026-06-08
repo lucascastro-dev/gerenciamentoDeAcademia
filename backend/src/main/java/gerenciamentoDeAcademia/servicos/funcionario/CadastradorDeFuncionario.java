@@ -7,6 +7,7 @@ import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
 import gerenciamentoDeAcademia.repositorios.FuncionarioRepository;
 import gerenciamentoDeAcademia.servicos.auditoria.ServicoAuditoria;
 import gerenciamentoDeAcademia.servicos.interfaces.ICadastradorDeFuncionario;
+import gerenciamentoDeAcademia.util.PoliticaEmail;
 import gerenciamentoDeAcademia.util.PoliticaSenha;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +46,7 @@ public class CadastradorDeFuncionario implements ICadastradorDeFuncionario {
         }
         ExcecaoDeDominio.quandoNuloOuVazio(funcionarioDto.getNome(), "Nome é obrigatório!");
         ExcecaoDeDominio.quandoNuloOuVazio(funcionarioDto.getCpf(), "CPF é obrigatório!");
+        PoliticaEmail.validar(funcionarioDto.getEmail());
         PoliticaSenha.validarSenhaForte(funcionarioDto.getSenha());
 
         Funcionario salvo = funcionarioRepository.save(Funcionario.builder()
@@ -54,6 +56,7 @@ public class CadastradorDeFuncionario implements ICadastradorDeFuncionario {
                 .dataDeNascimento(funcionarioDto.getDataDeNascimento())
                 .endereco(funcionarioDto.getEndereco())
                 .telefone(funcionarioDto.getTelefone())
+                .email(PoliticaEmail.normalizar(funcionarioDto.getEmail()))
                 .senha(funcionarioDto.getSenha())
                 .cadastroAtivo(false)
                 .permitirGerenciarFuncoes(false)
