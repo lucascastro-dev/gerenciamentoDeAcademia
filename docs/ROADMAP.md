@@ -158,6 +158,119 @@ Prioridade sugerida após Professor e Master estáveis:
 
 ---
 
+## Implementações futuras — Módulo Cantina
+
+Solicitação de cliente para **escolas infantis** e demais instituições com cantina/lanchonete. Compra antecipada pelo portal (aluno ou responsável), sem presença física no momento do pedido.
+
+### Objetivo
+
+Permitir **reserva/compra virtual** de itens da cantina, com fluxo de pagamento manual inicial (comprovante PIX) e evolução para **PIX automático** integrado ao mesmo gateway previsto para planos SaaS e mensalidades.
+
+### Menu principal: **Cantina**
+
+Visível conforme perfil (detalhe de permissões na implementação).
+
+| Perfil | Submenus sugeridos | Função |
+|--------|-------------------|--------|
+| **Aluno / responsável** (portal) | **Cardápio virtual**, **Meus pedidos** | Montar carrinho, pagar (manual → PIX API), acompanhar status |
+| **Administrador / cantina** (instituição) | **Cardápio e estoque**, **Gestão de pedidos** | Cadastro de itens, estoque exibido ao aluno, fila operacional |
+
+*Nomes dos submenus podem ser refinados na UI (ex.: “Cardápio”, “Pedidos da cantina”).*
+
+### Portal do aluno / responsável
+
+**Cardápio virtual**
+- Lista de itens disponíveis (origem: estoque da instituição)
+- Indicadores: disponível / esgotado / limite por dia (a definir)
+- Carrinho com quantidades e valor total
+- Checkout **fase 1 (manual):** instruções PIX da instituição + upload de comprovante no próprio pedido
+- Checkout **fase 2 (API):** geração de cobrança PIX e confirmação automática (mesma linha de integração de pagamentos do backlog)
+
+**Meus pedidos**
+- Histórico e pedidos em andamento
+- Status visível ao cliente (ver fluxo abaixo)
+
+**Quem compra**
+- Aluno logado no portal (CPF do aluno)
+- Responsável vinculado ao aluno (quando aplicável ao cadastro existente)
+
+### Administrador da instituição
+
+**Cardápio e estoque**
+- CRUD de itens (nome, descrição, preço, categoria, foto opcional)
+- Controle de estoque / disponibilidade (quantidade ou flag ativo)
+- Itens publicados refletem no cardápio virtual do aluno
+
+**Gestão de pedidos**
+- Fila com filtros por status e data
+- Ações: **aprovar pagamento** (comprovante manual), **em preparo**, **pronto para retirada**, **entregue**, **cancelado**
+- Visão do comprovante anexado (fase manual)
+- Notificação in-app ou e-mail (backlog de notificações)
+
+### Fluxo de status do pedido (proposta)
+
+```
+CARRINHO → AGUARDANDO_PAGAMENTO → PAGAMENTO_EM_ANALISE → PAGO
+    → EM_PREPARO → PRONTO → ENTREGUE
+         ↘ CANCELADO / PAGAMENTO_RECUSADO
+```
+
+| Status | Quem altera | Observação |
+|--------|-------------|------------|
+| Aguardando pagamento | Sistema / aluno | Pedido criado; PIX manual ou aguardando API |
+| Pagamento em análise | Admin | Comprovante enviado; conferência manual |
+| Pago | Admin ou webhook PIX | Libera preparo |
+| Em preparo / Pronto / Entregue | Admin / operador cantina | Operação da cozinha/balcão |
+| Cancelado / Recusado | Admin ou timeout | Estorno de estoque reservado |
+
+### Cenários e regras de negócio (a detalhar na implementação)
+
+1. **Escola infantil — responsável:** menor sem autonomia de compra; responsável usa portal com vínculo ao aluno.
+2. **Aluno maior / fundamental:** compra com CPF próprio se política da instituição permitir.
+3. **Estoque:** reserva ao confirmar pedido; baixa definitiva ao marcar **Entregue** (ou ao pagar — decisão na spec).
+4. **Horário de pedido:** janela para pedido antecipado (ex.: até 20h do dia anterior) — configurável por instituição.
+5. **Retirada:** data/turno (manhã, intervalo, almoço) selecionável no checkout.
+6. **Multi-instituicao:** aluno matriculado em mais de uma unidade escolhe a instituição/cantina no contexto do vínculo logado.
+7. **Master:** sem operação de cantina cross-tenant na v1; escopo sempre pela instituição do vínculo.
+8. **LGPD:** comprovantes e dados de pedido com retenção e acesso auditável.
+
+### Modelo de dados (rascunho)
+
+- `tb_cantina_item` — item do cardápio (instituição, preço, estoque, ativo)
+- `tb_cantina_pedido` — pedido (aluno, instituição, total, status, turno retirada)
+- `tb_cantina_pedido_item` — linhas do pedido
+- `tb_cantina_pagamento` — comprovante manual (arquivo, status análise) ou referência gateway PIX
+
+### APIs (rascunho)
+
+| Área | Endpoints (prefixo sugerido `/cantina`) |
+|------|----------------------------------------|
+| Portal | `GET /itens`, `POST /pedidos`, `POST /pedidos/{id}/comprovante`, `GET /pedidos/meus` |
+| Admin | `CRUD /itens`, `GET /pedidos`, `PATCH /pedidos/{id}/status`, `PATCH /pedidos/{id}/aprovar-pagamento` |
+
+### Permissões (rascunho)
+
+- `cantina:cardapio-consultar` — aluno/responsável
+- `cantina:pedido-criar`, `cantina:pedido-consultar-proprio`
+- `cantina:item-gerenciar`, `cantina:pedido-gerenciar`, `cantina:pagamento-aprovar`
+
+### Fases de entrega sugeridas
+
+| Fase | Escopo |
+|------|--------|
+| **1** | Cardápio + estoque (admin) + cardápio virtual + carrinho + pedido com PIX manual e comprovante |
+| **2** | Meus pedidos + fluxo de status completo (preparo → entrega) |
+| **3** | PIX automático (API) alinhado à integração de mensalidades/planos |
+| **4** | Relatórios, limites por turma/série, notificações |
+
+### Dependências
+
+- Módulo de **upload de arquivos** (comprovante) com armazenamento seguro
+- Integração de **pagamentos** (backlog item 1)
+- Definição de política **aluno vs responsável** por faixa etária (config instituição)
+
+---
+
 ## Como validar localmente
 
 1. `docker compose up postgres -d` (porta **5435** no host)
