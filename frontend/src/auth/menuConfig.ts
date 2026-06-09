@@ -93,7 +93,7 @@ export function obterMenus(sessao: SessaoUsuario | null): MenuSection[] {
           { label: 'Funcionários', path: '/arealogada/funcionarios', permissao: 'funcionario:consultar' },
           { label: 'Ativar cadastros', path: '/arealogada/gestaoCadastro', permissao: 'funcionario:ativar' },
           { label: 'Ativar / desativar instituição', path: '/arealogada/gestaoAcademia' },
-          { label: 'Auditoria', path: '/arealogada/auditoria' },
+          { label: 'Auditoria', path: '/arealogada/auditoria', permissao: 'auditoria:consultar' },
         ],
       },
     ];
@@ -148,6 +148,7 @@ export function obterMenus(sessao: SessaoUsuario | null): MenuSection[] {
   const adminItens: MenuItem[] = [
     { label: 'Funcionários', path: '/arealogada/funcionarios', permissao: 'funcionario:consultar' },
     { label: 'Ativar cadastros', path: '/arealogada/gestaoCadastro', permissao: 'funcionario:ativar' },
+    { label: 'Auditoria', path: '/arealogada/auditoria', permissao: 'auditoria:consultar' },
     { label: 'Plano da instituição', path: '/arealogada/plano-instituicao', permissao: 'plano:visualizar' },
   ];
   const adminFiltrado = filtrarItens(adminItens);

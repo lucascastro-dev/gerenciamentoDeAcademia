@@ -95,6 +95,7 @@ public class ConsultaDeFuncionario implements IConsultaDeFuncionario {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public List<AuditoriaRevisionDto> listarRevisoesDetalhadas(Long id) {
         ExcecaoDeDominio.quandoNulo(id, "ID do funcionário é obrigatório");
         var page = funcionarioRepository.findRevisions(id, PageRequest.of(0, 100));

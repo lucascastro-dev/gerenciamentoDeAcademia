@@ -1,54 +1,63 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import PageShell from '../components/common/PageShell';
 import HttpService from '../services/HttpService';
 
-interface FuncionarioResumo {
-  id: number;
-  cpf: string;
-  nome: string;
-  tipoFuncionario?: string;
+interface RegistroAuditoria {
+  id?: number;
+  ajuste: string;
+  dataHora: string;
+  usuarioLogin: string;
+  entidade: string;
+  referencia?: string;
+  motivo?: string;
 }
 
-interface Revisao {
-  revisionNumber: number;
-  revisionDate?: string;
-  cpf?: string;
-  nome?: string;
-  tipoFuncionario?: string;
-  cadastroAtivo?: boolean;
-  enderecoResumo?: string;
-}
+const TAMANHOS_PAGINA = [10, 25, 50, 100] as const;
+const AJUSTES = ['Todos', 'Criação', 'Edição', 'Exclusão'] as const;
 
 const Auditoria: React.FC = () => {
-  const [funcionarios, setFuncionarios] = useState<FuncionarioResumo[]>([]);
-  const [selecionado, setSelecionado] = useState<FuncionarioResumo | null>(null);
-  const [revisoes, setRevisoes] = useState<Revisao[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [filtro, setFiltro] = useState('');
+  const [registros, setRegistros] = useState<RegistroAuditoria[]>([]);
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState('');
+  const [busca, setBusca] = useState('');
+  const [filtroAjuste, setFiltroAjuste] = useState<(typeof AJUSTES)[number]>('Todos');
+  const [pagina, setPagina] = useState(0);
+  const [tamanhoPagina, setTamanhoPagina] = useState<number>(25);
 
   useEffect(() => {
-    HttpService.listarFuncionarios()
-      .then((r) => setFuncionarios(r.data))
-      .catch(() => setFuncionarios([]));
+    setCarregando(true);
+    setErro('');
+    HttpService.listarAuditoria()
+      .then((r) => setRegistros(r.data))
+      .catch(() => {
+        setRegistros([]);
+        setErro('Não foi possível carregar os registros de auditoria.');
+      })
+      .finally(() => setCarregando(false));
   }, []);
 
-  const carregarRevisoes = async (f: FuncionarioResumo) => {
-    setSelecionado(f);
-    setLoading(true);
-    try {
-      const { data } = await HttpService.auditoriaFuncionario(f.id);
-      setRevisoes(data);
-    } catch {
-      setRevisoes([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const filtrados = useMemo(() => {
+    const termo = busca.trim().toLowerCase();
+    return registros.filter((r) => {
+      const ajusteOk = filtroAjuste === 'Todos' || r.ajuste === filtroAjuste;
+      if (!ajusteOk) return false;
+      if (!termo) return true;
+      const campos = [
+        r.ajuste,
+        r.usuarioLogin,
+        r.entidade,
+        r.referencia,
+        r.motivo,
+      ].filter(Boolean).join(' ').toLowerCase();
+      return campos.includes(termo);
+    });
+  }, [registros, busca, filtroAjuste]);
 
-  const listaFiltrada = funcionarios.filter(
-    (f) =>
-      f.nome?.toLowerCase().includes(filtro.toLowerCase()) ||
-      f.cpf?.includes(filtro.replace(/\D/g, '')),
+  const totalPaginas = Math.max(1, Math.ceil(filtrados.length / tamanhoPagina));
+  const paginaAtual = Math.min(pagina, totalPaginas - 1);
+  const itensPagina = filtrados.slice(
+    paginaAtual * tamanhoPagina,
+    paginaAtual * tamanhoPagina + tamanhoPagina,
   );
 
   const fmtData = (iso?: string) => {
@@ -61,74 +70,117 @@ const Auditoria: React.FC = () => {
   };
 
   return (
-    <PageShell title="Auditoria" subtitle="Histórico de alterações (Envers) em cadastros de funcionários">
+    <PageShell
+      title="Auditoria"
+      subtitle="Histórico de criações, edições e exclusões registradas no sistema"
+    >
       <div className="card" style={{ marginBottom: '1rem' }}>
-        <label>Buscar colaborador</label>
-        <input
-          placeholder="Nome ou CPF"
-          value={filtro}
-          onChange={(e) => setFiltro(e.target.value)}
-        />
+        <div className="form-grid" style={{ gridTemplateColumns: '1fr 200px', gap: '1rem' }}>
+          <div>
+            <label>Buscar</label>
+            <input
+              placeholder="Usuário, referência, entidade ou motivo"
+              value={busca}
+              onChange={(e) => {
+                setBusca(e.target.value);
+                setPagina(0);
+              }}
+            />
+          </div>
+          <div>
+            <label>Ajuste</label>
+            <select
+              value={filtroAjuste}
+              onChange={(e) => {
+                setFiltroAjuste(e.target.value as (typeof AJUSTES)[number]);
+                setPagina(0);
+              }}
+            >
+              {AJUSTES.map((a) => (
+                <option key={a} value={a}>{a}</option>
+              ))}
+            </select>
+          </div>
+        </div>
       </div>
 
-      <div className="audit-layout">
-        <div className="card table-wrap" style={{ maxHeight: 420, overflow: 'auto' }}>
-          <h3 style={{ marginTop: 0 }}>Colaboradores</h3>
-          <table className="audit-table">
-            <thead>
-              <tr>
-                <th>Nome</th>
-                <th>CPF</th>
-              </tr>
-            </thead>
-            <tbody>
-              {listaFiltrada.map((f) => (
-                <tr
-                  key={f.id}
-                  style={{ cursor: 'pointer', background: selecionado?.id === f.id ? '#eff6ff' : undefined }}
-                  onClick={() => carregarRevisoes(f)}
-                >
-                  <td>{f.nome}</td>
-                  <td>{f.cpf}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="card table-wrap">
-          <h3 style={{ marginTop: 0 }}>
-            {selecionado ? `Revisões — ${selecionado.nome}` : 'Selecione um colaborador'}
-          </h3>
-          {loading && <p className="field-hint">Carregando histórico...</p>}
-          {!loading && selecionado && revisoes.length === 0 && (
-            <p className="field-hint">Nenhuma revisão registrada.</p>
-          )}
-          {!loading && revisoes.length > 0 && (
+      <div className="card table-wrap">
+        {carregando && <p className="field-hint">Carregando registros...</p>}
+        {!carregando && erro && <p className="field-hint" style={{ color: '#b91c1c' }}>{erro}</p>}
+        {!carregando && !erro && filtrados.length === 0 && (
+          <p className="field-hint">Nenhum registro de auditoria encontrado.</p>
+        )}
+        {!carregando && filtrados.length > 0 && (
+          <>
             <table className="audit-table">
               <thead>
                 <tr>
-                  <th>Rev.</th>
-                  <th>Data</th>
-                  <th>Perfil</th>
-                  <th>Ativo</th>
-                  <th>Endereço</th>
+                  <th>Ajuste</th>
+                  <th>Quando</th>
+                  <th>Por quem</th>
+                  <th>Entidade</th>
+                  <th>Referência</th>
+                  <th>Motivo</th>
                 </tr>
               </thead>
               <tbody>
-                {revisoes.map((r) => (
-                  <tr key={r.revisionNumber}>
-                    <td>{r.revisionNumber}</td>
-                    <td>{fmtData(r.revisionDate)}</td>
-                    <td>{r.tipoFuncionario ?? '—'}</td>
-                    <td>{r.cadastroAtivo ? 'Sim' : 'Não'}</td>
-                    <td>{r.enderecoResumo || '—'}</td>
+                {itensPagina.map((r, idx) => (
+                  <tr key={r.id ?? `env-${r.dataHora}-${idx}`}>
+                    <td>
+                      <span className={`audit-badge audit-badge--${r.ajuste.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '')}`}>
+                        {r.ajuste}
+                      </span>
+                    </td>
+                    <td>{fmtData(r.dataHora)}</td>
+                    <td>{r.usuarioLogin || '—'}</td>
+                    <td>{r.entidade || '—'}</td>
+                    <td>{r.referencia || '—'}</td>
+                    <td>{r.motivo || '—'}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          )}
-        </div>
+
+            <div className="paginacao-bar" style={{ marginTop: '1rem' }}>
+              <span className="field-hint">
+                {filtrados.length} registro(s) — página {paginaAtual + 1} de {totalPaginas}
+              </span>
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                <label className="field-hint" style={{ margin: 0 }}>
+                  Por página
+                  <select
+                    value={tamanhoPagina}
+                    onChange={(e) => {
+                      setTamanhoPagina(Number(e.target.value));
+                      setPagina(0);
+                    }}
+                    style={{ marginLeft: '0.35rem' }}
+                  >
+                    {TAMANHOS_PAGINA.map((t) => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
+                  </select>
+                </label>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  disabled={paginaAtual <= 0}
+                  onClick={() => setPagina((p) => Math.max(0, p - 1))}
+                >
+                  Anterior
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  disabled={paginaAtual >= totalPaginas - 1}
+                  onClick={() => setPagina((p) => Math.min(totalPaginas - 1, p + 1))}
+                >
+                  Próxima
+                </button>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </PageShell>
   );

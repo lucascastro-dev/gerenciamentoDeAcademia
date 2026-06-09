@@ -154,7 +154,7 @@ root.render(
               <PermissaoRoute somenteMaster><GestaoAcademias /></PermissaoRoute>
             } />
             <Route path="auditoria" element={
-              <PermissaoRoute somenteMaster><Auditoria /></PermissaoRoute>
+              <PermissaoRoute permissao="auditoria:consultar"><Auditoria /></PermissaoRoute>
             } />
             </Route>
           </Route>

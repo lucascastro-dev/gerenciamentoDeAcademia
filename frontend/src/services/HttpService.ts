@@ -353,6 +353,17 @@ const HttpService = {
 
   listarFuncionarios: () => api.get('/funcionario/consultarFuncionario'),
 
+  listarAuditoria: () =>
+    api.get<Array<{
+      id?: number;
+      ajuste: string;
+      dataHora: string;
+      usuarioLogin: string;
+      entidade: string;
+      referencia?: string;
+      motivo?: string;
+    }>>('/auditoria/lista'),
+
   auditoriaFuncionario: (id: number) => api.get(`/funcionario/revision/${id}`),
 
   planoInstituicao: (instituicaoId: string | number) =>

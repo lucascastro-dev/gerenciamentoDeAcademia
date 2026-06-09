@@ -3,6 +3,7 @@ package gerenciamentoDeAcademia.servicos.funcionario;
 import gerenciamentoDeAcademia.entidades.Funcionario;
 import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
 import gerenciamentoDeAcademia.repositorios.FuncionarioRepository;
+import gerenciamentoDeAcademia.servicos.auditoria.ServicoAuditoria;
 import org.instancio.Instancio;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -20,6 +21,8 @@ public class ExcluirFuncionarioTest {
     ExcluirFuncionario excluirFuncionario;
     @Mock
     FuncionarioRepository funcionarioRepository;
+    @Mock
+    ServicoAuditoria servicoAuditoria;
 
     @Test
     void deveExcluirFuncionario() {
