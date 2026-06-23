@@ -1,0 +1,304 @@
+.colab-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.colab-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.colab-toolbar__field label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.88rem;
+  color: var(--color-muted);
+}
+
+.colab-toolbar__hint {
+  margin: 0;
+  max-width: 320px;
+  align-self: center;
+}
+
+.colab-filter label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.88rem;
+  color: var(--color-muted);
+}
+
+.colab-filter--row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+  align-items: end;
+}
+
+.colab-filter__action {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.colab-competencia {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.colab-competencia select {
+  min-width: 140px;
+}
+
+.colab-doc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.colab-doc-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.25rem;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.colab-doc-card--off {
+  opacity: 0.85;
+}
+
+.colab-doc-card__head {
+  display: flex;
+  gap: 0.85rem;
+  align-items: flex-start;
+}
+
+.colab-doc-card__badge {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--color-primary);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.colab-doc-card h3 {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+}
+
+.colab-doc-card p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-muted);
+}
+
+.colab-ferias-grid {
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) minmax(280px, 1.4fr);
+  gap: 1rem;
+}
+
+@media (max-width: 768px) {
+  .colab-ferias-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.colab-saldo h3,
+.colab-ferias-grid .card > h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+}
+
+.colab-saldo__row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.colab-saldo__circulo {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 5px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.colab-saldo__dias {
+  margin: 0;
+}
+
+.colab-saldo__dias strong {
+  font-size: 1.5rem;
+  color: var(--color-primary);
+}
+
+.colab-saldo__bar {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 1rem;
+  font-size: 0.85rem;
+}
+
+.colab-saldo__track {
+  height: 8px;
+  background: var(--color-border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.colab-saldo__track div {
+  height: 100%;
+  background: var(--color-primary);
+}
+
+.colab-periodos {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.colab-periodos li {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 0.9rem;
+}
+
+.colab-periodos li:last-child {
+  border-bottom: none;
+}
+
+.colab-badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  background: var(--color-border);
+}
+
+.colab-badge--info {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+[data-theme="dark"] .colab-badge--info {
+  background: #1e3a5f;
+  color: #93c5fd;
+}
+
+.colab-empty {
+  text-align: center;
+  padding: 1.75rem 1.25rem;
+}
+
+.colab-empty h3 {
+  margin: 0 0 0.35rem;
+}
+
+.colab-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.colab-modal {
+  width: min(480px, 100%);
+  margin: 0;
+}
+
+.colab-modal h3 {
+  margin-top: 0;
+}
+
+.colab-modal__form {
+  margin-top: 1rem;
+}
+
+.colab-doc-view {
+  width: min(560px, 100%);
+  max-height: 80vh;
+  overflow: auto;
+}
+
+.colab-doc-view__content {
+  white-space: pre-wrap;
+  font-family: inherit;
+  font-size: 0.88rem;
+  background: var(--color-bg);
+  padding: 1rem;
+  border-radius: var(--radius);
+  margin: 1rem 0;
+}
+
+.colab-ponto__acao {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem;
+}
+
+.colab-ponto__titulo {
+  margin: 0 0 0.35rem;
+  font-size: 1.05rem;
+}
+
+.colab-ponto__horario {
+  margin: 0.5rem 0 0;
+  font-size: 0.9rem;
+  color: var(--color-text);
+}
+
+.colab-ponto__btn {
+  min-width: 180px;
+}
+
+.colab-ponto__total {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.2rem;
+}
+
+.colab-ponto__total strong {
+  font-size: 1.35rem;
+}
+
+.colab-ponto__total span {
+  font-size: 0.85rem;
+  color: var(--color-muted);
+}
+
+.colab-ponto__footer td {
+  background: var(--color-bg);
+}

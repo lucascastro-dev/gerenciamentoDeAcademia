@@ -1,0 +1,16 @@
+.rh-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.rh-form {
+  margin-top: 0.75rem;
+}
+
+.rh-ponto__status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
