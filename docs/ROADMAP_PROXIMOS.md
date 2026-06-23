@@ -10,6 +10,8 @@ Planejamento unificado em **[ROADMAP.md](./ROADMAP.md)**.
 
 **Perfil Administrativo** — menus Geral, Financeiro, Acadêmico e Administrativo (sem master); dashboard institucional; consulta de turmas com paginação e detalhe em tela separada; e-mail no pré-cadastro de colaborador; correção da listagem de alunos para professor.
 
+**Folha de ponto e integração RH/Financeiro** — marcação entrada/saída (Meu ponto), conferência RH, integração na folha de pagamento, holerite com horas apuradas e recibo após pagamento. Ver [FOLHA_PONTO.md](./FOLHA_PONTO.md).
+
 ## Próximo foco (ago/2026)
 
 1. **DIRETOR** — menus e segregação de funções (SoD)

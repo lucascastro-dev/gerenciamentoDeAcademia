@@ -117,6 +117,17 @@ O aluno **Teste Portal Aluno** (`12345678909`) fica vinculado à turma de Judô 
 2. Consultar alunos cross-tenant, consultar turmas com filtros, matricular, instituições e financeiro plataforma.
 3. Confirme que menus exclusivos do master permanecem invisíveis para o professor.
 
+### 12. Folha de ponto (Colaborador → RH → Financeiro)
+
+Documentação: [FOLHA_PONTO.md](./FOLHA_PONTO.md)
+
+1. **Colaborador** (ex.: Professor `61482582007` / `123`): **Meu ponto** → **Registrar entrada** → **Registrar saída**. Confira tabela do mês e total de horas.
+2. **RH** (`71428793860` / `123`): **Folha de ponto** → revisar horas → **Conferir folha de ponto** (falha se houver entrada sem saída).
+3. **Financeiro** (`52998224725` / `123`): **Folha de pagamento** → **Integrar folha de ponto**.
+4. **RH**: **Lançamento de holerite** → publicar para o colaborador testado.
+5. **Financeiro**: **Confirmar pagamento** na folha (status Processado).
+6. **Colaborador**: **Meu holerite** → visualizar holerite e recibo do mês.
+
 ---
 
 ## Reiniciar massa de demo

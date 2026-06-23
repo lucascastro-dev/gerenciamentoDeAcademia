@@ -65,3 +65,28 @@ Consultar turmas (instituição), Cadastrar turma, Matricular aluno, Financeiro,
 - `[Demo] Karatê — conflito Dojo 1` — Terça/Quinta, Dojo 1
 
 Roteiro detalhado: [CENARIOS_TESTE.md](./CENARIOS_TESTE.md) (seções 6–10).
+
+---
+
+## Folha de ponto e remuneração
+
+Todos os colaboradores ativos têm **Meu ponto** na Área do colaborador (entrada/saída diária e extrato mensal).
+
+| Perfil | CPF | Uso |
+|--------|-----|-----|
+| RH | 71428793860 | Conferir ponto, lançar holerite |
+| Financeiro | 52998224725 | Integrar ponto, confirmar pagamento |
+| Professor | 61482582007 | Marcar ponto e ver holerite/recibo |
+
+Fluxo completo: [FOLHA_PONTO.md](./FOLHA_PONTO.md) · Roteiro: [CENARIOS_TESTE.md](./CENARIOS_TESTE.md) seção 12.
+
+Após alterações de permissão ou deploy, faça **logout e login** para renovar o JWT.
+
+### Judô Castro Team — ativar pré-cadastro (Administrador / RH)
+
+1. Login na **Judô Castro Team** (ex.: administrador `15179950783` ou RH `90714464090`, senha `123456`).
+2. Menu **Administrativo → Ativar cadastros**.
+3. Informe o CPF do colaborador que fez **pré-cadastro** e clique **Consultar CPF** (não exige vínculo prévio).
+4. Escolha o perfil e clique **Vincular e ativar**.
+
+Perfis com `funcionario:ativar`, `funcionario:cadastrar` ou `funcionario:editar` podem consultar CPF antes do vínculo. Demais perfis só consultam colaboradores já vinculados à instituição.
