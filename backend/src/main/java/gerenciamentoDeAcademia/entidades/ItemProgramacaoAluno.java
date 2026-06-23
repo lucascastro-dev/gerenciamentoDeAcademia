@@ -35,9 +35,13 @@ public class ItemProgramacaoAluno {
     @JoinColumn(name = "instituicao_id")
     private Instituicao instituicao;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = true)
     @JoinColumn(name = "aluno_id")
     private Aluno aluno;
+
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "turma_id")
+    private Turma turma;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -50,6 +54,9 @@ public class ItemProgramacaoAluno {
     private String descricao;
 
     private LocalDate dataPrevista;
+
+    /** Quando informada, o item vale do início até esta data (inclusive). */
+    private LocalDate dataFim;
 
     /** Texto legado; preferir horaInicio/horaFim quando informados. */
     private String horario;

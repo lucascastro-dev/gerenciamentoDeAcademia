@@ -2,6 +2,7 @@ package gerenciamentoDeAcademia.servicos.programacao;
 
 import gerenciamentoDeAcademia.dto.ConflitoHorarioDto;
 import gerenciamentoDeAcademia.dto.GradeHorariaEventoDto;
+import gerenciamentoDeAcademia.entidades.Aluno;
 import gerenciamentoDeAcademia.entidades.ItemProgramacaoAluno;
 import gerenciamentoDeAcademia.entidades.Turma;
 import gerenciamentoDeAcademia.repositorios.ItemProgramacaoAlunoRepository;
@@ -9,13 +10,16 @@ import gerenciamentoDeAcademia.repositorios.TurmaRepository;
 import gerenciamentoDeAcademia.util.IntervaloHorario;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +30,7 @@ public class ServicoGradeHoraria {
     private final TurmaRepository turmaRepository;
     private final ItemProgramacaoAlunoRepository programacaoRepository;
 
+    @Transactional(readOnly = true)
     public List<GradeHorariaEventoDto> montarGrade(Long instituicaoId, LocalDate semanaReferencia) {
         LocalDate ref = semanaReferencia != null ? semanaReferencia : LocalDate.now();
         List<GradeHorariaEventoDto> eventos = new ArrayList<>();
@@ -34,41 +39,155 @@ public class ServicoGradeHoraria {
         return marcarConflitos(eventos);
     }
 
+    @Transactional(readOnly = true)
     public List<ConflitoHorarioDto> detectarConflitosItem(Long instituicaoId, ItemProgramacaoAluno item, Long ignorarId) {
-        LocalDate data = item.getDataPrevista();
-        if (data == null) {
+        if (item.getDataPrevista() == null) {
             return List.of();
         }
-        List<GradeHorariaEventoDto> grade = montarGrade(instituicaoId, data);
-        String dia = diaSemanaPt(data.getDayOfWeek());
         IntervaloHorario novo = intervaloItem(item);
         if (novo == null) {
             return List.of();
         }
         String sala = item.getSala();
+        if (sala == null || sala.isBlank()) {
+            return List.of();
+        }
+
         List<ConflitoHorarioDto> conflitos = new ArrayList<>();
-        for (GradeHorariaEventoDto ev : grade) {
-            if ("PROGRAMACAO".equals(ev.origem()) && ev.referenciaId() != null
-                    && ev.referenciaId().equals(ignorarId)) {
-                continue;
-            }
-            if (!mesmoDia(ev, dia, data)) {
-                continue;
-            }
-            if (!mesmaSala(sala, ev.sala())) {
-                continue;
-            }
-            IntervaloHorario existente = new IntervaloHorario(ev.horaInicio(), ev.horaFim());
-            if (novo.sobrepoe(existente)) {
-                conflitos.add(new ConflitoHorarioDto(
-                        "Sobreposição em " + sala + " no dia " + dia + " entre "
-                                + item.getTitulo() + " e " + ev.titulo(),
-                        item.getTitulo(),
-                        ev.titulo(),
-                        sala));
+        Set<String> chaves = new HashSet<>();
+
+        for (LocalDate data : datasDoItem(item)) {
+            List<GradeHorariaEventoDto> grade = montarGrade(instituicaoId, data);
+            String dia = diaSemanaPt(data.getDayOfWeek());
+
+            for (GradeHorariaEventoDto ev : grade) {
+                if ("PROGRAMACAO".equals(ev.origem()) && ev.referenciaId() != null
+                        && ev.referenciaId().equals(ignorarId)) {
+                    continue;
+                }
+                if (!mesmoDia(ev, dia, data)) {
+                    continue;
+                }
+                if (ev.horaInicio() == null || ev.horaFim() == null) {
+                    continue;
+                }
+                IntervaloHorario existente = new IntervaloHorario(ev.horaInicio(), ev.horaFim());
+                if (!novo.sobrepoe(existente)) {
+                    continue;
+                }
+
+                if (mesmaSala(sala, ev.sala())) {
+                    adicionarConflito(conflitos, chaves,
+                            "Sobreposição de sala em " + sala + " em " + formatarData(data)
+                                    + " entre \"" + item.getTitulo() + "\" e \"" + ev.titulo() + "\"",
+                            item.getTitulo(), ev.titulo(), sala);
+                }
+
+                if (conflitoAluno(item, ev, instituicaoId, data, novo, ignorarId)) {
+                    String alvo = rotuloAlvo(item);
+                    adicionarConflito(conflitos, chaves,
+                            "Conflito de agenda para " + alvo + " em " + formatarData(data)
+                                    + " entre \"" + item.getTitulo() + "\" e \"" + ev.titulo() + "\"",
+                            item.getTitulo(), ev.titulo(), sala);
+                }
             }
         }
         return conflitos;
+    }
+
+    private boolean conflitoAluno(
+            ItemProgramacaoAluno item,
+            GradeHorariaEventoDto ev,
+            Long instituicaoId,
+            LocalDate data,
+            IntervaloHorario novo,
+            Long ignorarId) {
+        Set<String> cpfsAfetados = cpfsImpactados(item);
+        if (cpfsAfetados.isEmpty()) {
+            return false;
+        }
+
+        if ("PROGRAMACAO".equals(ev.origem())) {
+            if (ev.referenciaId() == null) {
+                return false;
+            }
+            ItemProgramacaoAluno outro = programacaoRepository.findById(ev.referenciaId()).orElse(null);
+            if (outro == null || (ignorarId != null && ignorarId.equals(outro.getId()))) {
+                return false;
+            }
+            Set<String> cpfsOutro = cpfsImpactados(outro);
+            for (String cpf : cpfsAfetados) {
+                if (cpfsOutro.contains(cpf)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        if ("TURMA".equals(ev.origem()) && ev.referenciaId() != null) {
+            Turma turma = turmaRepository.findByIdComAlunos(ev.referenciaId()).orElse(null);
+            if (turma == null || turma.getAlunos() == null) {
+                return false;
+            }
+            if (item.getTurma() != null && item.getTurma().getId().equals(turma.getId())) {
+                return false;
+            }
+            for (Aluno aluno : turma.getAlunos()) {
+                if (aluno != null && aluno.getCpf() != null && cpfsAfetados.contains(aluno.getCpf())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private Set<String> cpfsImpactados(ItemProgramacaoAluno item) {
+        Set<String> cpfs = new HashSet<>();
+        if (item.getAluno() != null && item.getAluno().getCpf() != null) {
+            cpfs.add(item.getAluno().getCpf());
+        }
+        if (item.getTurma() != null && item.getTurma().getAlunos() != null) {
+            item.getTurma().getAlunos().stream()
+                    .filter(a -> a != null && a.getCpf() != null)
+                    .forEach(a -> cpfs.add(a.getCpf()));
+        }
+        return cpfs;
+    }
+
+    private String rotuloAlvo(ItemProgramacaoAluno item) {
+        if (item.getAluno() != null) {
+            return item.getAluno().getNome();
+        }
+        if (item.getTurma() != null) {
+            return "turma " + (item.getTurma().getModalidade() != null ? item.getTurma().getModalidade() : item.getTurma().getId());
+        }
+        return "participante";
+    }
+
+    private void adicionarConflito(
+            List<ConflitoHorarioDto> conflitos,
+            Set<String> chaves,
+            String mensagem,
+            String tituloA,
+            String tituloB,
+            String sala) {
+        if (chaves.add(mensagem)) {
+            conflitos.add(new ConflitoHorarioDto(mensagem, tituloA, tituloB, sala));
+        }
+    }
+
+    private List<LocalDate> datasDoItem(ItemProgramacaoAluno item) {
+        LocalDate inicio = item.getDataPrevista();
+        LocalDate fim = item.getDataFim() != null ? item.getDataFim() : inicio;
+        List<LocalDate> datas = new ArrayList<>();
+        for (LocalDate d = inicio; !d.isAfter(fim); d = d.plusDays(1)) {
+            datas.add(d);
+        }
+        return datas;
+    }
+
+    private String formatarData(LocalDate data) {
+        return data.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"));
     }
 
     private List<GradeHorariaEventoDto> marcarConflitos(List<GradeHorariaEventoDto> eventos) {
@@ -109,7 +228,7 @@ public class ServicoGradeHoraria {
 
     private List<GradeHorariaEventoDto> eventosTurmas(Long instituicaoId, LocalDate semanaRef) {
         List<GradeHorariaEventoDto> lista = new ArrayList<>();
-        for (Turma turma : turmaRepository.findByInstituicao_Id(instituicaoId)) {
+        for (Turma turma : turmaRepository.findByInstituicao_IdComDias(instituicaoId)) {
             IntervaloHorario intervalo = intervaloTurma(turma);
             if (intervalo == null || turma.getDias() == null) {
                 continue;
@@ -137,32 +256,49 @@ public class ServicoGradeHoraria {
 
     private List<GradeHorariaEventoDto> eventosProgramacao(Long instituicaoId, LocalDate semanaRef) {
         List<GradeHorariaEventoDto> lista = new ArrayList<>();
-        LocalDate inicio = semanaRef.with(DayOfWeek.MONDAY);
-        LocalDate fim = inicio.plusDays(6);
+        LocalDate inicioSemana = semanaRef.with(DayOfWeek.MONDAY);
+        LocalDate fimSemana = inicioSemana.plusDays(6);
         for (ItemProgramacaoAluno item : programacaoRepository.findByInstituicao_IdOrderByDataPrevistaAscIdAsc(instituicaoId)) {
-            if (item.getDataPrevista() == null || item.getDataPrevista().isBefore(inicio) || item.getDataPrevista().isAfter(fim)) {
+            if (item.getDataPrevista() == null) {
                 continue;
             }
             IntervaloHorario intervalo = intervaloItem(item);
             if (intervalo == null) {
                 continue;
             }
-            String dia = diaSemanaPt(item.getDataPrevista().getDayOfWeek());
-            lista.add(new GradeHorariaEventoDto(
-                    "PROGRAMACAO",
-                    item.getId(),
-                    item.getTitulo(),
-                    item.getAluno() != null ? item.getAluno().getNome() : null,
-                    item.getTipo(),
-                    null,
-                    item.getSala(),
-                    dia,
-                    item.getDataPrevista(),
-                    intervalo.inicio(),
-                    intervalo.fim(),
-                    false));
+            LocalDate fimItem = item.getDataFim() != null ? item.getDataFim() : item.getDataPrevista();
+            for (LocalDate data : datasEntre(item.getDataPrevista(), fimItem)) {
+                if (data.isBefore(inicioSemana) || data.isAfter(fimSemana)) {
+                    continue;
+                }
+                String subtitulo = item.getAluno() != null
+                        ? item.getAluno().getNome()
+                        : (item.getTurma() != null ? "Turma: " + item.getTurma().getModalidade() : null);
+                String dia = diaSemanaPt(data.getDayOfWeek());
+                lista.add(new GradeHorariaEventoDto(
+                        "PROGRAMACAO",
+                        item.getId(),
+                        item.getTitulo(),
+                        subtitulo,
+                        item.getTipo(),
+                        null,
+                        item.getSala(),
+                        dia,
+                        data,
+                        intervalo.inicio(),
+                        intervalo.fim(),
+                        false));
+            }
         }
         return lista;
+    }
+
+    private List<LocalDate> datasEntre(LocalDate inicio, LocalDate fim) {
+        List<LocalDate> datas = new ArrayList<>();
+        for (LocalDate d = inicio; !d.isAfter(fim); d = d.plusDays(1)) {
+            datas.add(d);
+        }
+        return datas;
     }
 
     private IntervaloHorario intervaloTurma(Turma turma) {

@@ -16,14 +16,20 @@ interface TipoProgramacao {
 
 interface ItemProgramacao {
   id: number;
+  escopoLancamento?: string;
   cpfAluno?: string;
   nomeAluno?: string;
+  turmaId?: number;
+  nomeTurma?: string;
   tipo: string;
   tipoDescricao?: string;
   titulo: string;
   descricao?: string;
   dataPrevista?: string;
+  dataFim?: string;
   horario?: string;
+  horaInicio?: string;
+  horaFim?: string;
   sala?: string;
 }
 
@@ -51,6 +57,12 @@ interface Sala {
 interface AlunoOpt {
   cpf: string;
   nome: string;
+}
+
+interface TurmaOpt {
+  id: number;
+  modalidade: string;
+  horario?: string;
 }
 
 const DIAS_GRADE = [
@@ -86,13 +98,47 @@ function formatHora(h?: string): string {
   return h.length >= 5 ? h.slice(0, 5) : h;
 }
 
+function parseHorario(horario?: string, horaInicio?: string, horaFim?: string) {
+  if (horaInicio && horaFim) {
+    return { inicio: horaInicio.slice(0, 5), fim: horaFim.slice(0, 5) };
+  }
+  const partes = (horario || '').split('-').map((p) => p.trim());
+  return { inicio: partes[0]?.slice(0, 5) || '18:00', fim: partes[1]?.slice(0, 5) || '19:30' };
+}
+
+function validarIntervalo(horaInicio: string, horaFim: string): string | null {
+  if (!horaInicio || !horaFim) return 'Informe o horário de início e de término.';
+  if (horaFim <= horaInicio) return 'O horário de término deve ser depois do início.';
+  return null;
+}
+
+function montarPayload(form: ReturnType<typeof formVazio>) {
+  return {
+    escopoLancamento: form.escopoLancamento,
+    cpfAluno: form.escopoLancamento === 'ALUNO' ? form.cpfAluno : undefined,
+    turmaId: form.escopoLancamento === 'TURMA' ? Number(form.turmaId) : undefined,
+    tipo: form.tipo,
+    titulo: form.titulo,
+    descricao: form.descricao,
+    dataPrevista: form.dataPrevista,
+    dataFim: form.dataFim || null,
+    horaInicio: form.horaInicio,
+    horaFim: form.horaFim,
+    sala: form.sala,
+  };
+}
+
 const formVazio = () => ({
+  escopoLancamento: 'ALUNO' as 'ALUNO' | 'TURMA',
   cpfAluno: '',
+  turmaId: '',
   tipo: 'AULA',
   titulo: '',
   descricao: '',
   dataPrevista: '',
-  horario: '',
+  dataFim: '',
+  horaInicio: '18:00',
+  horaFim: '19:30',
   sala: '',
 });
 
@@ -117,6 +163,7 @@ const GestaoProgramacao: React.FC = () => {
   const [grade, setGrade] = useState<GradeEvento[]>([]);
   const [salas, setSalas] = useState<Sala[]>([]);
   const [alunos, setAlunos] = useState<AlunoOpt[]>([]);
+  const [turmas, setTurmas] = useState<TurmaOpt[]>([]);
   const [semanaRef, setSemanaRef] = useState(() => segundaDaSemana(new Date()));
   const [form, setForm] = useState(formVazio());
   const [editId, setEditId] = useState<number | null>(null);
@@ -141,6 +188,7 @@ const GestaoProgramacao: React.FC = () => {
     setGrade([]);
     setSalas([]);
     setAlunos([]);
+    setTurmas([]);
     setTipos([]);
     setEditId(null);
     setForm(formVazio());
@@ -175,6 +223,7 @@ const GestaoProgramacao: React.FC = () => {
       setGrade([]);
       setSalas([]);
       setAlunos([]);
+    setTurmas([]);
       return;
     }
     HttpService.programacaoTipos(instituicaoId).then((r) => setTipos(r.data)).catch(() => undefined);
@@ -183,6 +232,13 @@ const GestaoProgramacao: React.FC = () => {
       HttpService.listarAlunos(instituicaoId)
         .then((r) => setAlunos((r.data || []).map((a: AlunoOpt) => ({ cpf: a.cpf, nome: a.nome }))))
         .catch(() => setAlunos([]));
+      HttpService.listarTurmas({ instituicaoId: Number(instituicaoId) })
+        .then((r) => setTurmas((r.data || []).map((t: TurmaOpt) => ({
+          id: t.id,
+          modalidade: t.modalidade,
+          horario: t.horario,
+        }))))
+        .catch(() => setTurmas([]));
     }
   }, [instituicaoId, podeGerenciarItens, carregarSalas]);
 
@@ -230,37 +286,66 @@ const GestaoProgramacao: React.FC = () => {
   };
 
   const preencherEdicao = (item: ItemProgramacao) => {
+    const horario = parseHorario(item.horario, item.horaInicio, item.horaFim);
     setEditId(item.id);
     setForm({
+      escopoLancamento: item.escopoLancamento === 'TURMA' ? 'TURMA' : 'ALUNO',
       cpfAluno: item.cpfAluno || '',
+      turmaId: item.turmaId ? String(item.turmaId) : '',
       tipo: item.tipo,
       titulo: item.titulo,
       descricao: item.descricao || '',
       dataPrevista: item.dataPrevista || '',
-      horario: item.horario || '',
+      dataFim: item.dataFim || '',
+      horaInicio: horario.inicio,
+      horaFim: horario.fim,
       sala: item.sala || '',
     });
     setConflitos([]);
   };
 
   const validarConflitos = async (): Promise<string[]> => {
-    if (!form.sala?.trim() || !form.horario?.trim() || !form.dataPrevista) {
+    const erroHorario = validarIntervalo(form.horaInicio, form.horaFim);
+    if (erroHorario) {
+      setConflitos([erroHorario]);
+      return [erroHorario];
+    }
+    if (!form.sala?.trim() || !form.dataPrevista) {
       setConflitos([]);
       return [];
     }
     try {
-      const r = await HttpService.programacaoValidarConflito(instituicaoId, form, editId ?? undefined);
+      const payload = montarPayload(form);
+      const r = await HttpService.programacaoValidarConflito(instituicaoId, payload, editId ?? undefined);
       const msgs = (r.data || []).map((c: { mensagem: string }) => c.mensagem);
       setConflitos(msgs);
       return msgs;
-    } catch {
-      setConflitos([]);
-      return [];
+    } catch (e) {
+      const msg = extractApiMessage(e, 'Erro ao validar conflitos.');
+      setConflitos([msg]);
+      return [msg];
     }
   };
 
   const salvarItem = async () => {
     if (!podeGerenciarItens) return;
+    const erroHorario = validarIntervalo(form.horaInicio, form.horaFim);
+    if (erroHorario) {
+      setModal({ open: true, success: false, message: erroHorario });
+      return;
+    }
+    if (form.escopoLancamento === 'ALUNO' && !form.cpfAluno) {
+      setModal({ open: true, success: false, message: 'Selecione o aluno.' });
+      return;
+    }
+    if (form.escopoLancamento === 'TURMA' && !form.turmaId) {
+      setModal({ open: true, success: false, message: 'Selecione a turma.' });
+      return;
+    }
+    if (!form.sala) {
+      setModal({ open: true, success: false, message: 'Selecione uma sala cadastrada.' });
+      return;
+    }
     setCarregando(true);
     try {
       const msgsConflito = await validarConflitos();
@@ -268,17 +353,18 @@ const GestaoProgramacao: React.FC = () => {
         setModal({
           open: true,
           success: false,
-          message: 'Há conflito de horário/sala. Ajuste antes de salvar ou confirme se deseja prosseguir mesmo assim.',
+          message: 'Não é possível publicar: resolva os conflitos de horário/sala antes de salvar.',
         });
         setCarregando(false);
         return;
       }
+      const payload = montarPayload(form);
       if (editId) {
-        await HttpService.programacaoAtualizarItem(instituicaoId, editId, form);
+        await HttpService.programacaoAtualizarItem(instituicaoId, editId, payload);
       } else {
-        await HttpService.programacaoCriarItem(instituicaoId, form);
+        await HttpService.programacaoCriarItem(instituicaoId, payload);
       }
-      setModal({ open: true, success: true, message: editId ? 'Item atualizado.' : 'Item criado na programação do aluno.' });
+      setModal({ open: true, success: true, message: editId ? 'Item atualizado.' : 'Item publicado na programação.' });
       limparForm();
       carregarItens();
       if (aba === 'grade') carregarGrade();
@@ -333,10 +419,7 @@ const GestaoProgramacao: React.FC = () => {
   };
 
   return (
-    <PageShell
-      title="Programação e grade"
-      subtitle="Organize a Minha programação dos alunos, visualize turmas na grade e evite conflitos de sala"
-    >
+    <PageShell>
       {master && (
         <div className="card" style={{ marginBottom: '1rem' }}>
           <label>Instituição</label>
@@ -382,23 +465,50 @@ const GestaoProgramacao: React.FC = () => {
         <>
           {podeGerenciarItens && (
             <div className="programacao-form-panel">
-              <h3 style={{ marginTop: 0 }}>{editId ? 'Editar item' : 'Novo item para o aluno'}</h3>
-              <p className="field-hint">
-                O aluno vê estes lançamentos em Minha programação. Use horário no formato 18:00-19:30 e informe a sala para detectar conflitos.
-              </p>
+              <h3 style={{ marginTop: 0 }}>{editId ? 'Editar item' : 'Novo lançamento'}</h3>
               <div className="form-grid">
                 <div>
-                  <label>Aluno</label>
+                  <label>Tipo de lançamento</label>
                   <select
-                    value={form.cpfAluno}
-                    onChange={(e) => setForm((f) => ({ ...f, cpfAluno: e.target.value }))}
+                    value={form.escopoLancamento}
+                    onChange={(e) => setForm((f) => ({
+                      ...f,
+                      escopoLancamento: e.target.value as 'ALUNO' | 'TURMA',
+                      cpfAluno: '',
+                      turmaId: '',
+                    }))}
                   >
-                    <option value="">Selecione</option>
-                    {alunos.map((a) => (
-                      <option key={a.cpf} value={a.cpf}>{a.nome}</option>
-                    ))}
+                    <option value="ALUNO">Aluno específico</option>
+                    <option value="TURMA">Turma completa</option>
                   </select>
                 </div>
+                {form.escopoLancamento === 'ALUNO' ? (
+                  <div>
+                    <label>Aluno</label>
+                    <select
+                      value={form.cpfAluno}
+                      onChange={(e) => setForm((f) => ({ ...f, cpfAluno: e.target.value }))}
+                    >
+                      <option value="">Selecione</option>
+                      {alunos.map((a) => (
+                        <option key={a.cpf} value={a.cpf}>{a.nome}</option>
+                      ))}
+                    </select>
+                  </div>
+                ) : (
+                  <div>
+                    <label>Turma</label>
+                    <select
+                      value={form.turmaId}
+                      onChange={(e) => setForm((f) => ({ ...f, turmaId: e.target.value }))}
+                    >
+                      <option value="">Selecione</option>
+                      {turmas.map((t) => (
+                        <option key={t.id} value={String(t.id)}>{t.modalidade}{t.horario ? ` · ${t.horario}` : ''}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
                 <div>
                   <label>Tipo</label>
                   <select value={form.tipo} onChange={(e) => setForm((f) => ({ ...f, tipo: e.target.value }))}>
@@ -408,14 +518,18 @@ const GestaoProgramacao: React.FC = () => {
                   </select>
                 </div>
                 <div><label>Título</label><input value={form.titulo} onChange={(e) => setForm((f) => ({ ...f, titulo: e.target.value }))} /></div>
-                <div><label>Data</label><input type="date" value={form.dataPrevista} onChange={(e) => setForm((f) => ({ ...f, dataPrevista: e.target.value }))} /></div>
-                <div><label>Horário</label><input placeholder="18:00-19:30" value={form.horario} onChange={(e) => setForm((f) => ({ ...f, horario: e.target.value }))} /></div>
+                <div><label>Data início</label><input type="date" value={form.dataPrevista} onChange={(e) => setForm((f) => ({ ...f, dataPrevista: e.target.value }))} /></div>
+                <div><label>Data fim (opcional)</label><input type="date" value={form.dataFim} onChange={(e) => setForm((f) => ({ ...f, dataFim: e.target.value }))} /></div>
+                <div><label>Início</label><input type="time" value={form.horaInicio} onChange={(e) => setForm((f) => ({ ...f, horaInicio: e.target.value }))} /></div>
+                <div><label>Término</label><input type="time" value={form.horaFim} onChange={(e) => setForm((f) => ({ ...f, horaFim: e.target.value }))} /></div>
                 <div>
                   <label>Sala</label>
-                  <input list="salas-datalist" value={form.sala} onChange={(e) => setForm((f) => ({ ...f, sala: e.target.value }))} />
-                  <datalist id="salas-datalist">
-                    {salas.map((s) => <option key={s.id} value={s.nome} />)}
-                  </datalist>
+                  <select value={form.sala} onChange={(e) => setForm((f) => ({ ...f, sala: e.target.value }))}>
+                    <option value="">Selecione</option>
+                    {salas.filter((s) => s.ativa !== false).map((s) => (
+                      <option key={s.id} value={s.nome}>{s.nome}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
               <div style={{ marginTop: '0.75rem' }}>
@@ -432,8 +546,13 @@ const GestaoProgramacao: React.FC = () => {
               )}
               <div className="form-actions form-actions--compact" style={{ marginTop: '1rem' }}>
                 <button type="button" className="btn-secondary" onClick={() => validarConflitos()}>Verificar conflito</button>
-                <button type="button" className="btn-primary" disabled={carregando} onClick={salvarItem}>
-                  {editId ? 'Salvar alterações' : 'Publicar para o aluno'}
+                <button
+                  type="button"
+                  className="btn-primary"
+                  disabled={carregando || conflitos.length > 0}
+                  onClick={salvarItem}
+                >
+                  {editId ? 'Salvar alterações' : 'Publicar'}
                 </button>
                 {editId && <button type="button" className="btn-secondary" onClick={limparForm}>Cancelar edição</button>}
               </div>
@@ -444,7 +563,7 @@ const GestaoProgramacao: React.FC = () => {
             <table className="programacao-table">
               <thead>
                 <tr>
-                  <th>Aluno</th>
+                  <th>Destino</th>
                   <th>Tipo</th>
                   <th>Título</th>
                   <th>Quando</th>
@@ -458,10 +577,20 @@ const GestaoProgramacao: React.FC = () => {
                 )}
                 {itens.map((item) => (
                   <tr key={item.id}>
-                    <td>{item.nomeAluno || item.cpfAluno}</td>
+                    <td>
+                      {item.escopoLancamento === 'TURMA'
+                        ? `Turma: ${item.nomeTurma || item.turmaId}`
+                        : (item.nomeAluno || item.cpfAluno)}
+                    </td>
                     <td><span className={`tipo-badge tipo-badge--${item.tipo}`}>{item.tipoDescricao || item.tipo}</span></td>
                     <td>{item.titulo}</td>
-                    <td>{item.dataPrevista}{item.horario ? ` · ${item.horario}` : ''}</td>
+                    <td>
+                      {item.dataPrevista}
+                      {item.dataFim && item.dataFim !== item.dataPrevista ? ` – ${item.dataFim}` : ''}
+                      {(item.horario || (item.horaInicio && item.horaFim))
+                        ? ` · ${item.horario || `${formatHora(item.horaInicio)}–${formatHora(item.horaFim)}`}`
+                        : ''}
+                    </td>
                     <td>{item.sala || '—'}</td>
                     {podeGerenciarItens && (
                       <td style={{ whiteSpace: 'nowrap' }}>

@@ -43,16 +43,25 @@ CREATE TABLE IF NOT EXISTS tb_sala (
 CREATE TABLE IF NOT EXISTS tb_item_programacao_aluno (
   id BIGSERIAL PRIMARY KEY,
   instituicao_id BIGINT NOT NULL REFERENCES tb_instituicao(id),
-  aluno_id BIGINT NOT NULL REFERENCES tb_aluno(id),
+  aluno_id BIGINT REFERENCES tb_aluno(id),
+  turma_id BIGINT REFERENCES tb_turma(id),
   tipo VARCHAR(50) NOT NULL,
   titulo VARCHAR(255) NOT NULL,
   descricao VARCHAR(2000),
   data_prevista DATE,
+  data_fim DATE,
   horario VARCHAR(255),
   hora_inicio TIME,
   hora_fim TIME,
   sala VARCHAR(255)
 );
+
+ALTER TABLE tb_item_programacao_aluno ADD COLUMN IF NOT EXISTS turma_id BIGINT REFERENCES tb_turma(id);
+ALTER TABLE tb_item_programacao_aluno ADD COLUMN IF NOT EXISTS data_fim DATE;
+ALTER TABLE tb_item_programacao_aluno ADD COLUMN IF NOT EXISTS hora_inicio TIME;
+ALTER TABLE tb_item_programacao_aluno ADD COLUMN IF NOT EXISTS hora_fim TIME;
+ALTER TABLE tb_item_programacao_aluno ADD COLUMN IF NOT EXISTS sala VARCHAR(255);
+ALTER TABLE tb_item_programacao_aluno ALTER COLUMN aluno_id DROP NOT NULL;
 
 CREATE INDEX IF NOT EXISTS idx_item_prog_instituicao ON tb_item_programacao_aluno(instituicao_id);
 CREATE INDEX IF NOT EXISTS idx_item_prog_aluno ON tb_item_programacao_aluno(aluno_id);

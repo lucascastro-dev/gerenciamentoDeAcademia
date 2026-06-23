@@ -18,7 +18,7 @@ public class ServicoProgramacaoAluno {
         if (aluno == null || instituicaoId == null) {
             return List.of();
         }
-        return repository.findByAluno_CpfAndInstituicao_IdOrderByDataPrevistaAsc(aluno.getCpf(), instituicaoId)
+        return repository.findVisiveisParaAluno(aluno.getCpf(), instituicaoId)
                 .stream()
                 .map(ItemProgramacaoDto::of)
                 .toList();

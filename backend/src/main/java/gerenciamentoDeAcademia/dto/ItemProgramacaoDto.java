@@ -1,6 +1,7 @@
 package gerenciamentoDeAcademia.dto;
 
 import gerenciamentoDeAcademia.entidades.ItemProgramacaoAluno;
+import gerenciamentoDeAcademia.enums.EscopoLancamentoProgramacao;
 import gerenciamentoDeAcademia.enums.TipoItemProgramacao;
 
 import java.time.LocalDate;
@@ -9,13 +10,17 @@ import java.time.format.DateTimeFormatter;
 
 public record ItemProgramacaoDto(
         Long id,
+        EscopoLancamentoProgramacao escopoLancamento,
         String cpfAluno,
         String nomeAluno,
+        Long turmaId,
+        String nomeTurma,
         TipoItemProgramacao tipo,
         String tipoDescricao,
         String titulo,
         String descricao,
         LocalDate dataPrevista,
+        LocalDate dataFim,
         String horario,
         LocalTime horaInicio,
         LocalTime horaFim,
@@ -32,15 +37,22 @@ public record ItemProgramacaoDto(
                 && item.getHoraInicio() != null && item.getHoraFim() != null) {
             horarioExibicao = item.getHoraInicio().format(HORA) + " - " + item.getHoraFim().format(HORA);
         }
+        EscopoLancamentoProgramacao escopo = item.getTurma() != null
+                ? EscopoLancamentoProgramacao.TURMA
+                : EscopoLancamentoProgramacao.ALUNO;
         return new ItemProgramacaoDto(
                 item.getId(),
+                escopo,
                 item.getAluno() != null ? item.getAluno().getCpf() : null,
                 item.getAluno() != null ? item.getAluno().getNome() : null,
+                item.getTurma() != null ? item.getTurma().getId() : null,
+                item.getTurma() != null ? item.getTurma().getModalidade() : null,
                 item.getTipo(),
                 item.getTipo() != null ? item.getTipo().getDescricao() : null,
                 item.getTitulo(),
                 item.getDescricao(),
                 item.getDataPrevista(),
+                item.getDataFim(),
                 horarioExibicao,
                 item.getHoraInicio(),
                 item.getHoraFim(),
