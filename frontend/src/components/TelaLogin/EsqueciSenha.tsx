@@ -73,7 +73,7 @@ const EsqueciSenha: React.FC = () => {
             onChange={(e) => setCpf(maskCPF(e.target.value))}
           />
 
-          <button type="button" onClick={handleRecuperar} disabled={!isFormValid}>
+          <button type="button" className="auth-btn-primary" onClick={handleRecuperar} disabled={!isFormValid}>
             {loading ? 'Enviando...' : 'Recuperar senha'}
           </button>
         </form>

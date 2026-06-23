@@ -9,9 +9,25 @@
   --color-muted: #64748b;
   --color-success: #16a34a;
   --color-danger: #dc2626;
+  --color-border: #e2e8f0;
   --radius: 10px;
   --shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
   font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+[data-theme="dark"] {
+  --color-primary: #3b82f6;
+  --color-primary-dark: #2563eb;
+  --color-sidebar: #0f172a;
+  --color-sidebar-hover: #1e293b;
+  --color-bg: #0b1120;
+  --color-surface: #1e293b;
+  --color-text: #f1f5f9;
+  --color-muted: #94a3b8;
+  --color-success: #22c55e;
+  --color-danger: #f87171;
+  --color-border: #334155;
+  --shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
 }
 
 * { box-sizing: border-box; }

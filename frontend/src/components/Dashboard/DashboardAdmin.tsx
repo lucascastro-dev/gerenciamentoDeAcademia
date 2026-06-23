@@ -45,10 +45,6 @@ const DashboardAdmin: React.FC = () => {
     if (!resumoPlat) return <div className="card"><p>Carregando indicadores...</p></div>;
     return (
       <div>
-        <h2 style={{ marginTop: 0 }}>Painel da plataforma</h2>
-        <p style={{ color: 'var(--color-muted)' }}>
-          Visão consolidada de todas as instituições no EduGestão Inteligente (modelo SaaS multi-tenant).
-        </p>
         <div className="dashboard-grid">
           <div className="stat-card">
             <h3>{resumoPlat.instituicoesCadastradas}</h3>
@@ -89,10 +85,6 @@ const DashboardAdmin: React.FC = () => {
 
   return (
     <div>
-      <h2 style={{ marginTop: 0 }}>Painel administrativo</h2>
-      <p style={{ color: 'var(--color-muted)' }}>
-        Visão geral da operação da sua instituição.
-      </p>
       <div className="dashboard-grid">
         <div className="stat-card">
           <h3>{resumoInst.totalAlunos}</h3>

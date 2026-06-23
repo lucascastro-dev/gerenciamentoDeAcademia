@@ -23,6 +23,9 @@ import GerenciarAlunos from "./components/TelaInicial/GerenciarAlunos";
 import GerenciarTurmas from "./components/TelaInicial/GerenciarTurmas";
 import FinanceiroLayout from "./components/Financeiro/FinanceiroLayout";
 import Mensalidades from "./components/Financeiro/Mensalidades";
+import FolhaPagamento from "./components/Financeiro/FolhaPagamento";
+import FechamentoMes from "./components/Financeiro/FechamentoMes";
+import ConciliacaoBancaria from "./components/Financeiro/ConciliacaoBancaria";
 import Inadimplencia from "./components/Financeiro/Inadimplencia";
 import TurmasProfessor from "./components/Professor/TurmasProfessor";
 import PresencaTurma from "./components/Professor/PresencaTurma";
@@ -42,6 +45,15 @@ import PortalAlunoDados from "./pages/portal-aluno/PortalAlunoDados";
 import PortalAlunoTurmas from "./pages/portal-aluno/PortalAlunoTurmas";
 import PortalAlunoMensalidades from "./pages/portal-aluno/PortalAlunoMensalidades";
 import GestaoProgramacao from "./pages/academico/GestaoProgramacao";
+import MeuHolerite from "./pages/colaborador/MeuHolerite";
+import MeuPonto from "./pages/colaborador/MeuPonto";
+import MinhasFerias from "./pages/colaborador/MinhasFerias";
+import LancamentoHolerite from "./pages/rh/LancamentoHolerite";
+import FolhaPonto from "./pages/rh/FolhaPonto";
+import FechamentoMensalRh from "./pages/rh/FechamentoMensalRh";
+import { inicializarTema } from "./theme/theme";
+
+inicializarTema();
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
@@ -83,6 +95,19 @@ root.render(
               <PermissaoRoute permissao="aluno-portal:programacao"><PortalAlunoProgramacao /></PermissaoRoute>
             } />
             <Route path="meu-perfil" element={<MeuPerfil />} />
+            <Route path="colaborador/ponto" element={<MeuPonto />} />
+            <Route path="colaborador/holerite" element={<MeuHolerite />} />
+            <Route path="colaborador/ferias" element={<MinhasFerias />} />
+
+            <Route path="rh/folha-ponto" element={
+              <PermissaoRoute permissao="rh:folha-ponto"><FolhaPonto /></PermissaoRoute>
+            } />
+            <Route path="rh/fechamento-mensal" element={
+              <PermissaoRoute permissao="rh:fechamento-mensal"><FechamentoMensalRh /></PermissaoRoute>
+            } />
+            <Route path="rh/lancamento-holerite" element={
+              <PermissaoRoute permissao="rh:holerite-lancamento"><LancamentoHolerite /></PermissaoRoute>
+            } />
 
             <Route path="dashboard" element={
               <PermissaoRoute permissao="dashboard:visualizar"><DashboardAdmin /></PermissaoRoute>
@@ -101,6 +126,15 @@ root.render(
               } />
               <Route path="inadimplencia" element={
                 <PermissaoRoute permissao="financeiro:relatorio"><Inadimplencia /></PermissaoRoute>
+              } />
+              <Route path="folha-pagamento" element={
+                <PermissaoRoute permissao="financeiro:cobranca"><FolhaPagamento /></PermissaoRoute>
+              } />
+              <Route path="conciliacao" element={
+                <PermissaoRoute permissao="financeiro:visualizar"><ConciliacaoBancaria /></PermissaoRoute>
+              } />
+              <Route path="fechamento-mes" element={
+                <PermissaoRoute permissao="financeiro:relatorio"><FechamentoMes /></PermissaoRoute>
               } />
             </Route>
 

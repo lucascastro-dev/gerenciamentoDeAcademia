@@ -21,9 +21,9 @@
   max-width: 420px;
   margin: 0 auto;
   padding: 1.5rem;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-border, #e2e8f0);
   border-radius: var(--radius, 10px);
-  background-color: #fff;
+  background-color: var(--color-surface, #fff);
   box-shadow: var(--shadow, 0 4px 14px rgba(15, 23, 42, 0.08));
 }
 
@@ -105,10 +105,11 @@
   width: 100%;
   padding: 0.65rem 0.75rem;
   margin: 0 0 0.5rem;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--color-border, #cbd5e1);
   border-radius: 8px;
   font-size: 0.95rem;
-  background: #fff;
+  background: var(--color-surface, #fff);
+  color: var(--color-text, #0f172a);
 }
 
 .login-container input:focus {
