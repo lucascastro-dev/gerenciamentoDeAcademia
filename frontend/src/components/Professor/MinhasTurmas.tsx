@@ -7,6 +7,8 @@ interface TurmaResumo {
   modalidade: string;
   horario: string;
   sala?: string;
+  dias?: string[];
+  totalAlunos?: number;
 }
 
 const MinhasTurmas: React.FC = () => {
@@ -24,7 +26,7 @@ const MinhasTurmas: React.FC = () => {
           <div key={t.id} className="card">
             <h3 style={{ margin: '0 0 0.5rem' }}>{t.modalidade}</h3>
             <p style={{ margin: 0, color: 'var(--color-muted)' }}>{t.horario} — {t.dias?.join(', ')}</p>
-            <p>{t.totalAlunos} aluno(s)</p>
+            <p>{t.totalAlunos ?? 0} aluno(s)</p>
             <Link to={`/arealogada/professor/alunos?turma=${t.id}`}>Ver alunos</Link>
           </div>
         ))}

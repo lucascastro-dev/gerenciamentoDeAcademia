@@ -3,9 +3,11 @@ import PageShell from '../../components/common/PageShell';
 import HttpService from '../../services/HttpService';
 
 interface TurmaAluno {
+  id: number;
   modalidade: string;
   horario: string;
   sala?: string;
+  professorNome?: string;
 }
 
 const PortalAlunoTurmas: React.FC = () => {
