@@ -37,6 +37,11 @@ public enum TipoFuncionario {
         return usuarioMaster;
     }
 
+    /** Diretor, administrador e professor podem ser vinculados a turmas e usar a área pedagógica. */
+    public boolean podeAtuarComoProfessor() {
+        return this == PROFESSOR || this == DIRETOR || this == ADMINISTRADOR;
+    }
+
     public Set<PermissaoSistema> permissoesPadrao() {
         if (usuarioMaster) {
             return EnumSet.allOf(PermissaoSistema.class);
@@ -58,9 +63,14 @@ public enum TipoFuncionario {
                     PermissaoSistema.ALUNO_DESMATRICULAR,
                     PermissaoSistema.TURMA_CONSULTAR,
                     PermissaoSistema.TURMA_GERENCIAR,
+                    PermissaoSistema.TURMA_GERENCIAR_ALUNOS,
+                    PermissaoSistema.TURMA_PRESENCA,
+                    PermissaoSistema.TURMA_AVALIACAO,
+                    PermissaoSistema.CERTIFICADO_GERAR,
                     PermissaoSistema.PLANO_INSTITUICAO_VISUALIZAR,
                     PermissaoSistema.PROGRAMACAO_CONSULTAR,
-                    PermissaoSistema.PROGRAMACAO_GERENCIAR
+                    PermissaoSistema.PROGRAMACAO_GERENCIAR,
+                    PermissaoSistema.PROGRAMACAO_GERENCIAR_ITENS
             );
             case TI -> EnumSet.of(
                     PermissaoSistema.DASHBOARD_VISUALIZAR,
@@ -80,7 +90,9 @@ public enum TipoFuncionario {
                     PermissaoSistema.FINANCEIRO_VISUALIZAR,
                     PermissaoSistema.FINANCEIRO_COBRANCA,
                     PermissaoSistema.FINANCEIRO_RELATORIO,
-                    PermissaoSistema.ALUNO_CONSULTAR
+                    PermissaoSistema.ALUNO_CONSULTAR,
+                    PermissaoSistema.FUNCIONARIO_CONSULTAR,
+                    PermissaoSistema.PLANO_INSTITUICAO_VISUALIZAR
             );
             case RH -> EnumSet.of(
                     PermissaoSistema.DASHBOARD_VISUALIZAR,
@@ -88,7 +100,9 @@ public enum TipoFuncionario {
                     PermissaoSistema.FUNCIONARIO_CADASTRAR,
                     PermissaoSistema.FUNCIONARIO_EDITAR,
                     PermissaoSistema.FUNCIONARIO_ATIVAR,
-                    PermissaoSistema.ALUNO_CONSULTAR
+                    PermissaoSistema.RH_FOLHA_PONTO,
+                    PermissaoSistema.RH_FECHAMENTO_MENSAL,
+                    PermissaoSistema.RH_LANCAMENTO_HOLERITE
             );
             case RECEPCIONISTA -> EnumSet.of(
                     PermissaoSistema.ALUNO_CONSULTAR,
@@ -110,6 +124,28 @@ public enum TipoFuncionario {
                     PermissaoSistema.PROGRAMACAO_CONSULTAR,
                     PermissaoSistema.PROGRAMACAO_GERENCIAR_ITENS
             );
+            case DIRETOR -> {
+                EnumSet<PermissaoSistema> diretor = EnumSet.of(
+                        PermissaoSistema.DASHBOARD_VISUALIZAR,
+                        PermissaoSistema.FINANCEIRO_VISUALIZAR,
+                        PermissaoSistema.FINANCEIRO_RELATORIO,
+                        PermissaoSistema.FUNCIONARIO_CONSULTAR,
+                        PermissaoSistema.ALUNO_CONSULTAR,
+                        PermissaoSistema.ALUNO_CADASTRAR,
+                        PermissaoSistema.ALUNO_EDITAR,
+                        PermissaoSistema.TURMA_CONSULTAR,
+                        PermissaoSistema.TURMA_GERENCIAR,
+                        PermissaoSistema.PLANO_INSTITUICAO_VISUALIZAR,
+                        PermissaoSistema.PROGRAMACAO_CONSULTAR,
+                        PermissaoSistema.PROGRAMACAO_GERENCIAR,
+                        PermissaoSistema.TURMA_GERENCIAR_ALUNOS,
+                        PermissaoSistema.TURMA_PRESENCA,
+                        PermissaoSistema.TURMA_AVALIACAO,
+                        PermissaoSistema.CERTIFICADO_GERAR,
+                        PermissaoSistema.PROGRAMACAO_GERENCIAR_ITENS
+                );
+                yield diretor;
+            }
             case ESTAGIARIO -> EnumSet.of(
                     PermissaoSistema.ALUNO_CONSULTAR,
                     PermissaoSistema.TURMA_CONSULTAR,

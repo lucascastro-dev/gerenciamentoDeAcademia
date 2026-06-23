@@ -3,6 +3,7 @@ package gerenciamentoDeAcademia.infra.seguranca;
 import gerenciamentoDeAcademia.entidades.Aluno;
 import gerenciamentoDeAcademia.entidades.Funcionario;
 import gerenciamentoDeAcademia.entidades.Usuario;
+import gerenciamentoDeAcademia.enums.AreaTerceirizado;
 import gerenciamentoDeAcademia.enums.PermissaoSistema;
 import gerenciamentoDeAcademia.enums.SituacaoCobranca;
 import gerenciamentoDeAcademia.enums.StatusFinanceiroInstituicao;
@@ -28,28 +29,40 @@ public class UsuarioAutenticado implements UserDetails {
     private final StatusFinanceiroInstituicao statusFinanceiroInstituicao;
     private final boolean operadorPlataforma;
     private final boolean masterRaiz;
+    /** Perfil efetivo na instituição da sessão (vínculo), quando informado. */
+    private final TipoFuncionario tipoPermissao;
+    private final AreaTerceirizado areaPermissao;
     private final Collection<? extends GrantedAuthority> authorities;
 
     public UsuarioAutenticado(Usuario usuario, Funcionario funcionario) {
         this(usuario, funcionario, null, null, SituacaoCobranca.ATIVO, StatusFinanceiroInstituicao.PAGAMENTO_CONFIRMADO,
-                false, false);
+                false, false, null, null);
     }
 
     public UsuarioAutenticado(Usuario usuario, Funcionario funcionario, Aluno aluno) {
         this(usuario, funcionario, aluno, null, SituacaoCobranca.ATIVO, StatusFinanceiroInstituicao.PAGAMENTO_CONFIRMADO,
-                false, false);
+                false, false, null, null);
     }
 
     public UsuarioAutenticado(Usuario usuario, Funcionario funcionario, Aluno aluno,
                               Long instituicaoId, SituacaoCobranca situacaoCobranca) {
         this(usuario, funcionario, aluno, instituicaoId, situacaoCobranca,
-                StatusFinanceiroInstituicao.PAGAMENTO_CONFIRMADO, false, false);
+                StatusFinanceiroInstituicao.PAGAMENTO_CONFIRMADO, false, false, null, null);
     }
 
     public UsuarioAutenticado(Usuario usuario, Funcionario funcionario, Aluno aluno,
                               Long instituicaoId, SituacaoCobranca situacaoCobranca,
                               StatusFinanceiroInstituicao statusFinanceiroInstituicao,
                               boolean operadorPlataforma, boolean masterRaiz) {
+        this(usuario, funcionario, aluno, instituicaoId, situacaoCobranca,
+                statusFinanceiroInstituicao, operadorPlataforma, masterRaiz, null, null);
+    }
+
+    public UsuarioAutenticado(Usuario usuario, Funcionario funcionario, Aluno aluno,
+                              Long instituicaoId, SituacaoCobranca situacaoCobranca,
+                              StatusFinanceiroInstituicao statusFinanceiroInstituicao,
+                              boolean operadorPlataforma, boolean masterRaiz,
+                              TipoFuncionario tipoPermissao, AreaTerceirizado areaPermissao) {
         this.usuario = usuario;
         this.funcionario = funcionario;
         this.aluno = aluno;
@@ -60,7 +73,9 @@ public class UsuarioAutenticado implements UserDetails {
                 : StatusFinanceiroInstituicao.PAGAMENTO_CONFIRMADO;
         this.operadorPlataforma = operadorPlataforma;
         this.masterRaiz = masterRaiz;
-        this.authorities = montarAuthorities(usuario, funcionario, aluno, operadorPlataforma);
+        this.tipoPermissao = tipoPermissao;
+        this.areaPermissao = areaPermissao;
+        this.authorities = montarAuthorities(usuario, funcionario, aluno, operadorPlataforma, tipoPermissao, areaPermissao);
     }
 
     public boolean isOperadorPlataforma() {
@@ -85,8 +100,23 @@ public class UsuarioAutenticado implements UserDetails {
         return usuario != null && usuario.getRole() == UserRole.ALUNO;
     }
 
+    public TipoFuncionario getTipoPermissao() {
+        if (tipoPermissao != null) {
+            return tipoPermissao;
+        }
+        return funcionario != null ? funcionario.getTipoFuncionario() : null;
+    }
+
+    public AreaTerceirizado getAreaPermissao() {
+        if (areaPermissao != null) {
+            return areaPermissao;
+        }
+        return funcionario != null ? funcionario.getAreaTerceirizado() : null;
+    }
+
     private Collection<? extends GrantedAuthority> montarAuthorities(
-            Usuario usuario, Funcionario funcionario, Aluno aluno, boolean operadorPlataforma) {
+            Usuario usuario, Funcionario funcionario, Aluno aluno, boolean operadorPlataforma,
+            TipoFuncionario tipoPermissao, AreaTerceirizado areaPermissao) {
         if (operadorPlataforma) {
             return java.util.List.of(
                     new SimpleGrantedAuthority("ROLE_MASTER"),
@@ -110,11 +140,14 @@ public class UsuarioAutenticado implements UserDetails {
             return list;
         }
 
-        TipoFuncionario tipo = funcionario != null ? funcionario.getTipoFuncionario() : null;
+        TipoFuncionario tipo = tipoPermissao != null
+                ? tipoPermissao
+                : (funcionario != null ? funcionario.getTipoFuncionario() : null);
         if (tipo == null) {
             return java.util.List.of(new SimpleGrantedAuthority("ROLE_USER"));
         }
-        var permissoes = TipoFuncionario.codigosPermissao(tipo, funcionario.getAreaTerceirizado()).stream()
+        AreaTerceirizado area = areaPermissao != null ? areaPermissao : funcionario.getAreaTerceirizado();
+        var permissoes = TipoFuncionario.codigosPermissao(tipo, area).stream()
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
         permissoes.add(new SimpleGrantedAuthority("ROLE_USER"));

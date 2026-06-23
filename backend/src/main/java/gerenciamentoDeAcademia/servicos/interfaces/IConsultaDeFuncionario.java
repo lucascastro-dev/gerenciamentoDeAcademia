@@ -14,5 +14,5 @@ public interface IConsultaDeFuncionario {
 
     Funcionario consultarFuncionarioPorCpf(String cpf);
 
-    FuncionarioConsultaCompletaDto consultarCompletoPorCpf(String cpf, Long instituicaoId, boolean operadorPlataforma);
+    FuncionarioConsultaCompletaDto consultarCompletoPorCpf(String cpf, UsuarioAutenticado usuario);
 }

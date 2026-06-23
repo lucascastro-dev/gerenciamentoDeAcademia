@@ -53,7 +53,11 @@ public enum PermissaoSistema {
 
     PROGRAMACAO_CONSULTAR("programacao:consultar"),
     PROGRAMACAO_GERENCIAR("programacao:gerenciar"),
-    PROGRAMACAO_GERENCIAR_ITENS("programacao:gerenciar-itens");
+    PROGRAMACAO_GERENCIAR_ITENS("programacao:gerenciar-itens"),
+
+    RH_FOLHA_PONTO("rh:folha-ponto"),
+    RH_FECHAMENTO_MENSAL("rh:fechamento-mensal"),
+    RH_LANCAMENTO_HOLERITE("rh:holerite-lancamento");
 
     private final String codigo;
 

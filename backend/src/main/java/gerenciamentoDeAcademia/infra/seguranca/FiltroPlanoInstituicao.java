@@ -34,14 +34,18 @@ public class FiltroPlanoInstituicao extends OncePerRequestFilter {
             "/academia/consultarAcademiaId/",
             "/instituicao/consultarAcademiaId/",
             "/funcionario/meuPerfil",
-            "/portal-aluno"
+            "/portal-aluno",
+            "/colaborador/documentos-remuneracao",
+            "/colaborador/folha-ponto"
     );
 
     private static final List<String> PREFIXOS_LIBERADOS_PAGAMENTO_PENDENTE = List.of(
             "/login",
             "/plano-instituicao",
             "/funcionario/meuPerfil",
-            "/funcionario/alterarSenha"
+            "/funcionario/alterarSenha",
+            "/colaborador/documentos-remuneracao",
+            "/colaborador/folha-ponto"
     );
 
     private final ObjectMapper objectMapper = new ObjectMapper();

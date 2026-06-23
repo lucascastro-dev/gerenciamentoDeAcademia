@@ -12,6 +12,8 @@ import gerenciamentoDeAcademia.entidades.Instituicao;
 
 import gerenciamentoDeAcademia.entidades.Usuario;
 
+import gerenciamentoDeAcademia.entidades.VinculoFuncionarioInstituicao;
+
 import gerenciamentoDeAcademia.enums.PermissaoSistema;
 
 import gerenciamentoDeAcademia.enums.SituacaoCobranca;
@@ -39,6 +41,8 @@ import gerenciamentoDeAcademia.repositorios.FuncionarioRepository;
 import gerenciamentoDeAcademia.repositorios.InstituicaoRepository;
 
 import gerenciamentoDeAcademia.repositorios.UsuarioRepository;
+
+import gerenciamentoDeAcademia.repositorios.VinculoFuncionarioInstituicaoRepository;
 
 import gerenciamentoDeAcademia.servicos.instituicao.GerenciadorDeInstituicao;
 
@@ -71,6 +75,8 @@ import java.util.Arrays;
 import java.util.EnumSet;
 
 import java.util.List;
+
+import java.util.Optional;
 
 
 
@@ -125,6 +131,12 @@ public class GerenciadorDeLogin implements IGerenciadorDeLogin, UserDetailsServi
     @Autowired
 
     private ServicoMasterPlataforma servicoMasterPlataforma;
+
+
+
+    @Autowired
+
+    private VinculoFuncionarioInstituicaoRepository vinculoFuncionarioInstituicaoRepository;
 
 
 
@@ -408,12 +420,30 @@ public class GerenciadorDeLogin implements IGerenciadorDeLogin, UserDetailsServi
 
                 : resolverSituacaoCobrancaVinculo(vinculo);
 
+        Optional<VinculoFuncionarioInstituicao> vinculoInstituicao = resolverVinculoInstituicao(funcionario, instituicaoId);
+        TipoFuncionario tipoPermissao = vinculoInstituicao
+                .map(VinculoFuncionarioInstituicao::getTipoFuncionario)
+                .orElse(funcionario != null ? funcionario.getTipoFuncionario() : null);
+        gerenciamentoDeAcademia.enums.AreaTerceirizado areaPermissao = vinculoInstituicao
+                .map(VinculoFuncionarioInstituicao::getAreaTerceirizado)
+                .orElse(funcionario != null ? funcionario.getAreaTerceirizado() : null);
+
         return new UsuarioAutenticado(
 
                 base.getUsuario(), funcionario, null, instituicaoId, situacao,
 
-                statusFinanceiro, operador, masterRaiz);
+                statusFinanceiro, operador, masterRaiz, tipoPermissao, areaPermissao);
 
+    }
+
+
+
+    private Optional<VinculoFuncionarioInstituicao> resolverVinculoInstituicao(Funcionario funcionario, Long instituicaoId) {
+        if (funcionario == null || instituicaoId == null || instituicaoId <= 0) {
+            return Optional.empty();
+        }
+        return vinculoFuncionarioInstituicaoRepository.findByFuncionarioCpfAndInstituicaoId(
+                funcionario.getCpf(), instituicaoId);
     }
 
 
@@ -502,7 +532,7 @@ public class GerenciadorDeLogin implements IGerenciadorDeLogin, UserDetailsServi
 
         Funcionario funcionario = autenticado.getFuncionario();
 
-        if (funcionario == null || funcionario.getTipoFuncionario() == null) {
+        if (funcionario == null || autenticado.getTipoPermissao() == null) {
 
             return List.of();
 
@@ -510,9 +540,9 @@ public class GerenciadorDeLogin implements IGerenciadorDeLogin, UserDetailsServi
 
         return new ArrayList<>(TipoFuncionario.codigosPermissao(
 
-                funcionario.getTipoFuncionario(),
+                autenticado.getTipoPermissao(),
 
-                funcionario.getAreaTerceirizado()));
+                autenticado.getAreaPermissao()));
 
     }
 

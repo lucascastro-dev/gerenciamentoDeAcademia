@@ -6,6 +6,7 @@ import gerenciamentoDeAcademia.dto.FuncionarioVinculoInstituicaoDto;
 import gerenciamentoDeAcademia.dto.PessoaListagemDto;
 import gerenciamentoDeAcademia.entidades.Funcionario;
 import gerenciamentoDeAcademia.entidades.VinculoFuncionarioInstituicao;
+import gerenciamentoDeAcademia.enums.PermissaoSistema;
 import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
 import gerenciamentoDeAcademia.infra.seguranca.UsuarioAutenticado;
 import gerenciamentoDeAcademia.repositorios.FuncionarioRepository;
@@ -16,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.history.Revision;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,9 +58,11 @@ public class ConsultaDeFuncionario implements IConsultaDeFuncionario {
 
     @Override
     @Transactional(readOnly = true)
-    public FuncionarioConsultaCompletaDto consultarCompletoPorCpf(String cpf, Long instituicaoId,
-                                                                  boolean operadorPlataforma) {
-        Funcionario funcionario = consultarFuncionarioPorCpfEscopo(cpf, instituicaoId, operadorPlataforma);
+    public FuncionarioConsultaCompletaDto consultarCompletoPorCpf(String cpf, UsuarioAutenticado usuario) {
+        boolean operadorPlataforma = usuario != null && usuario.isOperadorPlataforma();
+        Long instituicaoId = usuario != null ? usuario.getInstituicaoId() : null;
+        Funcionario funcionario = consultarFuncionarioPorCpfEscopo(
+                cpf, instituicaoId, operadorPlataforma, podeConsultarParaVinculo(usuario));
         FuncionarioConsultaCompletaDto dto = new FuncionarioConsultaCompletaDto(funcionario);
         List<VinculoFuncionarioInstituicao> vinculos = vinculoRepository
                 .findByFuncionarioCpfOrderByInstituicaoRazaoSocialAsc(cpf);
@@ -77,16 +81,39 @@ public class ConsultaDeFuncionario implements IConsultaDeFuncionario {
         return funcionarioRepository.findByCpf(cpf);
     }
 
-    public Funcionario consultarFuncionarioPorCpfEscopo(String cpf, Long instituicaoId, boolean operadorPlataforma) {
+    public Funcionario consultarFuncionarioPorCpfEscopo(
+            String cpf, Long instituicaoId, boolean operadorPlataforma, boolean podeConsultarParaVinculo) {
         Funcionario funcionario = consultarFuncionarioPorCpf(cpf);
         ExcecaoDeDominio.quandoNulo(funcionario, "Funcionário não encontrado.");
-        if (operadorPlataforma || instituicaoId == null || instituicaoId <= 0) {
+        if (operadorPlataforma || instituicaoId == null || instituicaoId <= 0 || podeConsultarParaVinculo) {
             return funcionario;
         }
         ExcecaoDeDominio.quando(
-                !instituicaoRepository.existsByCnpjAndFuncionarioCpf(instituicaoId, cpf),
+                !funcionarioVinculadoInstituicao(instituicaoId, cpf),
                 "Funcionário não vinculado à instituição do seu acesso.");
         return funcionario;
+    }
+
+    private boolean funcionarioVinculadoInstituicao(Long instituicaoId, String cpf) {
+        if (instituicaoRepository.existsByCnpjAndFuncionarioCpf(instituicaoId, cpf)) {
+            return true;
+        }
+        return vinculoRepository.findByFuncionarioCpfAndInstituicaoId(cpf, instituicaoId).isPresent();
+    }
+
+    private boolean podeConsultarParaVinculo(UsuarioAutenticado usuario) {
+        if (usuario == null || usuario.isOperadorPlataforma()) {
+            return true;
+        }
+        return usuario.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(this::permiteConsultaPreVinculo);
+    }
+
+    private boolean permiteConsultaPreVinculo(String codigo) {
+        return PermissaoSistema.FUNCIONARIO_ATIVAR.getCodigo().equals(codigo)
+                || PermissaoSistema.FUNCIONARIO_CADASTRAR.getCodigo().equals(codigo)
+                || PermissaoSistema.FUNCIONARIO_EDITAR.getCodigo().equals(codigo);
     }
 
     public List<String> listarLogs(Long id) {

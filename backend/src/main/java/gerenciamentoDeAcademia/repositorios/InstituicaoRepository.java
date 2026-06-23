@@ -13,6 +13,8 @@ import java.util.List;
 public interface InstituicaoRepository extends JpaRepository<Instituicao, Long> {
     Instituicao findByCnpj(String cnpjInstituicao);
 
+    java.util.Optional<Instituicao> findFirstByRazaoSocialIgnoreCase(String razaoSocial);
+
     @Query("SELECT COUNT(a) > 0 FROM Instituicao a JOIN a.funcionarios f WHERE a.id = :vinculo AND f.cpf = :cpf")
     boolean existsByCnpjAndFuncionarioCpf(@Param("vinculo") Long vinculo, @Param("cpf") String cpf);
 
@@ -34,7 +36,11 @@ public interface InstituicaoRepository extends JpaRepository<Instituicao, Long> 
             SELECT DISTINCT f FROM gerenciamentoDeAcademia.entidades.VinculoFuncionarioInstituicao v
             JOIN v.funcionario f
             WHERE v.instituicao.id = :instituicaoId
-            AND v.tipoFuncionario = gerenciamentoDeAcademia.enums.TipoFuncionario.PROFESSOR
+            AND v.tipoFuncionario IN (
+                gerenciamentoDeAcademia.enums.TipoFuncionario.PROFESSOR,
+                gerenciamentoDeAcademia.enums.TipoFuncionario.DIRETOR,
+                gerenciamentoDeAcademia.enums.TipoFuncionario.ADMINISTRADOR
+            )
             AND f.cadastroAtivo = true
             ORDER BY f.nome
             """)

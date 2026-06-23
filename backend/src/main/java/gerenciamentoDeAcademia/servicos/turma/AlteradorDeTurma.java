@@ -57,8 +57,8 @@ public class AlteradorDeTurma implements IAlteradorDeTurma {
             String cpf = cpfProfessor.replaceAll("\\D", "");
             Funcionario professor = funcionarioRepository.findByCpf(cpf);
             ExcecaoDeDominio.quandoNulo(professor, "Professor não encontrado na base");
-            ExcecaoDeDominio.quando(professor.getTipoFuncionario() != TipoFuncionario.PROFESSOR,
-                    "O colaborador informado não é professor.");
+            ExcecaoDeDominio.quando(!professor.getTipoFuncionario().podeAtuarComoProfessor(),
+                    "O colaborador informado não pode atuar como professor (perfil Professor, Diretor ou Administrador).");
             Long instituicaoId = turma.getInstituicao() != null ? turma.getInstituicao().getId() : null;
             ExcecaoDeDominio.quando(instituicaoId == null
                             || !instituicaoRepository.existsByCnpjAndFuncionarioCpf(instituicaoId, cpf),

@@ -80,14 +80,18 @@ public class LoginController {
 
             String perfilExibicao = autenticado.isOperadorPlataforma()
                     ? "USUÁRIO MASTER"
+                    : (autenticado.getTipoPermissao() != null
+                    ? autenticado.getTipoPermissao().getDescricao()
                     : (funcionario != null && funcionario.getTipoFuncionario() != null
                     ? funcionario.getTipoFuncionario().getDescricao()
-                    : null);
+                    : null));
 
             var retorno = new LoginRetornoDto(
                     token,
                     funcionario != null ? funcionario.getNome() : (aluno != null ? aluno.getNome() : data.login()),
-                    funcionario != null ? funcionario.getTipoFuncionario() : null,
+                    autenticado.getTipoPermissao() != null
+                            ? autenticado.getTipoPermissao()
+                            : (funcionario != null ? funcionario.getTipoFuncionario() : null),
                     perfilExibicao,
                     autenticado.isOperadorPlataforma(),
                     autenticado.isMasterRaiz(),

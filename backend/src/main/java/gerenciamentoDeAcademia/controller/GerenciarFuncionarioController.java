@@ -128,9 +128,7 @@ public class GerenciarFuncionarioController {
             @AuthenticationPrincipal UsuarioAutenticado usuario,
             @PathVariable("cpf") String cpf) {
         String cpfLimpo = cpf.replaceAll("\\D", "");
-        Long instituicaoId = usuario.getInstituicaoId();
-        return consultaDeFuncionario.consultarCompletoPorCpf(
-                cpfLimpo, instituicaoId, usuario.isOperadorPlataforma());
+        return consultaDeFuncionario.consultarCompletoPorCpf(cpfLimpo, usuario);
     }
 
     @PutMapping("/vinculo")

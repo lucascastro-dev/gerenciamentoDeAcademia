@@ -40,7 +40,14 @@ export function isModoPlataforma(sessao: SessaoUsuario | null): boolean {
 }
 
 export function isProfessor(sessao: SessaoUsuario | null): boolean {
-  return sessao?.tipoFuncionario === 'PROFESSOR';
+  return podeAtuarComoProfessor(sessao);
+}
+
+/** Professor, diretor ou administrador com atuação pedagógica (menu e turmas). */
+export function podeAtuarComoProfessor(sessao: SessaoUsuario | null): boolean {
+  return sessao?.tipoFuncionario === 'PROFESSOR'
+    || sessao?.tipoFuncionario === 'DIRETOR'
+    || sessao?.tipoFuncionario === 'ADMINISTRADOR';
 }
 
 export function labelPerfil(sessao: SessaoUsuario | null): string {
