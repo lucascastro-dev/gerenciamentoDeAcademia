@@ -2,6 +2,7 @@ services:
   postgres:
     image: public.ecr.aws/docker/library/postgres:16-alpine
     container_name: academia-postgres
+    restart: unless-stopped
     env_file:
       - .env
     environment:
@@ -31,6 +32,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: academia-backend
+    restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
@@ -59,10 +61,17 @@ services:
       args:
         VITE_API_URL: ${VITE_API_URL:-/srv-gerenciaracademia}
     container_name: academia-frontend
+    restart: unless-stopped
     depends_on:
       - backend
     ports:
       - "0.0.0.0:${APP_PORT:-5173}:80"
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
 
   # Túnel HTTPS público (internet). URL: docker compose logs tunnel  ou  URL_PUBLICA.txt
   tunnel:

@@ -64,12 +64,62 @@ docker compose -f docker-compose.yml -f docker-compose.ngrok.yml up -d --build
 
 | Arquivo | Função |
 |---------|--------|
-| `subir.bat` | Verifica Docker, portas, sobe compose dev/teste + túnel público |
+| `subir.bat` | Sobe stack completa (pull de imagens; **sem rebuild** por padrão). Use `subir.bat build` na 1ª vez ou após mudar código. |
+| `subir-postgres.bat` | Só banco PostgreSQL |
+| `subir-backend.bat` | Só API. `subir-backend.bat build` recompila o JAR |
+| `subir-frontend.bat` | Só nginx/React. `subir-frontend.bat build` recompila o frontend |
+| `subir-tunel.bat` | Só túnel Cloudflare (URL pública) |
 | `subir-prod.bat` | Produção: `docker,prod`, sem seeds demo, sem túnel |
 | `atualizar-url-publica.bat` | Regrava `URL_PUBLICA.txt` com a URL **mais recente** do túnel |
 | `scripts/configurar-portas.py` | Portas livres + firewall Windows |
 | `scripts/aguardar-url-publica.py` | Lê logs do túnel → `URL_PUBLICA.txt` |
+| `scripts/subir-servico.ps1` | Lógica compartilhada dos `.bat` modulares |
 | `scripts/subir-docker.ps1` | Mesmo fluxo em PowerShell |
+| `backup-banco.bat` | Backup manual do PostgreSQL |
+| `restaurar-banco.bat` | Restaura ultimo backup (ou arquivo informado) |
+| `agendar-backup-semanal.bat` | Tarefa Windows: backup todo domingo 03:00 |
+| [BACKUP_BANCO.md](./BACKUP_BANCO.md) | Backup automatico, restauracao e retencao |
+
+### Restart parcial (mais rápido)
+
+Após alterar só o backend:
+
+```bat
+subir-backend.bat build
+```
+
+Após alterar só o frontend:
+
+```bat
+subir-frontend.bat build
+```
+
+Reiniciar túnel sem rebuild da app:
+
+```bat
+subir-tunel.bat
+```
+
+Só o banco:
+
+```bat
+subir-postgres.bat
+```
+
+### Git Bash (MINGW64)
+
+No Bash, use **`./`** antes do script (`.bat` não entra no PATH):
+
+```bash
+./subir-backend.sh build
+./subir-frontend.sh build
+./subir-tunel.sh
+./subir-postgres.sh
+./subir.sh              # stack completa
+./subir.sh build        # stack + rebuild
+```
+
+Equivalente no CMD/PowerShell: `subir-backend.bat build` (sem `./`).
 
 ## URLs
 

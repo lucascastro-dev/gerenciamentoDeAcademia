@@ -1,5 +1,17 @@
 # Baixa imagens base (ECR publico primeiro; Docker Hub como fallback)
+param(
+    [ValidateSet('postgres', 'backend', 'frontend', 'tunnel', 'all')]
+    [string[]]$Servicos = @('all')
+)
+
 $ErrorActionPreference = "Continue"
+
+$mapaServicos = @{
+    postgres = @('postgres:16-alpine')
+    backend  = @('eclipse-temurin:17-jdk-alpine', 'eclipse-temurin:17-jre-alpine')
+    frontend = @('node:20-alpine', 'nginx:alpine')
+    tunnel   = @('cloudflare/cloudflared:latest')
+}
 
 # Nome local esperado pelo compose/build -> fontes em ordem de tentativa
 $imagens = @(
@@ -45,6 +57,19 @@ $imagens = @(
         )
     }
 )
+
+$alvo = New-Object 'System.Collections.Generic.HashSet[string]'
+if ($Servicos -contains 'all') {
+    foreach ($k in $mapaServicos.Keys) {
+        foreach ($n in $mapaServicos[$k]) { [void]$alvo.Add($n) }
+    }
+} else {
+    foreach ($s in $Servicos) {
+        foreach ($n in $mapaServicos[$s]) { [void]$alvo.Add($n) }
+    }
+}
+
+$imagens = $imagens | Where-Object { $alvo.Contains($_.Nome) }
 
 $tentativasMax = 2
 $pausaSegundos = 5

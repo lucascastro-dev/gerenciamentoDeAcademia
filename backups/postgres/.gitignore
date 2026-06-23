@@ -1,0 +1,4 @@
+# Backups locais do PostgreSQL (nao versionar dumps).
+*
+!.gitignore
+!README.md

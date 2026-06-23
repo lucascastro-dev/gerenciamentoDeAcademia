@@ -63,3 +63,8 @@ backend/certificados/
 
 # URL gerada pelo script de deploy (tunel publico)
 URL_PUBLICA.txt
+
+# Dumps PostgreSQL (conter dados sensiveis)
+backups/postgres/*.sql
+backups/postgres/*.sql.gz
+backups/postgres/.ultimo-backup.json

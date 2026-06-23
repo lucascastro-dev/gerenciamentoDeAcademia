@@ -1,10 +1,11 @@
-# Mirror AWS ECR (evita timeout do Docker Hub registry-1.docker.io)
+# syntax=docker/dockerfile:1
 FROM public.ecr.aws/docker/library/node:20-alpine AS build
 
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm ci
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci
 
 COPY . .
 RUN find . -type f -name "*.sh" -exec sed -i 's/\r$//' {} \;
