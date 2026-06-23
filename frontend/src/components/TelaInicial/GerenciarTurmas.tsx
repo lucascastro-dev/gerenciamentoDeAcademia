@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import FeedbackModal from '../common/FeedbackModal';
 import ListaConsultaTurmas, { TurmaListagemItem } from '../common/ListaConsultaTurmas';
 import PageShell from '../common/PageShell';
@@ -89,7 +89,7 @@ const GerenciarTurmas: React.FC<Props> = ({ modo }) => {
     ? (filtroInstituicao || '')
     : vinculoInst;
 
-  const reload = () => {
+  const reload = useCallback(() => {
     setCarregandoLista(true);
     setErroLista(null);
     const params: { instituicaoId?: number } = {};
@@ -109,7 +109,7 @@ const GerenciarTurmas: React.FC<Props> = ({ modo }) => {
         setErroLista(extractApiMessage(e, 'Falha ao carregar turmas.'));
       })
       .finally(() => setCarregandoLista(false));
-  };
+  }, [master, filtroInstituicao, turmaSelecionadaId]);
 
   const turmasListagem: TurmaListagemItem[] = useMemo(
     () => turmas.map((t) => ({
@@ -231,7 +231,7 @@ const GerenciarTurmas: React.FC<Props> = ({ modo }) => {
 
   useEffect(() => {
     if (!somenteCadastro) reload();
-  }, [somenteCadastro, filtroInstituicao]);
+  }, [somenteCadastro, filtroInstituicao, reload]);
 
   useEffect(() => {
     const id = instituicaoIdFiltroProf;

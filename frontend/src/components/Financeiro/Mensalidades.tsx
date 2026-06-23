@@ -4,8 +4,17 @@ import PageShell from '../common/PageShell';
 import HttpService from '../../services/HttpService';
 import { extractApiMessage } from '../../utils/apiError';
 
+interface MensalidadeItem {
+  cpf: string;
+  nome: string;
+  valorMensalidade: number;
+  diaVencimento: number;
+  dataUltimoPagamento?: string;
+  inadimplente: boolean;
+}
+
 const Mensalidades: React.FC = () => {
-  const [lista, setLista] = useState<any[]>([]);
+  const [lista, setLista] = useState<MensalidadeItem[]>([]);
   const [modal, setModal] = useState({ open: false, success: false, message: '' });
 
   const carregar = () => {

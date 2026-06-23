@@ -71,11 +71,11 @@ const PresencaTurma: React.FC = () => {
 
   const chave = (cpf: string, dia: number) => `${cpf}:${dia}`;
 
-  const valorCelula = (aluno: AlunoLinha, dia: number) => {
+  const valorCelula = useCallback((aluno: AlunoLinha, dia: number) => {
     const k = chave(aluno.cpf, dia);
     if (k in alteracoes) return alteracoes[k];
     return aluno.registros[dia] || '';
-  };
+  }, [alteracoes]);
 
   const alternarCelula = (aluno: AlunoLinha, dia: number) => {
     const atual = valorCelula(aluno, dia);
@@ -135,7 +135,7 @@ const PresencaTurma: React.FC = () => {
       mapa[a.cpf] = t;
     });
     return mapa;
-  }, [grade, alteracoes]);
+  }, [grade, valorCelula]);
 
   return (
     <PageShell title="Presença" subtitle="Planilha mensal de frequência por turma">

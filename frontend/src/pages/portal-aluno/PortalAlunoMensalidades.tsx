@@ -4,8 +4,15 @@ import PageShell from '../../components/common/PageShell';
 import HttpService from '../../services/HttpService';
 import { extractApiMessage } from '../../utils/apiError';
 
+interface ResumoMensalidade {
+  valorMensalidade?: number;
+  diaVencimento?: number;
+  inadimplente?: boolean;
+  dataUltimoPagamento?: string;
+}
+
 const PortalAlunoMensalidades: React.FC = () => {
-  const [resumo, setResumo] = useState<any>(null);
+  const [resumo, setResumo] = useState<ResumoMensalidade | null>(null);
   const [infoPagamento, setInfoPagamento] = useState('');
   const [modal, setModal] = useState({ open: false, success: false, message: '' });
 

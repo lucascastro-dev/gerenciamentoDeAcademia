@@ -1,8 +1,14 @@
 import { useEffect, useState } from 'react';
 import HttpService from '../../services/HttpService';
 
+interface InadimplenteItem {
+  cpf: string;
+  nome: string;
+  diaVencimento: number;
+}
+
 const Inadimplencia: React.FC = () => {
-  const [lista, setLista] = useState<any[]>([]);
+  const [lista, setLista] = useState<InadimplenteItem[]>([]);
 
   useEffect(() => {
     HttpService.financeiroInadimplentes().then((r) => setLista(r.data));

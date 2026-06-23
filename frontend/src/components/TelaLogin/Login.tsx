@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { salvarSessao } from '../../auth/permissoes';
+import { salvarSessao, TipoFuncionario } from '../../auth/permissoes';
 import HttpService from '../../services/HttpService';
 import { extractApiMessage } from '../../utils/apiError';
 import FeedbackModal from '../common/FeedbackModal';
@@ -82,7 +82,7 @@ const Login: React.FC = () => {
         cpf: cpfLimpo,
         vinculo,
         nome: data.nome,
-        tipoFuncionario: data.tipoFuncionario as any,
+        tipoFuncionario: (data.tipoFuncionario as TipoFuncionario | null) ?? null,
         perfilExibicao: data.perfilExibicao,
         usuarioMaster: data.usuarioMaster,
         masterRaiz: data.masterRaiz,

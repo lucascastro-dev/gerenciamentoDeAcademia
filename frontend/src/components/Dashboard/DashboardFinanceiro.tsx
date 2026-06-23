@@ -30,8 +30,13 @@ const DashboardFinanceiro: React.FC = () => {
         .catch(() => setDadosPlat(null));
     } else {
       HttpService.financeiroDashboard().then((r) => {
-        const { proximosVencimentos: _, ...rest } = r.data as DashboardFin & { proximosVencimentos?: unknown };
-        setDados(rest);
+        const data = r.data as DashboardFin & { proximosVencimentos?: unknown };
+        setDados({
+          totalAlunos: data.totalAlunos,
+          receitaMensalPrevista: data.receitaMensalPrevista,
+          alunosInadimplentes: data.alunosInadimplentes,
+          valorInadimplente: data.valorInadimplente,
+        });
       }).catch(() => setDados(null));
     }
   }, [plataforma]);

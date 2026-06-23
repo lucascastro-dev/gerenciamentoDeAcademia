@@ -3,10 +3,22 @@ import { useSearchParams } from 'react-router-dom';
 import HttpService from '../../services/HttpService';
 import { formatarTelefoneExibicao } from '../../utils/phoneFormat';
 
+interface TurmaResumo {
+  id: number;
+  modalidade: string;
+  horario: string;
+}
+
+interface AlunoResumo {
+  cpf: string;
+  nome: string;
+  telefone?: string;
+}
+
 const MeusAlunos: React.FC = () => {
   const [params] = useSearchParams();
-  const [turmas, setTurmas] = useState<any[]>([]);
-  const [alunos, setAlunos] = useState<any[]>([]);
+  const [turmas, setTurmas] = useState<TurmaResumo[]>([]);
+  const [alunos, setAlunos] = useState<AlunoResumo[]>([]);
   const [turmaId, setTurmaId] = useState(params.get('turma') || '');
 
   useEffect(() => {

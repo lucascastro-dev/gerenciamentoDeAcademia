@@ -4,8 +4,18 @@ import HttpService from '../../services/HttpService';
 import { parseEndereco } from '../../utils/endereco';
 import { formatarTelefoneExibicao } from '../../utils/phoneFormat';
 
+interface PortalAlunoDados {
+  nome: string;
+  cpf: string;
+  rg: string;
+  dataDeNascimento: string;
+  telefone?: string;
+  email?: string;
+  endereco?: string;
+}
+
 const PortalAlunoDados: React.FC = () => {
-  const [dados, setDados] = useState<any>(null);
+  const [dados, setDados] = useState<PortalAlunoDados | null>(null);
 
   useEffect(() => {
     HttpService.portalAlunoDados().then((r) => setDados(r.data)).catch(() => setDados(null));

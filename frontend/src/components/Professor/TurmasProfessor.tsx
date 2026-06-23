@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import HttpService from '../../services/HttpService';
 import FeedbackModal from '../common/FeedbackModal';
@@ -60,7 +60,7 @@ const TurmasProfessor: React.FC = () => {
 
   const turmaSelecionada = turmas.find((t) => t.id === turmaId) || null;
 
-  const carregarTurmas = () => {
+  const carregarTurmas = useCallback(() => {
     HttpService.minhasTurmasProfessor()
       .then((r) => {
         const lista = r.data || [];
@@ -70,7 +70,7 @@ const TurmasProfessor: React.FC = () => {
         }
       })
       .catch(() => setTurmas([]));
-  };
+  }, [turmaId]);
 
   const carregarAlunos = (id: number) => {
     HttpService.alunosDaTurma(id)
@@ -80,7 +80,7 @@ const TurmasProfessor: React.FC = () => {
 
   useEffect(() => {
     carregarTurmas();
-  }, []);
+  }, [carregarTurmas]);
 
   useEffect(() => {
     if (turmaId) carregarAlunos(turmaId);

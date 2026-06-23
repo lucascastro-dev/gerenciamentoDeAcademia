@@ -2,8 +2,15 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import HttpService from '../../services/HttpService';
 
+interface TurmaResumo {
+  id: number;
+  modalidade: string;
+  horario: string;
+  sala?: string;
+}
+
 const MinhasTurmas: React.FC = () => {
-  const [turmas, setTurmas] = useState<any[]>([]);
+  const [turmas, setTurmas] = useState<TurmaResumo[]>([]);
 
   useEffect(() => {
     HttpService.minhasTurmasProfessor().then((r) => setTurmas(r.data));

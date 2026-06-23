@@ -57,7 +57,7 @@ function detectarPaisPorDigitos(digits: string): PaisTelefone | null {
 export function formatarTelefoneExibicao(valor: string, dialPadrao = PAIS_PADRAO.dial): string {
   if (!valor || telefoneMascarado(valor)) return valor;
 
-  let digits = somenteDigitosTelefone(valor);
+  const digits = somenteDigitosTelefone(valor);
   if (digits.length === 0) return '';
 
   const pais = detectarPaisPorDigitos(digits);

@@ -2,8 +2,14 @@ import { useEffect, useState } from 'react';
 import PageShell from '../../components/common/PageShell';
 import HttpService from '../../services/HttpService';
 
+interface TurmaAluno {
+  modalidade: string;
+  horario: string;
+  sala?: string;
+}
+
 const PortalAlunoTurmas: React.FC = () => {
-  const [turmas, setTurmas] = useState<any[]>([]);
+  const [turmas, setTurmas] = useState<TurmaAluno[]>([]);
 
   useEffect(() => {
     HttpService.portalAlunoTurmas().then((r) => setTurmas(r.data)).catch(() => setTurmas([]));
