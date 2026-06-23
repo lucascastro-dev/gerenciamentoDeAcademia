@@ -2,6 +2,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 
 import EnderecoFields from '../common/EnderecoFields';
 import FeedbackModal from '../common/FeedbackModal';
+import PhoneInput from '../common/PhoneInput';
+import '../common/PhoneFields.css';
 import ListaConsultaInstituicoes, { InstituicaoListagemItem } from '../common/ListaConsultaInstituicoes';
 import PageShell from '../common/PageShell';
 
@@ -14,6 +16,7 @@ import { filtrarTiposPlano } from '../../utils/planoInstituicao';
 import { formatDateBr } from '../../utils/format';
 
 import { EnderecoCompleto, enderecoVazio, parseEndereco, serializarEndereco } from '../../utils/endereco';
+import { formatarTelefoneExibicao, telefoneParaApi } from '../../utils/phoneFormat';
 
 const STATUS_FINANCEIRO = [
   { value: 'NAO_APLICAVEL', label: 'Não aplicável' },
@@ -58,9 +61,6 @@ const GerenciarAcademia: React.FC = () => {
       .replace(/(\d{3})(\d)/, '$1.$2')
       .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
       .slice(0, 14);
-
-  const maskPhone = (v: string) =>
-    v.replace(/\D/g, '').replace(/^(\d{2})(\d)/g, '($1) $2').replace(/(\d)(\d{4})$/, '$1-$2').slice(0, 15);
 
   const onlyNumbers = (v: string) => v.replace(/\D/g, '');
   const onlyAlnumCnpj = (v: string) => v.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
@@ -121,7 +121,7 @@ const GerenciarAcademia: React.FC = () => {
   }) => {
     setRazaoSocial(data.razaoSocial ?? '');
     setEndereco(parseEndereco(data.endereco));
-    setTelefone(data.telefone ?? '');
+    setTelefone(formatarTelefoneExibicao(data.telefone ?? ''));
     setEmail(data.email ?? '');
     setCadastroAtivo(!!data.cadastroAtivo);
     setStatusFinanceiro(data.statusFinanceiro ?? 'NAO_APLICAVEL');
@@ -167,7 +167,7 @@ const GerenciarAcademia: React.FC = () => {
         razaoSocial,
         cnpj: onlyAlnumCnpj(cnpj),
         endereco: serializarEndereco(endereco),
-        telefone: onlyNumbers(telefone),
+        telefone: telefoneParaApi(telefone),
         email,
         cadastroAtivo,
       });
@@ -276,14 +276,7 @@ const GerenciarAcademia: React.FC = () => {
                 <label>CNPJ</label>
                 <input disabled value={cnpj} />
               </div>
-              <div>
-                <label>Telefone</label>
-                <input
-                  type="tel"
-                  value={telefone}
-                  onChange={(e) => setTelefone(maskPhone(e.target.value))}
-                />
-              </div>
+              <PhoneInput label="Telefone" value={telefone} onChange={setTelefone} />
               <div>
                 <label>E-mail da instituição</label>
                 <input

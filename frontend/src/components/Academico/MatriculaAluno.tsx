@@ -8,7 +8,10 @@ import { extractApiMessage } from '../../utils/apiError';
 import { EnderecoCompleto, enderecoVazio, serializarEndereco } from '../../utils/endereco';
 import { idInstituicao } from '../../utils/instituicao';
 import CurrencyInput from '../common/CurrencyInput';
+import PhoneInput from '../common/PhoneInput';
+import '../common/PhoneFields.css';
 import { parseMoeda } from '../../utils/moeda';
+import { telefoneParaApi } from '../../utils/phoneFormat';
 
 function senhaInicialDoCpf(cpf: string): string {
   const digitos = cpf.replace(/\D/g, '');
@@ -106,12 +109,12 @@ const MatriculaAluno: React.FC = () => {
         rg,
         dataDeNascimento,
         endereco: serializarEndereco(endereco),
-        telefone: telefone.replace(/\D/g, ''),
+        telefone: telefoneParaApi(telefone),
         email,
         valorMensalidade: parseMoeda(valorMensalidade),
         diaVencimentoMensalidade: parseInt(diaVencimentoMensalidade, 10),
         nomeResponsavel,
-        telefoneResponsavel: telefoneResponsavel.replace(/\D/g, ''),
+        telefoneResponsavel: telefoneParaApi(telefoneResponsavel),
         instituicaoId: idDestino,
       });
       const senha = senhaInicialDoCpf(cpfLimpo);
@@ -169,7 +172,7 @@ const MatriculaAluno: React.FC = () => {
           <div><label>CPF</label><input value={cpf} onChange={(e) => setCpf(e.target.value)} required /></div>
           <div><label>RG</label><input value={rg} onChange={(e) => setRg(e.target.value)} required /></div>
           <div><label>Nascimento</label><input type="date" value={dataDeNascimento} onChange={(e) => setDataDeNascimento(e.target.value)} required /></div>
-          <div><label>Telefone</label><input value={telefone} onChange={(e) => setTelefone(e.target.value)} required /></div>
+          <PhoneInput label="Telefone" value={telefone} onChange={setTelefone} required />
           <div>
             <label>E-mail</label>
             <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="nome@email.com" />
@@ -184,7 +187,7 @@ const MatriculaAluno: React.FC = () => {
           </div>
           <div><label>Dia vencimento</label><input type="number" min={1} max={28} value={diaVencimentoMensalidade} onChange={(e) => setDiaVencimentoMensalidade(e.target.value)} /></div>
           <div><label>Responsável</label><input value={nomeResponsavel} onChange={(e) => setNomeResponsavel(e.target.value)} /></div>
-          <div><label>Tel. responsável</label><input value={telefoneResponsavel} onChange={(e) => setTelefoneResponsavel(e.target.value)} /></div>
+          <PhoneInput label="Tel. responsável" value={telefoneResponsavel} onChange={setTelefoneResponsavel} />
         </div>
         <EnderecoFields value={endereco} onChange={setEndereco} />
         <div className="form-actions">

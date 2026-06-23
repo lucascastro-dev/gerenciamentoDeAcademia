@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import PageShell from '../../components/common/PageShell';
 import HttpService from '../../services/HttpService';
 import { parseEndereco } from '../../utils/endereco';
+import { formatarTelefoneExibicao } from '../../utils/phoneFormat';
 
 const PortalAlunoDados: React.FC = () => {
   const [dados, setDados] = useState<any>(null);
@@ -24,7 +25,7 @@ const PortalAlunoDados: React.FC = () => {
           <div><strong>CPF</strong><p>{dados.cpf}</p></div>
           <div><strong>RG</strong><p>{dados.rg}</p></div>
           <div><strong>Nascimento</strong><p>{dados.dataDeNascimento}</p></div>
-          <div><strong>Telefone</strong><p>{dados.telefone}</p></div>
+          <div><strong>Telefone</strong><p>{formatarTelefoneExibicao(dados.telefone || '') || '—'}</p></div>
           <div><strong>E-mail</strong><p>{dados.email || '—'}</p></div>
           <div className="form-grid__span-2">
             <strong>Endereço</strong>

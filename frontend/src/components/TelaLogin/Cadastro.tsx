@@ -4,12 +4,15 @@ import EnderecoFields from '../common/EnderecoFields';
 import FeedbackModal from '../common/FeedbackModal';
 import PasswordInput from '../common/PasswordInput';
 import PasswordStrengthHints from '../common/PasswordStrengthHints';
+import PhoneInput from '../common/PhoneInput';
 import '../common/PasswordFields.css';
+import '../common/PhoneFields.css';
 import HttpService from '../../services/HttpService';
 import { extractApiMessage } from '../../utils/apiError';
 import { EnderecoCompleto, enderecoVazio, serializarEndereco } from '../../utils/endereco';
 import { isEmailValido } from '../../utils/emailPolicy';
 import { isSenhaForte } from '../../utils/passwordPolicy';
+import { telefoneParaApi, telefoneValido } from '../../utils/phoneFormat';
 import './Login.css';
 
 const Cadastro: React.FC = () => {
@@ -35,11 +38,7 @@ const Cadastro: React.FC = () => {
     v.replace(/\D/g, '').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2')
       .replace(/(\d{3})(\d{1,2})$/, '$1-$2').slice(0, 14);
 
-  const maskPhone = (v: string) =>
-    v.replace(/\D/g, '').replace(/^(\d{2})(\d)/g, '($1) $2').replace(/(\d)(\d{4})$/, '$1-$2').slice(0, 15);
-
   const cpfLimpo = cpf.replace(/\D/g, '');
-  const telefoneLimpo = telefone.replace(/\D/g, '');
   const cepLimpo = endereco.cep.replace(/\D/g, '');
   const senhasConferem = senha === senhaConfirmacao && senhaConfirmacao.length > 0;
   const enderecoValido =
@@ -56,7 +55,7 @@ const Cadastro: React.FC = () => {
     cpfLimpo.length === 11 &&
     rg.trim() !== '' &&
     dataDeNascimento !== '' &&
-    telefoneLimpo.length >= 10 &&
+    telefoneValido(telefone) &&
     emailValido &&
     enderecoValido &&
     isSenhaForte(senha) &&
@@ -79,7 +78,7 @@ const Cadastro: React.FC = () => {
         rg: rg.trim(),
         dataDeNascimento,
         endereco: serializarEndereco(endereco),
-        telefone: telefoneLimpo,
+        telefone: telefoneParaApi(telefone),
         email: email.trim(),
         senha,
       });
@@ -153,14 +152,13 @@ const Cadastro: React.FC = () => {
 
           <fieldset className="auth-form-section">
             <legend>Contato</legend>
-            <label className="login-label" htmlFor="cad-tel">Telefone / WhatsApp</label>
-            <input
+            <PhoneInput
               id="cad-tel"
-              type="tel"
-              placeholder="(00) 00000-0000"
+              label="Telefone / WhatsApp"
+              labelClassName="login-label"
               value={telefone}
-              onChange={(e) => setTelefone(maskPhone(e.target.value))}
-              autoComplete="tel"
+              onChange={setTelefone}
+              required
             />
 
             <label className="login-label" htmlFor="cad-email">E-mail</label>

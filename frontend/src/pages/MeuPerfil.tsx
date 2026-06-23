@@ -4,11 +4,14 @@ import FeedbackModal from '../components/common/FeedbackModal';
 import PageShell from '../components/common/PageShell';
 import PasswordInput from '../components/common/PasswordInput';
 import PasswordStrengthHints from '../components/common/PasswordStrengthHints';
+import PhoneInput from '../components/common/PhoneInput';
 import '../components/common/PasswordFields.css';
+import '../components/common/PhoneFields.css';
 import HttpService from '../services/HttpService';
 import { extractApiMessage } from '../utils/apiError';
 import { EnderecoCompleto, enderecoVazio, parseEndereco, serializarEndereco } from '../utils/endereco';
 import { isSenhaForte } from '../utils/passwordPolicy';
+import { formatarTelefoneExibicao, telefoneParaApi } from '../utils/phoneFormat';
 
 const MeuPerfil: React.FC = () => {
   const [nome, setNome] = useState('');
@@ -41,7 +44,7 @@ const MeuPerfil: React.FC = () => {
         setCpf(d.cpf || '');
         setDataDeNascimento(d.dataDeNascimento || '');
         setEndereco(parseEndereco(d.endereco));
-        setTelefone(d.telefone || '');
+        setTelefone(formatarTelefoneExibicao(d.telefone || ''));
         setEmail(d.email || '');
         setEspecializacao(d.especializacao || '');
         setTipo(d.tipoFuncionario || d.cargo || '');
@@ -57,7 +60,7 @@ const MeuPerfil: React.FC = () => {
   const salvarDados = async () => {
     try {
       await HttpService.atualizarMeuPerfil({
-        nome, rg, cpf, dataDeNascimento, endereco: serializarEndereco(endereco), telefone, email, especializacao,
+        nome, rg, cpf, dataDeNascimento, endereco: serializarEndereco(endereco), telefone: telefoneParaApi(telefone), email, especializacao,
       });
       showOk('Dados atualizados com sucesso.');
     } catch (e) {
@@ -95,7 +98,7 @@ const MeuPerfil: React.FC = () => {
           <div><label>Nome</label><input value={nome} onChange={(e) => setNome(e.target.value)} /></div>
           <div><label>RG</label><input value={rg} onChange={(e) => setRg(e.target.value)} /></div>
           <div><label>Nascimento</label><input type="date" value={dataDeNascimento} onChange={(e) => setDataDeNascimento(e.target.value)} /></div>
-          <div><label>Telefone</label><input value={telefone} onChange={(e) => setTelefone(e.target.value)} /></div>
+          <PhoneInput label="Telefone" value={telefone} onChange={setTelefone} />
           <div>
             <label>E-mail</label>
             <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="nome@email.com" />

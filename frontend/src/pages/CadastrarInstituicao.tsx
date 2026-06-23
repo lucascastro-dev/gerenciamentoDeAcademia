@@ -1,8 +1,9 @@
 import { useState } from 'react';
 
 import EnderecoFields from '../components/common/EnderecoFields';
-
 import FeedbackModal from '../components/common/FeedbackModal';
+import PhoneInput from '../components/common/PhoneInput';
+import '../components/common/PhoneFields.css';
 
 import PageShell from '../components/common/PageShell';
 
@@ -13,6 +14,7 @@ import HttpService from '../services/HttpService';
 import { extractApiMessage } from '../utils/apiError';
 
 import { EnderecoCompleto, enderecoVazio, serializarEndereco } from '../utils/endereco';
+import { telefoneParaApi } from '../utils/phoneFormat';
 
 
 
@@ -64,7 +66,7 @@ const CadastrarInstituicao: React.FC = () => {
 
         endereco: serializarEndereco(endereco),
 
-        telefone: onlyNumbers(telefone),
+        telefone: telefoneParaApi(telefone),
 
         email,
 
@@ -128,7 +130,7 @@ const CadastrarInstituicao: React.FC = () => {
 
           <div><label>CNPJ</label><input value={cnpj} onChange={(e) => setCnpj(maskCNPJ(e.target.value))} /></div>
 
-          <div><label>Telefone</label><input value={telefone} onChange={(e) => setTelefone(e.target.value)} /></div>
+          <div><PhoneInput label="Telefone" value={telefone} onChange={setTelefone} /></div>
 
           <div>
 

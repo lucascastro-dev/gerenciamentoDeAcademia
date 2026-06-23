@@ -4,11 +4,14 @@ import FeedbackModal from '../common/FeedbackModal';
 import ListaConsultaPessoas, { PessoaListagemItem } from '../common/ListaConsultaPessoas';
 import PageShell from '../common/PageShell';
 import CurrencyInput from '../common/CurrencyInput';
+import PhoneInput from '../common/PhoneInput';
+import '../common/PhoneFields.css';
 import { carregarSessao, isModoPlataforma, isProfessor } from '../../auth/permissoes';
 import HttpService from '../../services/HttpService';
 import { extractApiMessage } from '../../utils/apiError';
 import { EnderecoCompleto, enderecoVazio, parseEndereco, serializarEndereco } from '../../utils/endereco';
 import { formatarMoeda, parseMoeda } from '../../utils/moeda';
+import { formatarTelefoneExibicao, telefoneParaApi } from '../../utils/phoneFormat';
 
 interface MatriculaInstituicao {
   instituicaoId: number;
@@ -95,10 +98,10 @@ const GerenciarAlunos: React.FC = () => {
     rg,
     dataDeNascimento,
     endereco: serializarEndereco(endereco),
-    telefone: onlyNumbers(telefone),
+    telefone: telefoneParaApi(telefone),
     email,
     nomeResponsavel,
-    telefoneResponsavel: onlyNumbers(telefoneResponsavel),
+    telefoneResponsavel: telefoneParaApi(telefoneResponsavel),
   });
 
   const aplicarFinanceiroDasMatriculas = (listaMat: MatriculaInstituicao[]) => {
@@ -144,10 +147,10 @@ const GerenciarAlunos: React.FC = () => {
       setRg(d.rg);
       setDataDeNascimento(d.dataDeNascimento);
       setEndereco(parseEndereco(d.endereco));
-      setTelefone(d.telefone);
+      setTelefone(formatarTelefoneExibicao(d.telefone));
       setEmail(d.email ?? '');
       setNomeResponsavel(d.nomeResponsavel ?? '');
-      setTelefoneResponsavel(d.telefoneResponsavel ?? '');
+      setTelefoneResponsavel(formatarTelefoneExibicao(d.telefoneResponsavel ?? ''));
       const mats = d.matriculas || [];
       setMatriculas(mats);
       aplicarFinanceiroDasMatriculas(mats);
@@ -337,13 +340,13 @@ const GerenciarAlunos: React.FC = () => {
               <div><label>CPF</label><input value={cpfBusca} readOnly /></div>
               <div><label>RG</label><input value={rg} readOnly={modoProfessor} onChange={(e) => setRg(e.target.value)} /></div>
               <div><label>Nascimento</label><input type="date" value={dataDeNascimento} readOnly={modoProfessor} onChange={(e) => setDataDeNascimento(e.target.value)} /></div>
-              <div><label>Telefone</label><input value={telefone} readOnly={modoProfessor} onChange={(e) => setTelefone(e.target.value)} /></div>
+              <PhoneInput label="Telefone" value={telefone} onChange={setTelefone} readOnly={modoProfessor} />
               <div>
                 <label>E-mail</label>
                 <input type="email" value={email} readOnly={modoProfessor} onChange={(e) => setEmail(e.target.value)} placeholder="nome@email.com" />
               </div>
               <div><label>Responsável</label><input value={nomeResponsavel} readOnly={modoProfessor} onChange={(e) => setNomeResponsavel(e.target.value)} /></div>
-              <div><label>Tel. responsável</label><input value={telefoneResponsavel} readOnly={modoProfessor} onChange={(e) => setTelefoneResponsavel(e.target.value)} /></div>
+              <PhoneInput label="Tel. responsável" value={telefoneResponsavel} onChange={setTelefoneResponsavel} readOnly={modoProfessor} />
             </div>
             <EnderecoFields value={endereco} onChange={setEndereco} disabled={modoProfessor} />
             {!modoProfessor && (

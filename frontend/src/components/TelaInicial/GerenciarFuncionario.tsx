@@ -1,12 +1,15 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import EnderecoFields from '../common/EnderecoFields';
 import FeedbackModal from '../common/FeedbackModal';
+import PhoneInput from '../common/PhoneInput';
+import '../common/PhoneFields.css';
 import ListaConsultaPessoas, { PessoaListagemItem } from '../common/ListaConsultaPessoas';
 import PageShell from '../common/PageShell';
 import { carregarSessao, isModoPlataforma } from '../../auth/permissoes';
 import HttpService from '../../services/HttpService';
 import { extractApiMessage } from '../../utils/apiError';
 import { EnderecoCompleto, enderecoVazio, parseEndereco, serializarEndereco } from '../../utils/endereco';
+import { formatarTelefoneExibicao, telefoneParaApi } from '../../utils/phoneFormat';
 
 const TIPOS = [
   'ADMINISTRADOR', 'TI', 'FINANCEIRO', 'RH', 'RECEPCIONISTA', 'PROFESSOR',
@@ -48,9 +51,6 @@ const GerenciarFuncionario: React.FC = () => {
   const maskCPF = (v: string) =>
     v.replace(/\D/g, '').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2').slice(0, 14);
 
-  const maskPhone = (v: string) =>
-    v.replace(/\D/g, '').replace(/^(\d{2})(\d)/g, '($1) $2').replace(/(\d)(\d{4})$/, '$1-$2').slice(0, 15);
-
   const onlyNumbers = (v: string) => v.replace(/\D/g, '');
 
   const carregarLista = useCallback(() => {
@@ -89,7 +89,7 @@ const GerenciarFuncionario: React.FC = () => {
     setRg(String(data.rg ?? ''));
     setNascimento(String(data.dataDeNascimento ?? ''));
     setEndereco(parseEndereco(String(data.endereco ?? '')));
-    setTelefone(String(data.telefone ?? ''));
+    setTelefone(formatarTelefoneExibicao(String(data.telefone ?? '')));
     setEmail(String(data.email ?? ''));
     setGerenciarFuncoes(Boolean(data.permitirGerenciarFuncoes));
     setCadastroAtivo(Boolean(data.cadastroAtivo));
@@ -171,7 +171,7 @@ const GerenciarFuncionario: React.FC = () => {
         rg,
         dataDeNascimento,
         endereco: serializarEndereco(endereco),
-        telefone: onlyNumbers(telefone),
+        telefone: telefoneParaApi(telefone),
         email,
         cadastroAtivo,
       });
@@ -305,7 +305,7 @@ const GerenciarFuncionario: React.FC = () => {
               <div><label>CPF</label><input disabled value={cpf} /></div>
               <div><label>RG</label><input value={rg} onChange={(e) => setRg(e.target.value)} /></div>
               <div><label>Nascimento</label><input type="date" value={dataDeNascimento} onChange={(e) => setNascimento(e.target.value)} /></div>
-              <div><label>Telefone</label><input type="tel" value={telefone} onChange={(e) => setTelefone(maskPhone(e.target.value))} /></div>
+              <div><PhoneInput label="Telefone" value={telefone} onChange={setTelefone} /></div>
               <div>
                 <label>E-mail</label>
                 <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="nome@email.com" />

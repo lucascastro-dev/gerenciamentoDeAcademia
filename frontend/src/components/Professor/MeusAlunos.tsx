@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import HttpService from '../../services/HttpService';
+import { formatarTelefoneExibicao } from '../../utils/phoneFormat';
 
 const MeusAlunos: React.FC = () => {
   const [params] = useSearchParams();
@@ -41,7 +42,7 @@ const MeusAlunos: React.FC = () => {
           </thead>
           <tbody>
             {alunos.map((a) => (
-              <tr key={a.cpf}><td>{a.nome}</td><td>{a.cpf}</td><td>{a.telefone}</td></tr>
+              <tr key={a.cpf}><td>{a.nome}</td><td>{a.cpf}</td><td>{formatarTelefoneExibicao(a.telefone || '') || '—'}</td></tr>
             ))}
           </tbody>
         </table>
