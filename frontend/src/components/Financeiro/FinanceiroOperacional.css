@@ -1,0 +1,163 @@
+.fin-op {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.fin-op__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.fin-op__toolbar label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.88rem;
+  color: var(--color-muted);
+}
+
+.fin-op__competencia {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.fin-op__competencia select {
+  min-width: 120px;
+}
+
+.fin-op__ponto-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.fin-op__kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.75rem;
+}
+
+.fin-op__kpi {
+  text-align: center;
+  padding: 1rem;
+}
+
+.fin-op__kpi strong {
+  display: block;
+  font-size: 1.15rem;
+  color: var(--color-primary);
+}
+
+.fin-op__kpi span {
+  font-size: 0.82rem;
+  color: var(--color-muted);
+}
+
+.fin-op__badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  background: var(--color-border);
+}
+
+.fin-op__badge--pendente,
+.fin-op__badge--processado {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.fin-op__badge--pago,
+.fin-op__badge--processado.fin-op__badge--pago {
+  background: #dcfce7;
+  color: #166534;
+}
+
+[data-theme="dark"] .fin-op__badge--pendente,
+[data-theme="dark"] .fin-op__badge--processado {
+  background: #422006;
+  color: #fcd34d;
+}
+
+[data-theme="dark"] .fin-op__badge--pago {
+  background: #14532d;
+  color: #86efac;
+}
+
+.fin-op__etapas {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.fin-op__etapa {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.85rem;
+  align-items: start;
+  text-align: left;
+  cursor: pointer;
+  border: 1px solid var(--color-border);
+  transition: border-color 0.15s;
+}
+
+.fin-op__etapa:disabled {
+  cursor: default;
+  opacity: 0.85;
+}
+
+.fin-op__etapa--ok {
+  border-color: var(--color-success);
+}
+
+.fin-op__etapa-check {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  border: 2px solid var(--color-border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  color: var(--color-success);
+}
+
+.fin-op__etapa--ok .fin-op__etapa-check {
+  border-color: var(--color-success);
+  background: #dcfce7;
+}
+
+.fin-op__etapa strong {
+  display: block;
+  margin-bottom: 0.2rem;
+}
+
+.fin-op__progresso {
+  min-width: 180px;
+}
+
+.fin-op__progresso span {
+  font-size: 0.85rem;
+  color: var(--color-muted);
+}
+
+.fin-op__progresso-track {
+  height: 8px;
+  background: var(--color-border);
+  border-radius: 999px;
+  margin-top: 0.35rem;
+  overflow: hidden;
+}
+
+.fin-op__progresso-track div {
+  height: 100%;
+  background: var(--color-primary);
+}
+
+.fin-op__actions {
+  display: flex;
+  justify-content: flex-end;
+}

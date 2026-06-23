@@ -336,6 +336,145 @@ const HttpService = {
 
   financeiroInadimplentes: () => api.get('/financeiro/inadimplentes'),
 
+  folhaPagamentoColaboradores: (mes: number, ano: number) =>
+    api.get<Array<{
+      cpf: string;
+      nome: string;
+      cargo: string;
+      salarioBase: number;
+      statusPagamento: string;
+      reciboPublicado: boolean;
+      diasTrabalhados?: number;
+      minutosTrabalhados?: number;
+      horasTrabalhadasFormatadas?: string;
+      pontoMesConferidoRh?: boolean;
+    }>>('/financeiro/folha-pagamento/colaboradores', { params: { mes, ano } }),
+
+  folhaConfirmarPagamento: (data: {
+    cpfColaborador: string;
+    mesCompetencia: number;
+    anoCompetencia: number;
+    valorBruto?: number;
+    valorLiquido?: number;
+  }) => api.post<{ message: string; recibo: Record<string, unknown> }>(
+    '/financeiro/folha-pagamento/confirmar-pagamento',
+    data,
+  ),
+
+  meusDocumentosRemuneracao: (mes: number, ano: number) =>
+    api.get<Array<{
+      id: number;
+      tipo: 'HOLERITE' | 'RECIBO' | 'INFORME';
+      tipoDescricao: string;
+      nomeColaborador: string;
+      mesCompetencia: number;
+      anoCompetencia: number;
+      valorBruto?: number;
+      valorLiquido?: number;
+      conteudo?: string;
+      publicadoEm?: string;
+    }>>('/colaborador/documentos-remuneracao', { params: { mes, ano } }),
+
+  meuDocumentoRemuneracao: (id: number) =>
+    api.get<{
+      id: number;
+      tipo: string;
+      tipoDescricao: string;
+      conteudo?: string;
+      valorLiquido?: number;
+    }>(`/colaborador/documentos-remuneracao/${id}`),
+
+  rhPublicarHolerite: (data: {
+    cpfColaborador: string;
+    mesCompetencia: number;
+    anoCompetencia: number;
+    valorBruto?: number;
+    valorLiquido?: number;
+    observacao?: string;
+  }) => api.post('/rh/remuneracao/holerite/publicar', data),
+
+  pontoStatusHoje: () =>
+    api.get<{
+      proximaAcao: 'ENTRADA' | 'SAIDA' | 'COMPLETO';
+      horaEntrada?: string;
+      horaSaida?: string;
+      mensagem: string;
+    }>('/colaborador/folha-ponto/status-hoje'),
+
+  pontoMarcar: () =>
+    api.post<{
+      proximaAcao: 'ENTRADA' | 'SAIDA' | 'COMPLETO';
+      horaEntrada?: string;
+      horaSaida?: string;
+      mensagem: string;
+    }>('/colaborador/folha-ponto/marcar'),
+
+  pontoMeuMes: (mes: number, ano: number) =>
+    api.get<{
+      mesCompetencia: number;
+      anoCompetencia: number;
+      registros: Array<{
+        data: string;
+        horaEntrada?: string;
+        horaSaida?: string;
+        minutosTrabalhados?: number;
+        horasFormatadas: string;
+        situacao: string;
+      }>;
+      totalMinutosTrabalhados: number;
+      totalHorasFormatadas: string;
+      diasComRegistroCompleto: number;
+    }>('/colaborador/folha-ponto/meu-mes', { params: { mes, ano } }),
+
+  rhFolhaPontoColaboradores: (mes: number, ano: number) =>
+    api.get<Array<{
+      cpf: string;
+      nome: string;
+      cargo: string;
+      diasTrabalhados: number;
+      minutosTrabalhados: number;
+      horasFormatadas: string;
+      possuiRegistroAberto: boolean;
+    }>>('/rh/folha-ponto/colaboradores', { params: { mes, ano } }),
+
+  rhFolhaPontoDetalhe: (cpf: string, mes: number, ano: number) =>
+    api.get<{
+      mesCompetencia: number;
+      anoCompetencia: number;
+      registros: Array<{
+        data: string;
+        horaEntrada?: string;
+        horaSaida?: string;
+        horasFormatadas: string;
+        situacao: string;
+      }>;
+      totalHorasFormatadas: string;
+      diasComRegistroCompleto: number;
+    }>(`/rh/folha-ponto/colaboradores/${cpf}/detalhe`, { params: { mes, ano } }),
+
+  rhFolhaPontoStatusIntegracao: (mes: number, ano: number) =>
+    api.get<{
+      pontoConferidoRh: boolean;
+      integradoFinanceiro: boolean;
+      colaboradoresComRegistro: number;
+      totalMinutosInstituicao: number;
+      conferidoEm?: string;
+    }>('/rh/folha-ponto/status-integracao', { params: { mes, ano } }),
+
+  rhFolhaPontoConferir: (mes: number, ano: number) =>
+    api.post<{ message: string }>('/rh/folha-ponto/conferir', null, { params: { mes, ano } }),
+
+  financeiroPontoStatusIntegracao: (mes: number, ano: number) =>
+    api.get<{
+      pontoConferidoRh: boolean;
+      integradoFinanceiro: boolean;
+      colaboradoresComRegistro: number;
+      totalMinutosInstituicao: number;
+    }>('/financeiro/folha-pagamento/ponto/status-integracao', { params: { mes, ano } }),
+
+  financeiroPontoIntegrar: (mes: number, ano: number) =>
+    api.post<{ message: string }>('/financeiro/folha-pagamento/ponto/integrar', null, { params: { mes, ano } }),
+
   gerarCertificados: (data: Record<string, unknown>) =>
     api.post<{
       mensagem: string;

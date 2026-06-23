@@ -1,5 +1,5 @@
 import { APP_NAME } from '../constants/branding';
-import { isModoPlataforma, isPortalAluno, possuiPermissao, SessaoUsuario } from './permissoes';
+import { isModoPlataforma, isPortalAluno, podeAtuarComoProfessor, possuiPermissao, SessaoUsuario } from './permissoes';
 
 export interface MenuItem {
   label: string;
@@ -15,6 +15,13 @@ export interface MenuSection {
 }
 
 export { APP_NAME };
+
+const ITENS_COLABORADOR: MenuItem[] = [
+  { label: 'Meu cadastro', path: '/arealogada/meu-perfil' },
+  { label: 'Meu ponto', path: '/arealogada/colaborador/ponto' },
+  { label: 'Meu holerite', path: '/arealogada/colaborador/holerite' },
+  { label: 'Minhas férias', path: '/arealogada/colaborador/ferias' },
+];
 
 export function obterMenus(sessao: SessaoUsuario | null): MenuSection[] {
   if (isPortalAluno(sessao)) {
@@ -39,7 +46,7 @@ export function obterMenus(sessao: SessaoUsuario | null): MenuSection[] {
   }
 
   const master = isModoPlataforma(sessao);
-  const ehProfessor = sessao?.tipoFuncionario === 'PROFESSOR';
+  const atuaComoProfessor = podeAtuarComoProfessor(sessao);
 
   const pode = (codigo?: string, perfis?: string[]) => {
     if (!sessao) return false;
@@ -63,9 +70,12 @@ export function obterMenus(sessao: SessaoUsuario | null): MenuSection[] {
         titulo: 'Geral',
         itens: [
           { label: 'Início', path: '/arealogada/home' },
-          { label: 'Meu cadastro', path: '/arealogada/meu-perfil' },
           { label: 'Dashboard administrativo', path: '/arealogada/dashboard' },
         ],
+      },
+      {
+        titulo: 'Área do colaborador',
+        itens: ITENS_COLABORADOR,
       },
       {
         titulo: 'Financeiro',
@@ -106,9 +116,13 @@ export function obterMenus(sessao: SessaoUsuario | null): MenuSection[] {
     titulo: 'Geral',
     itens: filtrarItens([
       { label: 'Início', path: '/arealogada/home' },
-      { label: 'Meu cadastro', path: '/arealogada/meu-perfil' },
       { label: 'Dashboard administrativo', path: '/arealogada/dashboard', permissao: 'dashboard:visualizar' },
     ]),
+  });
+
+  sections.push({
+    titulo: 'Área do colaborador',
+    itens: ITENS_COLABORADOR,
   });
 
   if (pode('financeiro:visualizar')) {
@@ -117,33 +131,49 @@ export function obterMenus(sessao: SessaoUsuario | null): MenuSection[] {
       itens: filtrarItens([
         { label: 'Dashboard financeiro', path: '/arealogada/financeiro' },
         { label: 'Mensalidades', path: '/arealogada/financeiro/mensalidades' },
-        { label: 'Inadimplência', path: '/arealogada/financeiro/inadimplencia', permissao: 'financeiro:relatorio' },
+        { label: 'Inadimplências', path: '/arealogada/financeiro/inadimplencia', permissao: 'financeiro:relatorio' },
+        { label: 'Folha de pagamento', path: '/arealogada/financeiro/folha-pagamento', permissao: 'financeiro:cobranca' },
+        { label: 'Conciliação bancária', path: '/arealogada/financeiro/conciliacao' },
+        { label: 'Fechamento de mês', path: '/arealogada/financeiro/fechamento-mes', permissao: 'financeiro:relatorio' },
       ]),
     });
+  }
+
+  const itensRh: MenuItem[] = [
+    { label: 'Folha de ponto', path: '/arealogada/rh/folha-ponto', permissao: 'rh:folha-ponto' },
+    { label: 'Fechamento mensal', path: '/arealogada/rh/fechamento-mensal', permissao: 'rh:fechamento-mensal' },
+    { label: 'Lançamento de holerite', path: '/arealogada/rh/lancamento-holerite', permissao: 'rh:holerite-lancamento' },
+  ];
+  const rhFiltrado = filtrarItens(itensRh);
+  if (rhFiltrado.length > 0) {
+    sections.push({ titulo: 'Recursos Humanos', itens: rhFiltrado });
   }
 
   const itensProfessor: MenuItem[] = [
     { label: 'Minhas turmas', path: '/arealogada/professor/turmas' },
     { label: 'Presença', path: '/arealogada/professor/presenca', permissao: 'turma:presenca' },
   ];
-  if (pode('certificado:gerar') && ehProfessor) {
-    itensProfessor.splice(2, 0, { label: 'Gerar certificados', path: '/arealogada/professor/certificados' });
+  if (pode('certificado:gerar')) {
+    itensProfessor.push({ label: 'Gerar certificados', path: '/arealogada/professor/certificados' });
   }
-  if (ehProfessor) {
+  if (atuaComoProfessor) {
     sections.push({ titulo: 'Área do professor', itens: filtrarItens(itensProfessor) });
   }
 
   const itensAcademico: MenuItem[] = [
     { label: 'Consultar alunos', path: '/arealogada/alunos', permissao: 'aluno:consultar' },
-    ...(ehProfessor ? [] : [{ label: 'Consultar turmas', path: '/arealogada/turmas', permissao: 'turma:consultar' }]),
+    ...(atuaComoProfessor ? [] : [{ label: 'Consultar turmas', path: '/arealogada/turmas', permissao: 'turma:consultar' }]),
     { label: 'Cadastrar turma', path: '/arealogada/turmas/gerenciar', permissao: 'turma:gerenciar' },
     { label: 'Matricular aluno', path: '/arealogada/matricula', permissao: 'aluno:matricular' },
     { label: 'Programação e grade', path: '/arealogada/programacao', permissao: 'programacao:consultar' },
   ];
-  if (pode('certificado:gerar') && !ehProfessor) {
+  if (pode('certificado:gerar') && !atuaComoProfessor) {
     itensAcademico.push({ label: 'Gerar certificados', path: '/arealogada/professor/certificados' });
   }
-  sections.push({ titulo: 'Acadêmico', itens: filtrarItens(itensAcademico) });
+  const academicoFiltrado = filtrarItens(itensAcademico);
+  if (academicoFiltrado.length > 0) {
+    sections.push({ titulo: 'Acadêmico', itens: academicoFiltrado });
+  }
 
   const adminItens: MenuItem[] = [
     { label: 'Funcionários', path: '/arealogada/funcionarios', permissao: 'funcionario:consultar' },
