@@ -76,7 +76,7 @@ public class ServicoGradeHoraria {
                     continue;
                 }
 
-                if (mesmaSala(sala, ev.sala())) {
+                if (mesmaSala(sala, ev.sala()) && !mesmoEventoTurma(item, ev)) {
                     adicionarConflito(conflitos, chaves,
                             "Sobreposição de sala em " + sala + " em " + formatarData(data)
                                     + " entre \"" + item.getTitulo() + "\" e \"" + ev.titulo() + "\"",
@@ -162,6 +162,23 @@ public class ServicoGradeHoraria {
             return "turma " + (item.getTurma().getModalidade() != null ? item.getTurma().getModalidade() : item.getTurma().getId());
         }
         return "participante";
+    }
+
+    /** Turma completa na própria grade recorrente não gera conflito de sala. */
+    private boolean mesmoEventoTurma(ItemProgramacaoAluno item, GradeHorariaEventoDto ev) {
+        if (item.getTurma() == null || item.getTurma().getId() == null) {
+            return false;
+        }
+        if ("TURMA".equals(ev.origem()) && ev.referenciaId() != null
+                && item.getTurma().getId().equals(ev.referenciaId())) {
+            return true;
+        }
+        if ("PROGRAMACAO".equals(ev.origem()) && ev.referenciaId() != null) {
+            ItemProgramacaoAluno outro = programacaoRepository.findById(ev.referenciaId()).orElse(null);
+            return outro != null && outro.getTurma() != null
+                    && item.getTurma().getId().equals(outro.getTurma().getId());
+        }
+        return false;
     }
 
     private void adicionarConflito(

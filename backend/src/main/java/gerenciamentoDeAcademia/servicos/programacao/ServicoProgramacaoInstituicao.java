@@ -144,6 +144,8 @@ public class ServicoProgramacaoInstituicao {
         item.setHoraInicio(intervalo.inicio());
         item.setHoraFim(intervalo.fim());
         item.setSala(sala);
+        ExcecaoDeDominio.quando(item.getAluno() == null && item.getTurma() == null,
+                "Informe o aluno ou a turma para o item de programação.");
         return item;
     }
 

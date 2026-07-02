@@ -36,11 +36,11 @@ public class ItemProgramacaoAluno {
     private Instituicao instituicao;
 
     @ManyToOne(optional = true)
-    @JoinColumn(name = "aluno_id")
+    @JoinColumn(name = "aluno_id", nullable = true)
     private Aluno aluno;
 
     @ManyToOne(optional = true)
-    @JoinColumn(name = "turma_id")
+    @JoinColumn(name = "turma_id", nullable = true)
     private Turma turma;
 
     @Enumerated(EnumType.STRING)
