@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { COPY_UI } from '../../constants/copy';
 import PageShell from '../../components/common/PageShell';
 import HttpService from '../../services/HttpService';
 import { parseEndereco } from '../../utils/endereco';
@@ -22,13 +23,17 @@ const PortalAlunoDados: React.FC = () => {
   }, []);
 
   if (!dados) {
-    return <PageShell title="Meus dados"><div className="card"><p>Carregando...</p></div></PageShell>;
+    return (
+      <PageShell title={COPY_UI.portalAluno.dadosTitulo} subtitle={COPY_UI.portalAluno.dadosSubtitulo}>
+        <div className="card"><p>{COPY_UI.carregando}</p></div>
+      </PageShell>
+    );
   }
 
   const end = parseEndereco(dados.endereco);
 
   return (
-    <PageShell title="Meus dados pessoais">
+    <PageShell title={COPY_UI.portalAluno.dadosTitulo} subtitle={COPY_UI.portalAluno.dadosSubtitulo}>
       <div className="card">
         <div className="form-grid">
           <div><strong>Nome</strong><p>{dados.nome}</p></div>
