@@ -1,0 +1,140 @@
+.contato-page {
+  flex: 1;
+}
+
+.contato-hero {
+  text-align: center;
+  padding: 3rem 1.25rem 2rem;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.contato-hero h1 {
+  margin: 0 0 0.75rem;
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  font-weight: 800;
+}
+
+.contato-hero p {
+  margin: 0;
+  color: var(--color-muted, #64748b);
+  line-height: 1.6;
+}
+
+.contato-layout {
+  display: grid;
+  gap: 1.5rem;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 1.25rem 2.5rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 900px) {
+  .contato-layout {
+    grid-template-columns: 1.4fr 1fr;
+    align-items: start;
+  }
+}
+
+.contato-layout__form h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1.2rem;
+}
+
+.contato-layout__lead {
+  margin: 0 0 1rem;
+  color: var(--color-muted, #64748b);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.contato-layout__aside .contato-card {
+  height: 100%;
+}
+
+.contato-card {
+  border-radius: 16px;
+  padding: 1.75rem;
+  border: 1px solid var(--color-border, #e2e8f0);
+  background: #fff;
+  box-shadow: var(--shadow);
+}
+
+.contato-card--whatsapp {
+  border-top: 4px solid #25d366;
+}
+
+.contato-card--email {
+  border-top: 4px solid var(--brand-primary, #2563eb);
+}
+
+.contato-card h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.15rem;
+}
+
+.contato-card p {
+  margin: 0 0 0.75rem;
+  color: var(--color-muted, #64748b);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.contato-card__destaque {
+  font-size: 1.1rem !important;
+  font-weight: 700 !important;
+  color: var(--color-text, #0f172a) !important;
+}
+
+.contato-card__horario {
+  font-size: 0.85rem !important;
+}
+
+.contato-card__btn {
+  display: inline-block;
+  margin-top: 0.5rem;
+  padding: 0.7rem 1.25rem;
+  border-radius: 10px;
+  background: #25d366;
+  color: #fff !important;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.contato-card__btn--outline {
+  background: var(--brand-primary, #2563eb);
+}
+
+.contato-faq {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 3rem;
+}
+
+.contato-faq h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.contato-faq dl {
+  margin: 0;
+}
+
+.contato-faq div {
+  margin-bottom: 1.25rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--color-border, #e2e8f0);
+}
+
+.contato-faq dt {
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+}
+
+.contato-faq dd {
+  margin: 0;
+  color: var(--color-muted, #64748b);
+  line-height: 1.55;
+  font-size: 0.95rem;
+}

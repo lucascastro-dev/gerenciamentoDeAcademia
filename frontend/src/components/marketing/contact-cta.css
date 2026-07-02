@@ -1,0 +1,101 @@
+.contact-cta {
+  padding: 2.5rem 1.25rem;
+}
+
+.contact-cta--banner {
+  background: linear-gradient(135deg, #0f172a, #1e3a8a);
+  color: #fff;
+}
+
+.contact-cta--default {
+  background: #fff;
+  border-top: 1px solid var(--color-border, #e2e8f0);
+}
+
+.contact-cta--compact {
+  padding: 1.5rem;
+  background: #f0f9ff;
+  border-radius: 16px;
+  border: 1px solid #bae6fd;
+}
+
+.contact-cta__inner {
+  max-width: 960px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.contact-cta__copy h2 {
+  margin: 0 0 0.5rem;
+  font-size: clamp(1.25rem, 3vw, 1.75rem);
+}
+
+.contact-cta--banner .contact-cta__copy h2 {
+  color: #fff;
+}
+
+.contact-cta__copy p {
+  margin: 0;
+  line-height: 1.55;
+  max-width: 32rem;
+}
+
+.contact-cta--default .contact-cta__copy p {
+  color: var(--color-muted, #64748b);
+}
+
+.contact-cta--banner .contact-cta__copy p {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.contact-cta__horario {
+  margin-top: 0.5rem !important;
+  font-size: 0.85rem !important;
+  opacity: 0.75;
+}
+
+.contact-cta__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  min-width: min(100%, 280px);
+}
+
+.contact-cta__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.contact-cta__btn:hover {
+  transform: translateY(-2px);
+}
+
+.contact-cta__btn--whatsapp {
+  background: #25d366;
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(37, 211, 102, 0.35);
+}
+
+.contact-cta__btn--email {
+  background: #fff;
+  color: var(--brand-primary, #2563eb);
+  border: 2px solid var(--brand-primary, #2563eb);
+}
+
+.contact-cta--banner .contact-cta__btn--email {
+  background: transparent;
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.5);
+}
