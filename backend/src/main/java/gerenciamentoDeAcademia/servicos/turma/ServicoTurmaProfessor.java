@@ -26,6 +26,7 @@ public class ServicoTurmaProfessor {
     private final AlunoRepository alunoRepository;
     private final InstituicaoRepository instituicaoRepository;
     private final ServicoEscopoProfessor servicoEscopoProfessor;
+    private final VinculoTurmaAluno vinculoTurmaAluno;
 
     @Transactional(readOnly = true)
     public List<TurmaResumoDto> listarMinhasTurmas(String cpfProfessor) {
@@ -62,8 +63,9 @@ public class ServicoTurmaProfessor {
                 .anyMatch(a -> cpfLimpo.equals(CpfUtil.somenteDigitos(a.getCpf())));
         ExcecaoDeDominio.quando(jaNaTurma, "Aluno já pertence a esta turma.");
 
-        turma.getAlunos().add(aluno);
+        vinculoTurmaAluno.vincular(turma, aluno);
         turmaRepository.save(turma);
+        alunoRepository.save(aluno);
     }
 
     @Transactional
@@ -76,7 +78,8 @@ public class ServicoTurmaProfessor {
         ExcecaoDeDominio.quandoNulo(aluno, "Aluno não encontrado nesta turma.");
         ExcecaoDeDominio.quando(!turma.getAlunos().contains(aluno), "Aluno não encontrado nesta turma.");
 
-        turma.getAlunos().remove(aluno);
+        vinculoTurmaAluno.desvincular(turma, aluno);
         turmaRepository.save(turma);
+        alunoRepository.save(aluno);
     }
 }

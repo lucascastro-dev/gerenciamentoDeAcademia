@@ -24,7 +24,7 @@ public interface TurmaRepository extends JpaRepository<Turma, Long> {
      * Sem ORDER BY no SQL: PostgreSQL exige que colunas do ORDER BY apareçam no SELECT com DISTINCT.
      * Ordenação feita em {@link gerenciamentoDeAcademia.servicos.aluno.ConsultaDeAlunos}.
      */
-    @Query("SELECT DISTINCT t FROM Turma t JOIN FETCH t.instituicao JOIN t.alunos a WHERE a.cpf = :cpf")
+    @Query("SELECT DISTINCT t FROM Turma t JOIN FETCH t.instituicao LEFT JOIN FETCH t.professor LEFT JOIN FETCH t.dias JOIN t.alunos a WHERE a.cpf = :cpf")
     List<Turma> findTurmasMatriculadasPorCpf(@Param("cpf") String cpf);
 
     @Query("SELECT DISTINCT t FROM Turma t LEFT JOIN FETCH t.instituicao LEFT JOIN FETCH t.professor")
@@ -47,9 +47,15 @@ public interface TurmaRepository extends JpaRepository<Turma, Long> {
     List<Turma> findByInstituicao_IdComDias(@Param("instituicaoId") Long instituicaoId);
 
     @Query("""
-            SELECT t FROM Turma t
-            LEFT JOIN FETCH t.alunos
-            WHERE t.id = :id
+            SELECT DISTINCT t FROM Turma t
+            LEFT JOIN FETCH t.professor
+            LEFT JOIN FETCH t.dias
+            JOIN t.alunos a
+            WHERE a.cpf = :cpf AND t.instituicao.id = :instituicaoId
+            ORDER BY t.modalidade
             """)
+    List<Turma> findTurmasDoAlunoNaInstituicao(@Param("cpf") String cpf, @Param("instituicaoId") Long instituicaoId);
+
+    @Query("SELECT t FROM Turma t LEFT JOIN FETCH t.alunos WHERE t.id = :id")
     java.util.Optional<Turma> findByIdComAlunos(@Param("id") Long id);
 }

@@ -1,9 +1,11 @@
 import { useEffect, useId, useRef, useState } from 'react';
+import { PLACEHOLDERS } from '../../constants/copy';
 import {
   PAIS_PADRAO,
   PAISES_TELEFONE,
   PaisTelefone,
   detectarPais,
+  extrairDigitosNacionais,
   formatarParteNacional,
   formatarTelefoneExibicao,
   telefoneMascarado,
@@ -32,7 +34,7 @@ const PhoneInput: React.FC<Props> = ({
   required = false,
   disabled = false,
   readOnly = false,
-  placeholder = '21 96532 4465',
+  placeholder = PLACEHOLDERS.telefone,
   autoComplete = 'tel',
   labelClassName,
 }) => {
@@ -87,7 +89,7 @@ const PhoneInput: React.FC<Props> = ({
   };
 
   const onInputChange = (raw: string) => {
-    const digitos = raw.replace(/\D/g, '').slice(0, 11);
+    const digitos = extrairDigitosNacionais(raw.replace(/\D/g, ''), pais.dial);
     emitir(pais, digitos);
   };
 

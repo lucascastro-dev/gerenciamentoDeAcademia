@@ -40,6 +40,8 @@ public class AlteradorDeTurmaTest {
     AlunoRepository alunoRepository;
     @Mock
     InstituicaoRepository instituicaoRepository;
+    @Mock
+    VinculoTurmaAluno vinculoTurmaAluno;
 
     private Turma turmaParaAlterar;
     private Turma turma;

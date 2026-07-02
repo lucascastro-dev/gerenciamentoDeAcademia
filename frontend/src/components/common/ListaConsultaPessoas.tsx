@@ -192,7 +192,7 @@ const ListaConsultaPessoas: React.FC<Props> = ({ itens, carregando, exibirCargo,
             ) : (
               paginaItens.map((item) => (
                 <tr key={chaveLinha(item)}>
-                  <td>{item.nome}</td>
+                  <td>{item.nome?.trim() || '—'}</td>
                   <td>{item.cpfExibicao || item.cpf || '—'}</td>
                   <td>{formatarData(item.dataDeNascimento)}</td>
                   {exibirInstituicao && <td>{item.instituicaoNome || '—'}</td>}
@@ -202,7 +202,7 @@ const ListaConsultaPessoas: React.FC<Props> = ({ itens, carregando, exibirCargo,
                       type="button"
                       className="lista-consulta__acao"
                       title="Ver cadastro completo"
-                      aria-label={`Ver cadastro de ${item.nome}`}
+                      aria-label={`Ver cadastro de ${item.nome?.trim() || 'aluno'}`}
                       onClick={() => onVerDetalhes(item)}
                     >
 

@@ -27,17 +27,21 @@ public class AlunoConsultaProfessorDto {
 
     public static AlunoConsultaProfessorDto of(Aluno aluno, List<TurmaResumoDto> turmas) {
         AlunoConsultaProfessorDto dto = new AlunoConsultaProfessorDto();
-        dto.setNome(aluno.getNome());
+        dto.setNome(textoSeguro(aluno.getNome()));
         dto.setCpfMascarado(MascaramentoDadosUtil.cpf(aluno.getCpf()));
         dto.setRgMascarado(MascaramentoDadosUtil.rg(aluno.getRg()));
         dto.setDataDeNascimento(aluno.getDataDeNascimento());
         dto.setEnderecoResumido(enderecoParaConsulta(aluno.getEndereco()));
         dto.setTelefoneMascarado(MascaramentoDadosUtil.telefone(aluno.getTelefone()));
         dto.setEmailMascarado(MascaramentoDadosUtil.email(aluno.getEmail()));
-        dto.setNomeResponsavel(aluno.getNomeResponsavel());
+        dto.setNomeResponsavel(textoSeguro(aluno.getNomeResponsavel()));
         dto.setTelefoneResponsavelMascarado(MascaramentoDadosUtil.telefone(aluno.getTelefoneResponsavel()));
         dto.setTurmasInstituicao(turmas != null ? turmas : List.of());
         return dto;
+    }
+
+    private static String textoSeguro(String valor) {
+        return valor != null ? valor : "";
     }
 
     /** Mantém JSON estruturado para o frontend preencher os campos; evita quebrar o parse. */
