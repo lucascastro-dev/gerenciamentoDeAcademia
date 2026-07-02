@@ -8,6 +8,8 @@ public record MensalidadeResumoDto(
         Double valorMensalidade,
         Integer diaVencimento,
         boolean inadimplente,
-        LocalDate dataUltimoPagamento
+        LocalDate dataUltimoPagamento,
+        String statusDescricao,
+        LocalDate dataVencimentoCompetencia
 ) {
 }

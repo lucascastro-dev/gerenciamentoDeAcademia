@@ -1,22 +1,32 @@
 package gerenciamentoDeAcademia.servicos.financeiro;
 
 import gerenciamentoDeAcademia.dto.DashboardFinanceiroDto;
+import gerenciamentoDeAcademia.dto.MensalidadeHistoricoItemDto;
 import gerenciamentoDeAcademia.dto.MensalidadeResumoDto;
 import gerenciamentoDeAcademia.entidades.Aluno;
+import gerenciamentoDeAcademia.entidades.CobrancaExterna;
 import gerenciamentoDeAcademia.entidades.MatriculaInstituicao;
 import gerenciamentoDeAcademia.enums.SituacaoCobranca;
+import gerenciamentoDeAcademia.enums.StatusCobrancaExterna;
+import gerenciamentoDeAcademia.enums.TipoCobrancaExterna;
 import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
+import gerenciamentoDeAcademia.repositorios.CobrancaExternaRepository;
 import gerenciamentoDeAcademia.repositorios.MatriculaInstituicaoRepository;
 import gerenciamentoDeAcademia.servicos.aluno.ServicoMatriculaInstituicao;
+import gerenciamentoDeAcademia.util.RelogioAplicacao;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -24,15 +34,14 @@ public class ServicoFinanceiro {
 
     private final MatriculaInstituicaoRepository matriculaInstituicaoRepository;
     private final ServicoMatriculaInstituicao servicoMatriculaInstituicao;
+    private final CobrancaExternaRepository cobrancaExternaRepository;
 
     public DashboardFinanceiroDto obterDashboard(Long instituicaoId) {
         ExcecaoDeDominio.quandoNulo(instituicaoId, "Instituição é obrigatória para o dashboard financeiro.");
         List<MatriculaInstituicao> matriculas = matriculaInstituicaoRepository
                 .findByInstituicao_IdOrderByAluno_NomeAsc(instituicaoId);
-        LocalDate hoje = LocalDate.now();
 
-        List<MensalidadeResumoDto> resumos = matriculas.stream()
-                .map(m -> toResumo(m, hoje))
+        List<MensalidadeResumoDto> resumos = listarMensalidades(instituicaoId).stream()
                 .sorted(Comparator.comparing(MensalidadeResumoDto::inadimplente).reversed()
                         .thenComparing(MensalidadeResumoDto::diaVencimento))
                 .toList();
@@ -61,24 +70,165 @@ public class ServicoFinanceiro {
     }
 
     public List<MensalidadeResumoDto> listarMensalidades(Long instituicaoId) {
+        LocalDate hoje = RelogioAplicacao.hoje();
+        return listarMensalidades(instituicaoId, hoje.getMonthValue(), hoje.getYear());
+    }
+
+    public List<MensalidadeResumoDto> listarMensalidades(Long instituicaoId, int mes, int ano) {
         ExcecaoDeDominio.quandoNulo(instituicaoId, "Instituição é obrigatória.");
-        LocalDate hoje = LocalDate.now();
+        validarCompetencia(mes, ano);
+        LocalDate hoje = RelogioAplicacao.hoje();
+        YearMonth competencia = YearMonth.of(ano, mes);
+
+        Map<String, CobrancaExterna> cobrancaPorCpf = cobrancaExternaRepository
+                .findByInstituicao_IdAndTipoAndMesCompetenciaAndAnoCompetencia(
+                        instituicaoId, TipoCobrancaExterna.MENSALIDADE_ALUNO, mes, ano)
+                .stream()
+                .collect(Collectors.toMap(CobrancaExterna::getCpfAluno, c -> c, (a, b) -> b));
+
         return matriculaInstituicaoRepository.findByInstituicao_IdOrderByAluno_NomeAsc(instituicaoId).stream()
-                .map(m -> toResumo(m, hoje))
+                .map(m -> toResumoCompetencia(
+                        m,
+                        competencia,
+                        hoje,
+                        cobrancaPorCpf.get(m.getAluno().getCpf())))
                 .toList();
     }
 
     public List<MensalidadeResumoDto> listarInadimplentes(Long instituicaoId) {
-        return listarMensalidades(instituicaoId).stream().filter(MensalidadeResumoDto::inadimplente).toList();
+        LocalDate hoje = RelogioAplicacao.hoje();
+        return listarInadimplentes(instituicaoId, hoje.getMonthValue(), hoje.getYear());
+    }
+
+    public List<MensalidadeResumoDto> listarInadimplentes(Long instituicaoId, int mes, int ano) {
+        return listarMensalidades(instituicaoId, mes, ano).stream().filter(MensalidadeResumoDto::inadimplente).toList();
     }
 
     public MensalidadeResumoDto resumoMensalidade(String cpf, Long instituicaoId) {
         ExcecaoDeDominio.quandoNuloOuVazio(cpf, "CPF do aluno é obrigatório");
         ExcecaoDeDominio.quandoNulo(instituicaoId, "Instituição é obrigatória.");
+        String cpfLimpo = cpf.replaceAll("\\D", "");
+        MatriculaInstituicao matricula = servicoMatriculaInstituicao.obterOuMigrarLegado(cpfLimpo, instituicaoId);
+        ExcecaoDeDominio.quandoNulo(matricula, "Matrícula financeira não encontrada para esta instituição.");
+        LocalDate hoje = RelogioAplicacao.hoje();
+        CobrancaExterna cobranca = cobrancaExternaRepository
+                .findByInstituicao_IdAndTipoAndMesCompetenciaAndAnoCompetencia(
+                        instituicaoId,
+                        TipoCobrancaExterna.MENSALIDADE_ALUNO,
+                        hoje.getMonthValue(),
+                        hoje.getYear())
+                .stream()
+                .filter(c -> cpfLimpo.equals(c.getCpfAluno()))
+                .findFirst()
+                .orElse(null);
+        return toResumoCompetencia(matricula, YearMonth.from(hoje), hoje, cobranca);
+    }
+
+    public LocalDate vencimentoCompetencia(String cpf, Long instituicaoId, int mes, int ano) {
         MatriculaInstituicao matricula = servicoMatriculaInstituicao.obterOuMigrarLegado(
                 cpf.replaceAll("\\D", ""), instituicaoId);
-        ExcecaoDeDominio.quandoNulo(matricula, "Matrícula financeira não encontrada para esta instituição.");
-        return toResumo(matricula, LocalDate.now());
+        ExcecaoDeDominio.quandoNulo(matricula, "Matrícula financeira não encontrada.");
+        return vencimentoNoMes(matricula, YearMonth.of(ano, mes));
+    }
+
+    public List<MensalidadeHistoricoItemDto> listarHistoricoAnual(String cpf, Long instituicaoId, int ano) {
+        MatriculaInstituicao matricula = servicoMatriculaInstituicao.obterOuMigrarLegado(
+                cpf.replaceAll("\\D", ""), instituicaoId);
+        ExcecaoDeDominio.quandoNulo(matricula, "Matrícula financeira não encontrada.");
+
+        LocalDate hoje = RelogioAplicacao.hoje();
+        BigDecimal valor = matricula.getValorMensalidade() != null
+                ? BigDecimal.valueOf(matricula.getValorMensalidade()) : BigDecimal.ZERO;
+
+        List<CobrancaExterna> cobrancas = cobrancaExternaRepository
+                .findByInstituicao_IdAndCpfAlunoAndTipoAndAnoCompetenciaOrderByMesCompetenciaAsc(
+                        instituicaoId, cpf.replaceAll("\\D", ""), TipoCobrancaExterna.MENSALIDADE_ALUNO, ano);
+
+        Map<Integer, CobrancaExterna> cobrancaPorMes = cobrancas.stream()
+                .filter(c -> c.getMesCompetencia() != null)
+                .collect(Collectors.toMap(CobrancaExterna::getMesCompetencia, c -> c, (a, b) -> b));
+
+        List<MensalidadeHistoricoItemDto> itens = new ArrayList<>();
+        for (int mes = 1; mes <= 12; mes++) {
+            YearMonth ym = YearMonth.of(ano, mes);
+            CobrancaExterna cobranca = cobrancaPorMes.get(mes);
+            CompetenciaMensalidade competencia = avaliarCompetencia(matricula, ym, hoje, cobranca);
+
+            itens.add(new MensalidadeHistoricoItemDto(
+                    mes, ano, competencia.vencimento(), competencia.dataPagamento(),
+                    competencia.status(), competencia.statusDescricao(), valor,
+                    competencia.cobrancaId(), competencia.podeGerarCobranca()));
+        }
+        return itens;
+    }
+
+    private record CompetenciaMensalidade(
+            String status,
+            String statusDescricao,
+            LocalDate vencimento,
+            LocalDate dataPagamento,
+            Long cobrancaId,
+            boolean podeGerarCobranca,
+            boolean inadimplente
+    ) {
+    }
+
+    private CompetenciaMensalidade avaliarCompetencia(
+            MatriculaInstituicao matricula,
+            YearMonth competencia,
+            LocalDate hoje,
+            CobrancaExterna cobranca) {
+        LocalDate vencimento = vencimentoNoMes(matricula, competencia);
+        String status;
+        String statusDescricao;
+        LocalDate dataPagamento = null;
+        Long cobrancaId = null;
+        boolean podeGerar = false;
+
+        if (cobranca != null && cobranca.getStatus() == StatusCobrancaExterna.PAGO) {
+            status = "PAGO";
+            statusDescricao = "Pago";
+            dataPagamento = cobranca.getPagoEm() != null ? cobranca.getPagoEm().toLocalDate() : null;
+            cobrancaId = cobranca.getId();
+        } else if (pagouNaCompetencia(matricula, competencia)) {
+            status = "PAGO";
+            statusDescricao = "Pago";
+            dataPagamento = matricula.getDataUltimoPagamentoMensalidade();
+        } else if (cobranca != null && cobranca.getStatus() == StatusCobrancaExterna.PENDENTE) {
+            status = "PENDENTE_COBRANCA";
+            statusDescricao = "Cobrança gerada";
+            cobrancaId = cobranca.getId();
+        } else if (competencia.isAfter(YearMonth.from(hoje))) {
+            status = "A_VENCER";
+            statusDescricao = "A vencer";
+        } else if (hoje.isAfter(vencimento)) {
+            status = "EM_ABERTO";
+            statusDescricao = "Em aberto";
+            podeGerar = true;
+        } else {
+            status = "A_VENCER";
+            statusDescricao = "A vencer";
+        }
+
+        if (status.equals("EM_ABERTO") && cobranca == null) {
+            podeGerar = true;
+        }
+
+        boolean inadimplente = status.equals("EM_ABERTO")
+                || (status.equals("PENDENTE_COBRANCA") && !hoje.isBefore(vencimento));
+
+        return new CompetenciaMensalidade(
+                status, statusDescricao, vencimento, dataPagamento, cobrancaId, podeGerar, inadimplente);
+    }
+
+    private void validarCompetencia(int mes, int ano) {
+        ExcecaoDeDominio.quando(mes < 1 || mes > 12, "Mês de competência inválido.");
+        ExcecaoDeDominio.quando(ano < 2000 || ano > 2100, "Ano de competência inválido.");
+    }
+
+    private boolean pagouNaCompetencia(MatriculaInstituicao matricula, YearMonth competencia) {
+        LocalDate pago = matricula.getDataUltimoPagamentoMensalidade();
+        return pago != null && YearMonth.from(pago).equals(competencia);
     }
 
     @Transactional
@@ -122,26 +272,30 @@ public class ServicoFinanceiro {
         return situacaoMensalidade(legado, hoje, diasTolerancia);
     }
 
-    private MensalidadeResumoDto toResumo(MatriculaInstituicao matricula, LocalDate hoje) {
+    private MensalidadeResumoDto toResumoCompetencia(
+            MatriculaInstituicao matricula,
+            YearMonth competencia,
+            LocalDate hoje,
+            CobrancaExterna cobranca) {
         Aluno aluno = matricula.getAluno();
+        CompetenciaMensalidade avaliacao = avaliarCompetencia(matricula, competencia, hoje, cobranca);
         return new MensalidadeResumoDto(
                 aluno.getCpf(),
                 aluno.getNome(),
                 matricula.getValorMensalidade(),
                 matricula.getDiaVencimentoMensalidade(),
-                isInadimplente(matricula, hoje),
-                matricula.getDataUltimoPagamentoMensalidade()
+                avaliacao.inadimplente(),
+                avaliacao.dataPagamento() != null
+                        ? avaliacao.dataPagamento()
+                        : matricula.getDataUltimoPagamentoMensalidade(),
+                avaliacao.statusDescricao(),
+                avaliacao.vencimento()
         );
     }
 
     private LocalDate vencimentoNoMes(MatriculaInstituicao matricula, YearMonth mes) {
         int dia = Math.min(matricula.getDiaVencimentoMensalidade(), mes.lengthOfMonth());
         return mes.atDay(dia);
-    }
-
-    private boolean isInadimplente(MatriculaInstituicao matricula, LocalDate hoje) {
-        SituacaoCobranca situacao = situacaoMensalidade(matricula, hoje, 0);
-        return situacao == SituacaoCobranca.EM_TOLERANCIA || situacao == SituacaoCobranca.BLOQUEADO;
     }
 
     private boolean pagouNoMesAtual(MatriculaInstituicao matricula, LocalDate hoje) {

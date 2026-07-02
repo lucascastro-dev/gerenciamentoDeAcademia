@@ -2,6 +2,7 @@ package gerenciamentoDeAcademia.servicos.financeiro;
 
 import gerenciamentoDeAcademia.entidades.Aluno;
 import gerenciamentoDeAcademia.entidades.MatriculaInstituicao;
+import gerenciamentoDeAcademia.repositorios.CobrancaExternaRepository;
 import gerenciamentoDeAcademia.repositorios.MatriculaInstituicaoRepository;
 import gerenciamentoDeAcademia.servicos.aluno.ServicoMatriculaInstituicao;
 import org.junit.jupiter.api.Test;
@@ -24,6 +25,8 @@ class ServicoFinanceiroTest {
     MatriculaInstituicaoRepository matriculaInstituicaoRepository;
     @Mock
     ServicoMatriculaInstituicao servicoMatriculaInstituicao;
+    @Mock
+    CobrancaExternaRepository cobrancaExternaRepository;
 
     @Test
     void deveCalcularReceitaPrevista() {
@@ -36,6 +39,10 @@ class ServicoFinanceiroTest {
         matricula.setDiaVencimentoMensalidade(28);
         Mockito.when(matriculaInstituicaoRepository.findByInstituicao_IdOrderByAluno_NomeAsc(1L))
                 .thenReturn(List.of(matricula));
+        Mockito.when(cobrancaExternaRepository
+                .findByInstituicao_IdAndTipoAndMesCompetenciaAndAnoCompetencia(
+                        Mockito.anyLong(), Mockito.any(), Mockito.anyInt(), Mockito.anyInt()))
+                .thenReturn(List.of());
 
         var dash = servicoFinanceiro.obterDashboard(1L);
         assertEquals(100.0, dash.receitaMensalPrevista());

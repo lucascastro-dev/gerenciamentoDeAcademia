@@ -15,9 +15,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import gerenciamentoDeAcademia.util.RelogioAplicacao;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -43,14 +46,26 @@ public class FinanceiroController {
 
     @GetMapping("/mensalidades")
     @PreAuthorize("@permissaoEvaluator.possui(authentication, 'financeiro:visualizar')")
-    public List<MensalidadeResumoDto> mensalidades(@AuthenticationPrincipal UsuarioAutenticado usuario) {
-        return servicoFinanceiro.listarMensalidades(instituicaoDaSessao(usuario));
+    public List<MensalidadeResumoDto> mensalidades(
+            @AuthenticationPrincipal UsuarioAutenticado usuario,
+            @RequestParam(required = false) Integer mes,
+            @RequestParam(required = false) Integer ano) {
+        LocalDate hoje = RelogioAplicacao.hoje();
+        int mesRef = mes != null ? mes : hoje.getMonthValue();
+        int anoRef = ano != null ? ano : hoje.getYear();
+        return servicoFinanceiro.listarMensalidades(instituicaoDaSessao(usuario), mesRef, anoRef);
     }
 
     @GetMapping("/inadimplentes")
     @PreAuthorize("@permissaoEvaluator.possui(authentication, 'financeiro:relatorio')")
-    public List<MensalidadeResumoDto> inadimplentes(@AuthenticationPrincipal UsuarioAutenticado usuario) {
-        return servicoFinanceiro.listarInadimplentes(instituicaoDaSessao(usuario));
+    public List<MensalidadeResumoDto> inadimplentes(
+            @AuthenticationPrincipal UsuarioAutenticado usuario,
+            @RequestParam(required = false) Integer mes,
+            @RequestParam(required = false) Integer ano) {
+        LocalDate hoje = RelogioAplicacao.hoje();
+        int mesRef = mes != null ? mes : hoje.getMonthValue();
+        int anoRef = ano != null ? ano : hoje.getYear();
+        return servicoFinanceiro.listarInadimplentes(instituicaoDaSessao(usuario), mesRef, anoRef);
     }
 
     @PostMapping("/mensalidades/{cpf}/baixa")
