@@ -1,6 +1,6 @@
 {
-  "name": "edugestao-inteligente-frontend",
-  "description": "Interface web EduGestão Inteligente — gestão de instituições de ensino",
+  "name": "turma360-frontend",
+  "description": "Interface web Turma360 — gestão de instituições de ensino",
   "private": true,
   "version": "1.0.1-SNAPSHOT",
   "type": "module",

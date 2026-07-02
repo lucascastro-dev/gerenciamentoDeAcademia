@@ -1,9 +1,11 @@
 import { useEffect, useState, type FC } from 'react';
 import { Link } from 'react-router-dom';
 import { carregarSessao, isModoPlataforma, isPortalAluno, labelPerfil } from '../../auth/permissoes';
+import { COPY_UI } from '../../constants/copy';
 import HttpService from '../../services/HttpService';
 import PageShell from '../common/PageShell';
 import { TelaInicialWrapper } from './TelaInicial.styled';
+import '../../theme/portal-aluno.css';
 
 const TelaInicial: FC = () => {
   const sessao = carregarSessao();
@@ -39,28 +41,51 @@ const TelaInicial: FC = () => {
 
   if (loading) {
     return (
-      <PageShell title="Carregando..." showBack={false}>
-        <p>Aguarde...</p>
+      <PageShell title={COPY_UI.carregando} showBack={false}>
+        <p>{COPY_UI.aguarde}</p>
       </PageShell>
     );
   }
 
   if (aluno) {
     return (
-      <PageShell title={`Olá, ${sessao?.nome || 'aluno'}`} subtitle="Acompanhe seus dados, turmas e mensalidades">
-        <div className="card">
-          <p>
-            Você está vinculado à <strong>{instituicao?.razaoSocial || 'sua instituição'}</strong>.
-          </p>
-          {msgPagamento && (
-            <p style={{ marginTop: '1rem', padding: '0.75rem', background: '#f0f9ff', borderRadius: 8 }}>
-              {msgPagamento}
+      <PageShell
+        title={`Olá, ${sessao?.nome || 'aluno'}`}
+        subtitle="Turmas, mensalidades e programação em um só lugar"
+        showBack={false}
+      >
+        <div className="portal-aluno-page">
+          <section className="portal-aluno-hero">
+            <h2>{COPY_UI.portalAluno.heroTitulo}</h2>
+            <p>
+              {COPY_UI.portalAluno.vinculoInstituicao(instituicao?.razaoSocial || 'sua instituição')}
             </p>
+          </section>
+
+          {msgPagamento && (
+            <div className="portal-aluno-alert" style={{ background: '#f0f9ff', borderColor: '#bae6fd', color: '#0369a1' }}>
+              {msgPagamento}
+            </div>
           )}
-        </div>
-        <div style={{ marginTop: '1rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-          <Link to="/arealogada/aluno/dados" className="btn-primary" style={{ textDecoration: 'none' }}>Meus dados</Link>
-          <Link to="/arealogada/aluno/turmas" className="btn-secondary" style={{ textDecoration: 'none' }}>Minhas turmas</Link>
+
+          <div className="portal-aluno-quick">
+            <Link to="/arealogada/aluno/turmas">
+              <span className="portal-aluno-quick__icon" aria-hidden="true">🥋</span>
+              Minhas turmas
+            </Link>
+            <Link to="/arealogada/aluno/programacao">
+              <span className="portal-aluno-quick__icon" aria-hidden="true">📅</span>
+              Programação
+            </Link>
+            <Link to="/arealogada/aluno/mensalidades">
+              <span className="portal-aluno-quick__icon" aria-hidden="true">💳</span>
+              Mensalidades
+            </Link>
+            <Link to="/arealogada/aluno/dados">
+              <span className="portal-aluno-quick__icon" aria-hidden="true">👤</span>
+              Meus dados
+            </Link>
+          </div>
         </div>
       </PageShell>
     );
@@ -70,36 +95,45 @@ const TelaInicial: FC = () => {
     return (
       <PageShell
         title={`Olá, ${sessao?.nome || 'operador'}`}
-        subtitle="Central de gestão da plataforma EduGestão Inteligente"
+        subtitle={COPY_UI.colaborador.masterSubtitulo}
         showBack={false}
       >
         <div className="card">
           <p>
             Perfil: <strong>{labelPerfil(sessao)}</strong>
+            {sessao?.masterRaiz && ' (master raiz)'}
           </p>
           <p style={{ marginTop: '0.75rem' }}>
-            Você opera o <strong>SaaS multi-instituição</strong>: cadastro de instituições, planos, ativação de
-            colaboradores e suporte acadêmico em todas as instituições.
+            Você administra o <strong>SaaS multi-instituição</strong>: cadastro de escolas, planos comerciais,
+            ativação de colaboradores e suporte acadêmico em todas as unidades.
           </p>
           {resumoPlat && (
-            <p style={{ marginTop: '1rem' }}>
-              <strong>{resumoPlat.instituicoesAtivas}</strong> instituições ativas de{' '}
-              <strong>{resumoPlat.instituicoesCadastradas}</strong> cadastradas.
-            </p>
+            <div style={{ marginTop: '1rem', display: 'grid', gap: '0.5rem' }}>
+              <p>
+                <strong>{resumoPlat.instituicoesAtivas}</strong> instituições ativas de{' '}
+                <strong>{resumoPlat.instituicoesCadastradas}</strong> cadastradas.
+              </p>
+            </div>
           )}
         </div>
-        <div style={{ marginTop: '1rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-          <Link to="/arealogada/dashboard" className="btn-primary" style={{ textDecoration: 'none' }}>
-            Dashboard administrativo
+        <div style={{ marginTop: '1rem', display: 'grid', gap: '0.75rem', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+          <Link to="/arealogada/financeiro" className="btn-primary" style={{ textDecoration: 'none', textAlign: 'center' }}>
+            Resumo financeiro
           </Link>
-          <Link to="/arealogada/financeiro" className="btn-primary" style={{ textDecoration: 'none', background: '#0369a1' }}>
-            Dashboard financeiro
+          <Link to="/arealogada/financeiro/pendentes" className="btn-primary" style={{ textDecoration: 'none', textAlign: 'center', background: '#0369a1' }}>
+            Pagamentos pendentes
           </Link>
-          <Link to="/arealogada/gestaoAcademia" className="btn-secondary" style={{ textDecoration: 'none' }}>
-            Ativar instituição
+          <Link to="/arealogada/financeiro/planos-expirados" className="btn-secondary" style={{ textDecoration: 'none', textAlign: 'center' }}>
+            Planos expirados
           </Link>
-          <Link to="/arealogada/instituicoes" className="btn-secondary" style={{ textDecoration: 'none' }}>
+          <Link to="/arealogada/cadastrar-instituicao" className="btn-secondary" style={{ textDecoration: 'none', textAlign: 'center' }}>
+            Nova instituição
+          </Link>
+          <Link to="/arealogada/instituicoes" className="btn-secondary" style={{ textDecoration: 'none', textAlign: 'center' }}>
             Consultar instituições
+          </Link>
+          <Link to="/arealogada/gestaoAcademia" className="btn-secondary" style={{ textDecoration: 'none', textAlign: 'center' }}>
+            Ativar instituição
           </Link>
         </div>
       </PageShell>
@@ -110,8 +144,7 @@ const TelaInicial: FC = () => {
     <TelaInicialWrapper>
       <h1>Olá, {sessao?.nome || 'colaborador'}!</h1>
       <p>
-        Você está vinculado à <strong>{instituicao?.razaoSocial || 'sua instituição'}</strong> no EduGestão
-        Inteligente.
+        {COPY_UI.colaborador.homeSubtitulo(instituicao?.razaoSocial || 'sua instituição')}
       </p>
       <p>Perfil: <strong>{labelPerfil(sessao)}</strong></p>
       <div style={{ marginTop: '1.5rem', display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>

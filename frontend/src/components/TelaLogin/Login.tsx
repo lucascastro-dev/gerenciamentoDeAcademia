@@ -5,8 +5,10 @@ import HttpService from '../../services/HttpService';
 import { extractApiMessage } from '../../utils/apiError';
 import FeedbackModal from '../common/FeedbackModal';
 import PasswordInput from '../common/PasswordInput';
+import AuthLayout from '../common/AuthLayout';
+import { COPY, PLACEHOLDERS } from '../../constants/copy';
+import '../common/AuthLayout.css';
 import '../common/PasswordFields.css';
-import './Login.css';
 
 interface Vinculo {
   id: number;
@@ -55,14 +57,12 @@ const Login: React.FC = () => {
         setVinculo('');
       }
       if (ativas.length === 0) {
-        setVinculoAviso(
-          'Nenhuma instituição ativa vinculada a este CPF. Instituições inativas não permitem acesso.',
-        );
+        setVinculoAviso(COPY.loginSemVinculo);
       }
     } catch {
       setInstituicoes([]);
       setVinculo('');
-      setVinculoAviso('Não foi possível buscar suas instituições. Tente novamente.');
+      setVinculoAviso(COPY.loginErroVinculos);
     } finally {
       setBuscandoVinculos(false);
     }
@@ -97,7 +97,7 @@ const Login: React.FC = () => {
 
       navigate('/arealogada/home');
     } catch (err) {
-      setErroLogin(extractApiMessage(err, 'Usuário, senha ou instituição inválidos.'));
+      setErroLogin(extractApiMessage(err, COPY.loginErroCredenciais));
     } finally {
       setLoading(false);
     }
@@ -111,63 +111,57 @@ const Login: React.FC = () => {
     !buscandoVinculos;
 
   return (
-    <div className="auth-page">
-      <div className="auth-page__brand">EduGestão Inteligente</div>
+    <AuthLayout title="Entrar na sua conta" subtitle={COPY.loginSubtitle}>
+      <form onSubmit={handleLogin}>
+        <label className="auth-label" htmlFor="login-cpf">CPF</label>
+        <input
+          id="login-cpf"
+          type="text"
+          inputMode="numeric"
+          placeholder={PLACEHOLDERS.cpf}
+          value={cpf}
+          onChange={(e) => setCpf(maskCPF(e.target.value))}
+          onBlur={carregarInstituicoes}
+        />
 
-      <div className="login-container">
-        <h2>Entrar</h2>
+        {buscandoVinculos && <p className="auth-hint">Buscando instituições...</p>}
+        {vinculoAviso && !buscandoVinculos && (
+          <p className="auth-hint auth-hint--warn">{vinculoAviso}</p>
+        )}
 
-        <form onSubmit={handleLogin}>
-          <label className="login-label" htmlFor="login-cpf">CPF</label>
-          <input
-            id="login-cpf"
-            type="text"
-            inputMode="numeric"
-            placeholder="000.000.000-00"
-            value={cpf}
-            onChange={(e) => setCpf(maskCPF(e.target.value))}
-            onBlur={carregarInstituicoes}
-          />
+        {instituicoes.length > 0 && (
+          <>
+            <label className="auth-label" htmlFor="login-vinculo">Instituição</label>
+            <select
+              id="login-vinculo"
+              value={vinculo}
+              onChange={(e) => setVinculo(e.target.value)}
+            >
+              <option value="" disabled>Selecione onde deseja entrar</option>
+              {instituicoes.map((i) => (
+                <option key={i.id} value={String(i.id)}>{i.razaoSocial}</option>
+              ))}
+            </select>
+          </>
+        )}
 
-          {buscandoVinculos && <p className="login-hint">Buscando instituições...</p>}
-          {vinculoAviso && !buscandoVinculos && (
-            <p className="login-hint login-hint--warn">{vinculoAviso}</p>
-          )}
+        <PasswordInput
+          id="login-senha"
+          label="Senha"
+          value={password}
+          onChange={setPassword}
+          placeholder={PLACEHOLDERS.senha}
+          autoComplete="current-password"
+        />
 
-          {instituicoes.length > 0 && (
-            <>
-              <label className="login-label" htmlFor="login-vinculo">Instituição</label>
-              <select
-                id="login-vinculo"
-                value={vinculo}
-                onChange={(e) => setVinculo(e.target.value)}
-              >
-                <option value="" disabled>Selecione onde deseja entrar</option>
-                {instituicoes.map((i) => (
-                  <option key={i.id} value={String(i.id)}>{i.razaoSocial}</option>
-                ))}
-              </select>
-            </>
-          )}
+        <button className="auth-btn-primary" disabled={!podeEntrar} type="submit">
+          {loading ? 'Entrando...' : 'Entrar'}
+        </button>
+      </form>
 
-          <PasswordInput
-            id="login-senha"
-            label="Senha"
-            value={password}
-            onChange={setPassword}
-            placeholder="Digite sua senha"
-            autoComplete="current-password"
-          />
-
-          <button className="auth-btn-primary" disabled={!podeEntrar} type="submit">
-            {loading ? 'Entrando...' : 'Entrar'}
-          </button>
-        </form>
-
-        <div className="links-container">
-          <Link to="/areapublica/cadastro">Pré-cadastro colaborador</Link>
-          <Link to="/areapublica/esqueciSenha">Esqueci minha senha</Link>
-        </div>
+      <div className="auth-links">
+        <Link to="/areapublica/cadastro">Sou colaborador — fazer pré-cadastro</Link>
+        <Link to="/areapublica/esqueciSenha">Esqueci minha senha</Link>
       </div>
 
       <FeedbackModal
@@ -177,7 +171,7 @@ const Login: React.FC = () => {
         message={erroLogin || ''}
         onClose={() => setErroLogin(null)}
       />
-    </div>
+    </AuthLayout>
   );
 };
 

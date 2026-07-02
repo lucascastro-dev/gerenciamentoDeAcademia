@@ -1,0 +1,65 @@
+/**
+ * Design tokens Turma360 — espaçamento, tipografia e breakpoints.
+ */
+:root {
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --font-size-sm: 0.85rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.35rem;
+  --touch-min: 44px;
+  --bp-sm: 600px;
+  --bp-md: 768px;
+  --bp-lg: 900px;
+  --bp-xl: 1200px;
+}
+
+/* Layout interno — mobile */
+@media (max-width: 600px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .card {
+    padding: var(--space-md);
+  }
+
+  .app-main__content {
+    padding: var(--space-md);
+  }
+
+  .btn-primary,
+  .btn-secondary,
+  .auth-btn-primary {
+    min-height: var(--touch-min);
+  }
+
+  .page-content {
+    padding: 0;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .stat-card h3 {
+    font-size: 1.35rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Tablet */
+@media (min-width: 601px) and (max-width: 900px) {
+  .app-main__content {
+    padding: var(--space-md) var(--space-lg);
+  }
+}

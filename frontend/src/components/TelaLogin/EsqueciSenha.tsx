@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { PLACEHOLDERS } from '../../constants/copy';
 import { Link, useNavigate } from 'react-router-dom';
 import HttpService from '../../services/HttpService';
 import { extractApiMessage } from '../../utils/apiError';
+import LogoMark from '../common/LogoMark';
 import './Login.css';
 
 const EsqueciSenha: React.FC = () => {
@@ -48,7 +50,7 @@ const EsqueciSenha: React.FC = () => {
   };
 
   const closeModal = () => {
-    if (modal.isSuccess) navigate('/areapublica/login');
+    if (modal.isSuccess) navigate('/entrar');
     setModal({ ...modal, show: false });
   };
 
@@ -56,17 +58,17 @@ const EsqueciSenha: React.FC = () => {
 
   return (
     <div className="auth-page">
-      <div className="auth-page__brand">EduGestão Inteligente</div>
+      <LogoMark className="auth-page__brand" />
       <div className="login-container">
         <h2>Recuperar senha</h2>
         <p className="login-hint">
-          Informe seu CPF. Se houver vínculo com alguma instituição, registraremos o pedido de recuperação
-          (envio por e-mail em implementação futura).
+          Informe o CPF cadastrado na plataforma. Se houver vínculo ativo com alguma instituição,
+          registraremos sua solicitação de redefinição de senha.
         </p>
         <form onSubmit={(e) => e.preventDefault()}>
           <label className="login-label">CPF</label>
           <input
-            placeholder="000.000.000-00"
+            placeholder={PLACEHOLDERS.cpf}
             type="text"
             inputMode="numeric"
             value={cpf}

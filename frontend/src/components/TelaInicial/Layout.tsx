@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { NavLink, Outlet } from 'react-router-dom';
 
-import { APP_NAME } from '../../constants/branding';
+import LogoMark from '../common/LogoMark';
 
 import { carregarSessao, isPortalAluno, labelPerfil, limparSessao, SessaoUsuario } from '../../auth/permissoes';
 
@@ -126,7 +126,7 @@ export const LayoutHome: React.FC = () => {
 
     limparSessao();
 
-    window.location.href = '/areapublica/login';
+    window.location.href = '/entrar';
 
   };
 
@@ -157,7 +157,7 @@ export const LayoutHome: React.FC = () => {
       <aside className="app-sidebar">
 
         <div className="app-sidebar__brand">
-          <span className="app-sidebar__brand-text">{APP_NAME}</span>
+          <LogoMark size="sm" className="app-sidebar__brand-logo" />
           <ThemeToggle tema={tema} onToggle={setTema} className="app-sidebar__theme" />
         </div>
 
