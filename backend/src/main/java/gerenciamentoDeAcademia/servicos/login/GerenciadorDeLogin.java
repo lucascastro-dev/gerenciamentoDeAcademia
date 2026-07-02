@@ -52,6 +52,8 @@ import gerenciamentoDeAcademia.servicos.interfaces.IGerenciadorDeLogin;
 
 import gerenciamentoDeAcademia.servicos.cobranca.ServicoSituacaoCobranca;
 
+import gerenciamentoDeAcademia.servicos.integracoes.ServicoNotificacoes;
+
 import gerenciamentoDeAcademia.servicos.master.ServicoMasterPlataforma;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -136,6 +138,12 @@ public class GerenciadorDeLogin implements IGerenciadorDeLogin, UserDetailsServi
 
     @Autowired
 
+    private ServicoNotificacoes servicoNotificacoes;
+
+
+
+    @Autowired
+
     private VinculoFuncionarioInstituicaoRepository vinculoFuncionarioInstituicaoRepository;
 
 
@@ -187,7 +195,10 @@ public class GerenciadorDeLogin implements IGerenciadorDeLogin, UserDetailsServi
 
         if (funcionario != null && servicoMasterPlataforma.ehOperadorPlataforma(funcionario)) {
 
-            return "Solicitação registrada. O envio de e-mail para redefinição de senha será implementado em breve.";
+            if (funcionario.getEmail() != null && !funcionario.getEmail().isBlank()) {
+                servicoNotificacoes.enviarRecuperacaoSenha(funcionario.getEmail(), mascararCpf(cpf));
+            }
+            return "Solicitação registrada. Se houver e-mail cadastrado, você receberá as instruções (em modo local, veja o log do servidor).";
 
         }
 
@@ -199,9 +210,15 @@ public class GerenciadorDeLogin implements IGerenciadorDeLogin, UserDetailsServi
 
                     "Nenhum vínculo com instituição encontrado para este CPF");
 
+            if (funcionario.getEmail() != null && !funcionario.getEmail().isBlank()) {
+                servicoNotificacoes.enviarRecuperacaoSenha(funcionario.getEmail(), mascararCpf(cpf));
+            }
+
+        } else if (aluno != null && aluno.getEmail() != null && !aluno.getEmail().isBlank()) {
+            servicoNotificacoes.enviarRecuperacaoSenha(aluno.getEmail(), mascararCpf(cpf));
         }
 
-        return "Solicitação registrada. O envio de e-mail para redefinição de senha será implementado em breve.";
+        return "Solicitação registrada. Se houver e-mail cadastrado, você receberá as instruções (em modo local, veja o log do servidor).";
 
     }
 
@@ -610,6 +627,13 @@ public class GerenciadorDeLogin implements IGerenciadorDeLogin, UserDetailsServi
 
                 funcionario.getAreaTerceirizado()));
 
+    }
+
+    private static String mascararCpf(String cpf) {
+        if (cpf == null || cpf.length() < 4) {
+            return "***";
+        }
+        return "***." + cpf.substring(cpf.length() - 2);
     }
 
 }

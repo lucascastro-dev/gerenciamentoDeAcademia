@@ -57,7 +57,9 @@ public enum PermissaoSistema {
 
     RH_FOLHA_PONTO("rh:folha-ponto"),
     RH_FECHAMENTO_MENSAL("rh:fechamento-mensal"),
-    RH_LANCAMENTO_HOLERITE("rh:holerite-lancamento");
+    RH_LANCAMENTO_HOLERITE("rh:holerite-lancamento"),
+    RH_FERIAS("rh:ferias"),
+    RH_FERIAS_GERENCIAR("rh:ferias-gerenciar");
 
     private final String codigo;
 
