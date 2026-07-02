@@ -23,7 +23,7 @@ public class ServicoSituacaoCobranca {
     public static final String MSG_BLOQUEIO_ALUNO =
             "Acesso bloqueado por pendência financeira com a instituição. Entre em contato com o SAC.";
     public static final String MSG_BLOQUEIO_INSTITUICAO =
-            "Acesso bloqueado por pendência com a plataforma. Entre em contato com o SAC da EduGestão Inteligente.";
+            "Acesso bloqueado por pendência com a plataforma. Entre em contato com o suporte Turma360.";
     public static final String MSG_ALERTA_ALUNO =
             "Sua mensalidade está em atraso. Regularize em até 5 dias para evitar o bloqueio do acesso.";
     public static final String MSG_ALERTA_INSTITUICAO =
