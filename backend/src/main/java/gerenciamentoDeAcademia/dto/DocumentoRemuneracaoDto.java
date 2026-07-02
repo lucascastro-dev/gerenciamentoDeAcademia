@@ -16,12 +16,15 @@ public record DocumentoRemuneracaoDto(
         BigDecimal valorBruto,
         BigDecimal valorLiquido,
         String conteudo,
-        LocalDateTime publicadoEm
+        LocalDateTime publicadoEm,
+        boolean possuiArquivoPdf,
+        String nomeArquivo
 ) {
     public static DocumentoRemuneracaoDto of(DocumentoRemuneracaoColaborador doc) {
         if (doc == null) {
             return null;
         }
+        boolean possuiPdf = doc.getCaminhoArquivo() != null && !doc.getCaminhoArquivo().isBlank();
         return new DocumentoRemuneracaoDto(
                 doc.getId(),
                 doc.getTipo(),
@@ -31,8 +34,10 @@ public record DocumentoRemuneracaoDto(
                 doc.getAnoCompetencia(),
                 doc.getValorBruto(),
                 doc.getValorLiquido(),
-                doc.getConteudo(),
-                doc.getPublicadoEm()
+                possuiPdf ? null : doc.getConteudo(),
+                doc.getPublicadoEm(),
+                possuiPdf,
+                possuiPdf ? doc.getNomeArquivoOriginal() : null
         );
     }
 }

@@ -115,8 +115,14 @@ const FolhaPagamento: React.FC = () => {
   };
 
   return (
-    <PageShell showBack={false}>
+    <PageShell showBack={false} title="Folha de pagamento (legado)">
       <div className="fin-op">
+        <div className="card" style={{ marginBottom: '1rem', borderLeft: '4px solid var(--brand-energy)' }}>
+          <p className="field-hint" style={{ margin: 0 }}>
+            Módulo legado em manutenção. Para holerite e recibo, use{' '}
+            <strong>Gestão de equipe → Anexar holerite / recibo (PDF)</strong> com documentos do seu ERP.
+          </p>
+        </div>
         <div className="fin-op__toolbar card">
           <div>
             <label htmlFor="folha-mes">Competência</label>

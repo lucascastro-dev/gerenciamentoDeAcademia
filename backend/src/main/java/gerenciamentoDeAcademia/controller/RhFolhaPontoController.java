@@ -1,8 +1,11 @@
 package gerenciamentoDeAcademia.controller;
 
+import gerenciamentoDeAcademia.dto.DecidirAjustePontoFormDto;
 import gerenciamentoDeAcademia.dto.FolhaPontoColaboradorRhDto;
 import gerenciamentoDeAcademia.dto.ResumoPontoMensalDto;
+import gerenciamentoDeAcademia.dto.SolicitacaoAjustePontoDto;
 import gerenciamentoDeAcademia.dto.StatusIntegracaoPontoDto;
+import gerenciamentoDeAcademia.enums.StatusSolicitacaoAjustePonto;
 import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
 import gerenciamentoDeAcademia.infra.seguranca.UsuarioAutenticado;
 import gerenciamentoDeAcademia.servicos.colaborador.ServicoFolhaPonto;
@@ -13,6 +16,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -58,7 +62,7 @@ public class RhFolhaPontoController {
 
     @PostMapping("/conferir")
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("@permissaoEvaluator.possui(authentication, 'rh:folha-ponto')")
+    @PreAuthorize("@permissaoEvaluator.possui(authentication, 'rh:fechamento-mensal')")
     public Map<String, Object> conferir(
             @AuthenticationPrincipal UsuarioAutenticado usuario,
             @RequestParam Integer mes,
@@ -69,8 +73,46 @@ public class RhFolhaPontoController {
                 mes,
                 ano);
         return Map.of(
-                "message", "Folha de ponto conferida. Financeiro pode integrar na folha de pagamento.",
+                "message", "Folha de ponto conferida. Colaboradores poderão marcar ponto no mês seguinte.",
                 "status", status);
+    }
+
+    @PostMapping("/reabrir")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("@permissaoEvaluator.possui(authentication, 'rh:fechamento-mensal')")
+    public Map<String, Object> reabrir(
+            @AuthenticationPrincipal UsuarioAutenticado usuario,
+            @RequestParam Integer mes,
+            @RequestParam Integer ano) {
+        StatusIntegracaoPontoDto status = servico.reabrirConferenciaRh(
+                instituicaoDaSessao(usuario),
+                mes,
+                ano);
+        return Map.of(
+                "message", "Conferência reaberta. Colaboradores podem voltar a marcar ponto nesta competência.",
+                "status", status);
+    }
+
+    @GetMapping("/ajustes")
+    @PreAuthorize("@permissaoEvaluator.possui(authentication, 'rh:folha-ponto')")
+    public List<SolicitacaoAjustePontoDto> listarAjustes(
+            @AuthenticationPrincipal UsuarioAutenticado usuario,
+            @RequestParam(required = false) StatusSolicitacaoAjustePonto status) {
+        return servico.listarAjustesRh(instituicaoDaSessao(usuario), status);
+    }
+
+    @PostMapping("/ajustes/{id}/decidir")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("@permissaoEvaluator.possui(authentication, 'rh:fechamento-mensal')")
+    public SolicitacaoAjustePontoDto decidirAjuste(
+            @AuthenticationPrincipal UsuarioAutenticado usuario,
+            @PathVariable Long id,
+            @RequestBody DecidirAjustePontoFormDto form) {
+        return servico.decidirAjuste(
+                instituicaoDaSessao(usuario),
+                id,
+                cpfDaSessao(usuario),
+                form);
     }
 
     private Long instituicaoDaSessao(UsuarioAutenticado usuario) {

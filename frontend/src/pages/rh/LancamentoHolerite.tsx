@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useState } from 'react';
 import FeedbackModal from '../../components/common/FeedbackModal';
 import PageShell from '../../components/common/PageShell';
+import { EQUIPE } from '../../constants/branding';
 import HttpService from '../../services/HttpService';
 import { extractApiMessage } from '../../utils/apiError';
 import '../../components/Financeiro/FinanceiroOperacional.css';
@@ -11,13 +12,18 @@ interface ColaboradorOpt {
   nome: string;
 }
 
+type TipoDocumento = 'HOLERITE' | 'RECIBO';
+
 const LancamentoHolerite: React.FC = () => {
   const hoje = new Date();
   const [colaboradores, setColaboradores] = useState<ColaboradorOpt[]>([]);
   const [cpf, setCpf] = useState('');
+  const [tipo, setTipo] = useState<TipoDocumento>('HOLERITE');
   const [mes, setMes] = useState(String(hoje.getMonth() + 1));
   const [ano, setAno] = useState(String(hoje.getFullYear()));
   const [observacao, setObservacao] = useState('');
+  const [arquivoPdf, setArquivoPdf] = useState<File | null>(null);
+  const [enviando, setEnviando] = useState(false);
   const [modal, setModal] = useState({ open: false, success: false, message: '' });
 
   useEffect(() => {
@@ -36,31 +42,47 @@ const LancamentoHolerite: React.FC = () => {
       setModal({ open: true, success: false, message: 'Selecione o colaborador.' });
       return;
     }
+    if (!arquivoPdf) {
+      setModal({ open: true, success: false, message: 'Selecione o arquivo PDF do holerite ou recibo.' });
+      return;
+    }
+    if (arquivoPdf.type !== 'application/pdf' && !arquivoPdf.name.toLowerCase().endsWith('.pdf')) {
+      setModal({ open: true, success: false, message: 'Apenas arquivos PDF são aceitos.' });
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('cpfColaborador', cpf);
+    formData.append('mesCompetencia', mes);
+    formData.append('anoCompetencia', ano);
+    formData.append('tipo', tipo);
+    if (observacao.trim()) {
+      formData.append('observacao', observacao.trim());
+    }
+    formData.append('arquivo', arquivoPdf);
+
+    setEnviando(true);
     try {
-      await HttpService.rhPublicarHolerite({
-        cpfColaborador: cpf,
-        mesCompetencia: Number(mes),
-        anoCompetencia: Number(ano),
-        observacao: observacao.trim() || undefined,
-      });
+      await HttpService.rhAnexarHoleritePdf(formData);
       setModal({
         open: true,
         success: true,
-        message: 'Holerite publicado. O colaborador pode visualizar em Meu holerite.',
+        message: 'Documento anexado. O colaborador pode visualizar em Meu holerite.',
       });
       setObservacao('');
+      setArquivoPdf(null);
     } catch (err) {
-      setModal({ open: true, success: false, message: extractApiMessage(err, 'Erro ao publicar holerite.') });
+      setModal({ open: true, success: false, message: extractApiMessage(err, 'Erro ao anexar documento.') });
+    } finally {
+      setEnviando(false);
     }
   };
 
   return (
-    <PageShell showBack={false}>
+    <PageShell showBack={false} title={EQUIPE.holeriteAnexoTitulo}>
       <div className="rh-page">
         <div className="card">
-          <p className="field-hint">
-            Publique o contracheque para o colaborador. O financeiro confirma o pagamento e gera o recibo em Folha de pagamento.
-          </p>
+          <p className="field-hint">{EQUIPE.holeriteAnexoHint}</p>
           <form onSubmit={publicar} className="rh-form">
             <div className="form-grid">
               <div>
@@ -70,6 +92,13 @@ const LancamentoHolerite: React.FC = () => {
                   {colaboradores.map((c) => (
                     <option key={c.cpf} value={c.cpf}>{c.nome}</option>
                   ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="holerite-tipo">Tipo de documento</label>
+                <select id="holerite-tipo" value={tipo} onChange={(e) => setTipo(e.target.value as TipoDocumento)}>
+                  <option value="HOLERITE">Holerite</option>
+                  <option value="RECIBO">Recibo de pagamento</option>
                 </select>
               </div>
               <div>
@@ -90,11 +119,22 @@ const LancamentoHolerite: React.FC = () => {
               </div>
             </div>
             <div style={{ marginTop: '0.75rem' }}>
+              <label htmlFor="holerite-pdf">Arquivo PDF</label>
+              <input
+                id="holerite-pdf"
+                type="file"
+                accept="application/pdf,.pdf"
+                onChange={(e) => setArquivoPdf(e.target.files?.[0] ?? null)}
+              />
+            </div>
+            <div style={{ marginTop: '0.75rem' }}>
               <label htmlFor="holerite-obs">Observação (opcional)</label>
               <textarea id="holerite-obs" rows={2} value={observacao} onChange={(e) => setObservacao(e.target.value)} style={{ width: '100%' }} />
             </div>
             <div className="form-actions form-actions--compact" style={{ marginTop: '1rem' }}>
-              <button type="submit" className="btn-primary">Publicar holerite</button>
+              <button type="submit" className="btn-primary" disabled={enviando}>
+                {enviando ? 'Enviando...' : 'Anexar documento'}
+              </button>
             </div>
           </form>
         </div>

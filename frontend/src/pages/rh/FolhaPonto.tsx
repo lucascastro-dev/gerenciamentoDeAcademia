@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import FeedbackModal from '../../components/common/FeedbackModal';
 import PageShell from '../../components/common/PageShell';
+import { carregarSessao, possuiPermissao } from '../../auth/permissoes';
 import HttpService from '../../services/HttpService';
 import { extractApiMessage } from '../../utils/apiError';
 import { FolhaPontoUtil } from '../../utils/folhaPonto';
@@ -22,6 +23,8 @@ interface ColaboradorPonto {
 }
 
 const FolhaPonto: React.FC = () => {
+  const sessao = carregarSessao();
+  const podeConferir = possuiPermissao(sessao, 'rh:fechamento-mensal');
   const hoje = new Date();
   const [mes, setMes] = useState(String(hoje.getMonth() + 1));
   const [ano, setAno] = useState(String(hoje.getFullYear()));
@@ -36,27 +39,54 @@ const FolhaPonto: React.FC = () => {
   }>; total: string } | null>(null);
   const [carregando, setCarregando] = useState(false);
   const [modal, setModal] = useState({ open: false, success: false, message: '' });
+  const [ajustesPendentes, setAjustesPendentes] = useState<Array<{
+    id: number;
+    nomeColaborador: string;
+    dataRegistro: string;
+    horaEntradaAtual?: string;
+    horaSaidaAtual?: string;
+    horaEntradaProposta?: string;
+    horaSaidaProposta?: string;
+    justificativa: string;
+    status: string;
+  }>>([]);
 
   const carregar = useCallback(() => {
     setCarregando(true);
     Promise.all([
       HttpService.rhFolhaPontoColaboradores(Number(mes), Number(ano)),
       HttpService.rhFolhaPontoStatusIntegracao(Number(mes), Number(ano)),
+      podeConferir ? HttpService.rhPontoAjustesListar('PENDENTE') : Promise.resolve({ data: [] }),
     ])
-      .then(([colabRes, statusRes]) => {
+      .then(([colabRes, statusRes, ajustesRes]) => {
         setColaboradores(colabRes.data || []);
         setStatusIntegracao(statusRes.data);
+        setAjustesPendentes(ajustesRes.data || []);
       })
       .catch(() => {
         setColaboradores([]);
         setStatusIntegracao(null);
       })
       .finally(() => setCarregando(false));
-  }, [mes, ano]);
+  }, [mes, ano, podeConferir]);
 
   useEffect(() => {
     carregar();
   }, [carregar]);
+
+  const decidirAjuste = async (id: number, status: 'APROVADO' | 'REJEITADO') => {
+    try {
+      await HttpService.rhPontoAjusteDecidir(id, { status });
+      setModal({
+        open: true,
+        success: true,
+        message: status === 'APROVADO' ? 'Ajuste aprovado.' : 'Ajuste rejeitado.',
+      });
+      carregar();
+    } catch (e) {
+      setModal({ open: true, success: false, message: extractApiMessage(e, 'Erro ao decidir ajuste.') });
+    }
+  };
 
   const conferir = async () => {
     try {
@@ -65,6 +95,19 @@ const FolhaPonto: React.FC = () => {
       carregar();
     } catch (e) {
       setModal({ open: true, success: false, message: extractApiMessage(e, 'Erro ao conferir ponto.') });
+    }
+  };
+
+  const reabrir = async () => {
+    if (!window.confirm('Reabrir a conferência desta competência? Colaboradores voltarão a poder marcar ponto no mês.')) {
+      return;
+    }
+    try {
+      const r = await HttpService.rhFolhaPontoReabrir(Number(mes), Number(ano));
+      setModal({ open: true, success: true, message: r.data.message });
+      carregar();
+    } catch (e) {
+      setModal({ open: true, success: false, message: extractApiMessage(e, 'Erro ao reabrir conferência.') });
     }
   };
 
@@ -84,6 +127,42 @@ const FolhaPonto: React.FC = () => {
   return (
     <PageShell showBack={false}>
       <div className="rh-page">
+        {podeConferir && ajustesPendentes.length > 0 && (
+          <div className="card" style={{ marginBottom: '1rem' }}>
+            <h3 style={{ marginTop: 0 }}>Ajustes de ponto pendentes</h3>
+            <div className="table-wrap">
+              <table className="audit-table">
+                <thead>
+                  <tr>
+                    <th>Colaborador</th>
+                    <th>Data</th>
+                    <th>Proposta</th>
+                    <th>Justificativa</th>
+                    <th />
+                  </tr>
+                </thead>
+                <tbody>
+                  {ajustesPendentes.map((a) => (
+                    <tr key={a.id}>
+                      <td>{a.nomeColaborador}</td>
+                      <td>{FolhaPontoUtil.formatarData(a.dataRegistro)}</td>
+                      <td>
+                        {FolhaPontoUtil.formatarHora(a.horaEntradaProposta)} → {FolhaPontoUtil.formatarHora(a.horaSaidaProposta)}
+                      </td>
+                      <td>{a.justificativa}</td>
+                      <td style={{ whiteSpace: 'nowrap' }}>
+                        <button type="button" className="btn-primary btn-sm" onClick={() => decidirAjuste(a.id, 'APROVADO')}>Aprovar</button>
+                        {' '}
+                        <button type="button" className="btn-secondary btn-sm" onClick={() => decidirAjuste(a.id, 'REJEITADO')}>Rejeitar</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
         <div className="fin-op__toolbar card">
           <div>
             <label htmlFor="ponto-mes">Competência</label>
@@ -110,19 +189,32 @@ const FolhaPonto: React.FC = () => {
           </div>
         </div>
 
-        <div className="fin-op__actions">
-          <button
-            type="button"
-            className="btn-primary"
-            disabled={statusIntegracao?.pontoConferidoRh || carregando}
-            onClick={conferir}
-          >
-            Conferir folha de ponto
-          </button>
-          <p className="field-hint">
-            Após conferir, o Financeiro integra o ponto na folha de pagamento. Colaboradores com entrada sem saída bloqueiam a conferência.
-          </p>
-        </div>
+        {podeConferir && (
+          <div className="fin-op__actions">
+            <button
+              type="button"
+              className="btn-primary"
+              disabled={statusIntegracao?.pontoConferidoRh || carregando}
+              onClick={conferir}
+            >
+              Conferir folha de ponto
+            </button>
+            {statusIntegracao?.pontoConferidoRh && !statusIntegracao?.integradoFinanceiro && (
+              <button
+                type="button"
+                className="btn-secondary"
+                disabled={carregando}
+                onClick={reabrir}
+              >
+                Reabrir conferência
+              </button>
+            )}
+            <p className="field-hint">
+              Conferir apenas meses já encerrados. Após conferir, os colaboradores marcam ponto no mês seguinte.
+              Registros em aberto bloqueiam a conferência.
+            </p>
+          </div>
+        )}
 
         <div className="card table-wrap">
           {carregando && <p className="field-hint">Carregando...</p>}

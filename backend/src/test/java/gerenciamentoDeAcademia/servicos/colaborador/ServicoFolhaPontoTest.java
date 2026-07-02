@@ -88,7 +88,21 @@ class ServicoFolhaPontoTest {
     }
 
     @Test
-    @DisplayName("Dado mês conferido, Quando colaborador marcar ponto, Então bloqueia")
+    @DisplayName("Dado mês anterior não conferido, Quando colaborador marcar ponto, Então bloqueia")
+    void deveBloquearMarcacaoQuandoMesAnteriorNaoConferido() {
+        LocalDate hoje = LocalDate.now();
+        LocalDate mesAnterior = hoje.minusMonths(1);
+        Mockito.when(conferenciaRepository.existsByInstituicao_Id(INSTITUICAO_ID)).thenReturn(true);
+        Mockito.when(conferenciaRepository.findByInstituicao_IdAndMesCompetenciaAndAnoCompetencia(
+                INSTITUICAO_ID, hoje.getMonthValue(), hoje.getYear())).thenReturn(Optional.empty());
+        Mockito.when(conferenciaRepository.findByInstituicao_IdAndMesCompetenciaAndAnoCompetencia(
+                INSTITUICAO_ID, mesAnterior.getMonthValue(), mesAnterior.getYear())).thenReturn(Optional.empty());
+
+        Assertions.assertThrows(ExcecaoDeDominio.class,
+                () -> servico.marcarPonto(INSTITUICAO_ID, CPF, NOME));
+    }
+
+    @Test
     void deveBloquearMarcacaoQuandoMesConferido() {
         Mockito.when(conferenciaRepository.findByInstituicao_IdAndMesCompetenciaAndAnoCompetencia(
                 INSTITUICAO_ID, LocalDate.now().getMonthValue(), LocalDate.now().getYear()))
@@ -99,10 +113,44 @@ class ServicoFolhaPontoTest {
     }
 
     @Test
-    @DisplayName("Dado registros em aberto, Quando RH conferir mês, Então falha")
-    void deveImpedirConferenciaComRegistroAberto() {
+    @DisplayName("Dado competência do mês atual, Quando RH conferir, Então bloqueia")
+    void deveImpedirConferenciaDoMesAtual() {
         int mes = LocalDate.now().getMonthValue();
         int ano = LocalDate.now().getYear();
+        Mockito.when(vinculoRepository.findByInstituicaoIdComDetalhes(INSTITUICAO_ID)).thenReturn(List.of());
+        Mockito.when(registroRepository.findByInstituicao_IdAndDataRegistroBetweenOrderByNomeColaboradorAscDataRegistroAsc(
+                Mockito.eq(INSTITUICAO_ID), Mockito.any(), Mockito.any())).thenReturn(List.of());
+
+        Assertions.assertThrows(ExcecaoDeDominio.class,
+                () -> servico.conferirMesRh(INSTITUICAO_ID, CPF, mes, ano));
+    }
+
+    @Test
+    @DisplayName("Dado competência conferida sem integração financeira, Quando reabrir, Então remove conferência")
+    void deveReabrirConferencia() {
+        int mes = LocalDate.now().minusMonths(1).getMonthValue();
+        int ano = LocalDate.now().minusMonths(1).getYear();
+        ConferenciaPontoMensal conferencia = ConferenciaPontoMensal.builder()
+                .mesCompetencia(mes)
+                .anoCompetencia(ano)
+                .build();
+        Mockito.when(conferenciaRepository.findByInstituicao_IdAndMesCompetenciaAndAnoCompetencia(
+                INSTITUICAO_ID, mes, ano)).thenReturn(Optional.of(conferencia));
+        Mockito.when(vinculoRepository.findByInstituicaoIdComDetalhes(INSTITUICAO_ID)).thenReturn(List.of());
+        Mockito.when(registroRepository.findByInstituicao_IdAndDataRegistroBetweenOrderByNomeColaboradorAscDataRegistroAsc(
+                Mockito.eq(INSTITUICAO_ID), Mockito.any(), Mockito.any())).thenReturn(List.of());
+
+        servico.reabrirConferenciaRh(INSTITUICAO_ID, mes, ano);
+
+        Mockito.verify(conferenciaRepository).delete(conferencia);
+    }
+
+    @Test
+    @DisplayName("Dado registros em aberto, Quando RH conferir mês, Então falha")
+    void deveImpedirConferenciaComRegistroAberto() {
+        LocalDate mesPassado = LocalDate.now().minusMonths(1);
+        int mes = mesPassado.getMonthValue();
+        int ano = mesPassado.getYear();
         RegistroDiaPonto aberto = RegistroDiaPonto.builder()
                 .cpfColaborador(CPF)
                 .nomeColaborador(NOME)

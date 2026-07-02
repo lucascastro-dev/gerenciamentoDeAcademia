@@ -9,4 +9,6 @@ public interface ConferenciaPontoMensalRepository extends JpaRepository<Conferen
 
     Optional<ConferenciaPontoMensal> findByInstituicao_IdAndMesCompetenciaAndAnoCompetencia(
             Long instituicaoId, Integer mesCompetencia, Integer anoCompetencia);
+
+    boolean existsByInstituicao_Id(Long instituicaoId);
 }
