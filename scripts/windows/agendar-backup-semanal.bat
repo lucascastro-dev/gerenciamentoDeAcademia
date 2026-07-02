@@ -1,7 +1,7 @@
 @echo off
 chcp 65001 >nul
-cd /d "%~dp0"
-title EduGestao - Agendar backup semanal
+cd /d "%~dp0\..\.."
+title Turma360 - Agendar backup semanal
 
 echo.
 echo  Agendar backup semanal (Agendador de Tarefas Windows)

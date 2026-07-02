@@ -1,7 +1,7 @@
 @echo off
 chcp 65001 >nul
-cd /d "%~dp0"
-title EduGestao - Restaurar backup
+cd /d "%~dp0\..\.."
+title Turma360 - Restaurar backup
 
 echo.
 echo  Restaurar backup PostgreSQL

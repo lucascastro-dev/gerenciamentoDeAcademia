@@ -1,7 +1,7 @@
 @echo off
 chcp 65001 >nul
-cd /d "%~dp0"
-title EduGestao - Subir Frontend
+cd /d "%~dp0\..\.."
+title Turma360 - Subir Frontend
 
 echo.
 echo  Subir Frontend (nginx + React)

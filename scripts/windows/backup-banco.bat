@@ -1,7 +1,7 @@
 @echo off
 chcp 65001 >nul
-cd /d "%~dp0"
-title EduGestao - Backup do banco
+cd /d "%~dp0\..\.."
+title Turma360 - Backup do banco
 
 echo.
 echo  Backup PostgreSQL (gerenciamento_academia)

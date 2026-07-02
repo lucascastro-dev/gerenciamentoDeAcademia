@@ -25,7 +25,7 @@ fi
 
 if $DEMO; then
   echo "Modo demo: apenas porta ${APP_PORT} (API via proxy nginx)."
-  docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d --build
+  docker compose -f docker-compose.yml -f infra/docker/docker-compose.demo.yml up -d --build
 else
   docker compose up -d --build
 fi

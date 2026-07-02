@@ -1,7 +1,7 @@
 @echo off
 chcp 65001 >nul
-cd /d "%~dp0"
-title EduGestao - Atualizar URL publica
+cd /d "%~dp0\..\.."
+title Turma360 - Atualizar URL publica
 
 echo.
 echo  Atualizar URL_PUBLICA.txt (tunel Cloudflare)

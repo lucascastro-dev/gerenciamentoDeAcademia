@@ -1,17 +1,17 @@
 @echo off
 chcp 65001 >nul
 cd /d "%~dp0"
-title EduGestao - Subir aplicacao
+title Turma360 - Subir aplicacao
 
 echo.
-echo  EduGestao - Deploy Docker + tunel publico
+echo  Turma360 - Deploy Docker + tunel publico
 echo  ==========================================
 echo.
-echo  Servicos separados (restart parcial):
-echo    subir-postgres.bat
-echo    subir-backend.bat   [build]
-echo    subir-frontend.bat  [build]
-echo    subir-tunel.bat
+echo  Servicos separados (restart parcial) — pasta scripts\windows\:
+echo    scripts\windows\subir-postgres.bat
+echo    scripts\windows\subir-backend.bat   [build]
+echo    scripts\windows\subir-frontend.bat  [build]
+echo    scripts\windows\subir-tunel.bat
 echo.
 
 where docker >nul 2>&1

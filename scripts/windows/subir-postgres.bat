@@ -1,7 +1,7 @@
 @echo off
 chcp 65001 >nul
-cd /d "%~dp0"
-title EduGestao - Subir Postgres
+cd /d "%~dp0\..\.."
+title Turma360 - Subir Postgres
 
 echo.
 echo  Subir Postgres (banco de dados)

@@ -1,7 +1,7 @@
 @echo off
 chcp 65001 >nul
-cd /d "%~dp0"
-title EduGestao - Subir Backend
+cd /d "%~dp0\..\.."
+title Turma360 - Subir Backend
 
 echo.
 echo  Subir Backend (API Spring Boot)

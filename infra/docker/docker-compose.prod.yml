@@ -5,10 +5,14 @@ services:
       SPRING_PROFILES_ACTIVE: docker,prod
       APP_SEED_DEMO: "false"
       APP_BOOTSTRAP_MASTER: ${APP_BOOTSTRAP_MASTER:-true}
+      REMUNERACAO_DOCS_PATH: /app/documentos-remuneracao
       JAVA_OPTS: ${JAVA_OPTS:--XX:+UseContainerSupport -Xms384m -Xmx768m -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+ExitOnOutOfMemoryError -Djava.security.egd=file:/dev/./urandom}
     mem_limit: ${BACKEND_MEM_LIMIT:-1024m}
     memswap_limit: ${BACKEND_MEM_LIMIT:-1024m}
     cpus: ${BACKEND_CPUS:-2.0}
+    volumes:
+      - certificados_data:/app/certificados
+      - remuneracao_docs_data:/app/documentos-remuneracao
 
   postgres:
     mem_limit: ${POSTGRES_MEM_LIMIT:-512m}

@@ -1,12 +1,12 @@
 @echo off
 chcp 65001 >nul
-cd /d "%~dp0"
-title EduGestao - Subir aplicacao (PRODUCAO)
+cd /d "%~dp0\..\.."
+title Turma360 - Subir aplicacao (PRODUCAO)
 
-set COMPOSE_CMD=docker compose -f docker-compose.yml -f docker-compose.prod.yml
+set COMPOSE_CMD=docker compose -f docker-compose.yml -f infra/docker/docker-compose.prod.yml
 
 echo.
-echo  EduGestao - Deploy Docker PRODUCAO
+echo  Turma360 - Deploy Docker PRODUCAO
 echo  ==================================
 echo  Profile: docker,prod  ^|  Sem seeds demo  ^|  Sem tunel publico
 echo.
