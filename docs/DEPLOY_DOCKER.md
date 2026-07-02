@@ -57,7 +57,7 @@ API e frontend usam o **mesmo host** (nginx faz proxy) — funciona para quem ac
 3. Suba com:
 
 ```bash
-docker compose -f docker-compose.yml -f docker-compose.ngrok.yml up -d --build
+docker compose -f docker-compose.yml -f infra/docker/docker-compose.ngrok.yml up -d --build
 ```
 
 ## Scripts
@@ -168,7 +168,7 @@ O backend Spring Boot costumava consumir quase toda a RAM do host porque a JVM u
 **Linha de comando:**
 
 ```bash
-docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.yml -f infra/docker/docker-compose.prod.yml up -d --build
 ```
 
 Variáveis úteis no `.env`:

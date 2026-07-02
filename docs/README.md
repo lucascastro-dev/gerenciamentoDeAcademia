@@ -1,4 +1,4 @@
-# Documentação — EduGestão Inteligente
+# Documentação — Turma360
 
 Índice da pasta `docs/`. O [README principal](../README.md) cobre execução rápida; aqui estão roteiros, migrações e planejamento.
 
@@ -6,6 +6,13 @@
 
 | Documento | Conteúdo |
 |-----------|----------|
+| [ESCOPO_PRODUTO.md](./ESCOPO_PRODUTO.md) | Marca Turma360, matriz de módulos e holerite via PDF |
+| [REFATORACAO_ETAPAS.md](./REFATORACAO_ETAPAS.md) | Plano de refatoração geral por etapas (prompts de execução) |
+| [BENCHMARK_MERCADO.md](./BENCHMARK_MERCADO.md) | Posicionamento vs iScholar, Sponte, EduGestão e outros |
+| [BOUNDED_CONTEXTS.md](./BOUNDED_CONTEXTS.md) | Contextos delimitados backend/frontend |
+| [DEPLOY_STAGING.md](./DEPLOY_STAGING.md) | Homologação Docker e CD staging |
+| [DEPLOY_VPS.md](./DEPLOY_VPS.md) | Duas VPS (app + banco) com Docker |
+| [INTEGRACOES.md](./INTEGRACOES.md) | Brevo, Twilio, Asaas e modo local |
 | [ROADMAP.md](./ROADMAP.md) | Entregas concluídas (master + **professor**), próxima fase (perfis institucionais) e backlog |
 | [ROADMAP_PROXIMOS.md](./ROADMAP_PROXIMOS.md) | Resumo do próximo foco (ago/2026) |
 | [ARQUITETURA.md](./ARQUITETURA.md) | Estrutura do monorepo, camadas backend/frontend e convenções |
