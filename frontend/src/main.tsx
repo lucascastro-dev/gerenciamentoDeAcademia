@@ -2,6 +2,9 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
+import MarketingHome from "./pages/marketing/MarketingHome";
+import MarketingPrecos from "./pages/marketing/MarketingPrecos";
+import MarketingContato from "./pages/marketing/MarketingContato";
 import { LayoutHome } from "./components/TelaInicial/Layout";
 import TelaInicial from "./components/TelaInicial/TelaInicial";
 import Cadastro from "./components/TelaLogin/Cadastro";
@@ -10,6 +13,7 @@ import { LayoutLogin } from "./components/TelaLogin/Layout";
 import Login from "./components/TelaLogin/Login";
 import "./index.css";
 import "./theme/global.css";
+import "./theme/tokens.css";
 import "./theme/programacao.css";
 import "./theme/turmas.css";
 import ProtectedRoute from "./ProtectedRoute";
@@ -23,9 +27,6 @@ import GerenciarAlunos from "./components/TelaInicial/GerenciarAlunos";
 import GerenciarTurmas from "./components/TelaInicial/GerenciarTurmas";
 import FinanceiroLayout from "./components/Financeiro/FinanceiroLayout";
 import Mensalidades from "./components/Financeiro/Mensalidades";
-import FolhaPagamento from "./components/Financeiro/FolhaPagamento";
-import FechamentoMes from "./components/Financeiro/FechamentoMes";
-import ConciliacaoBancaria from "./components/Financeiro/ConciliacaoBancaria";
 import Inadimplencia from "./components/Financeiro/Inadimplencia";
 import TurmasProfessor from "./components/Professor/TurmasProfessor";
 import PresencaTurma from "./components/Professor/PresencaTurma";
@@ -51,6 +52,7 @@ import MinhasFerias from "./pages/colaborador/MinhasFerias";
 import LancamentoHolerite from "./pages/rh/LancamentoHolerite";
 import FolhaPonto from "./pages/rh/FolhaPonto";
 import FechamentoMensalRh from "./pages/rh/FechamentoMensalRh";
+import RhFerias from "./pages/rh/RhFerias";
 import { inicializarTema } from "./theme/theme";
 
 inicializarTema();
@@ -63,10 +65,13 @@ root.render(
   <React.StrictMode>
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Navigate to="/areapublica/login" replace />} />
+        <Route path="/" element={<MarketingHome />} />
+        <Route path="/precos" element={<MarketingPrecos />} />
+        <Route path="/contato" element={<MarketingContato />} />
+        <Route path="/entrar" element={<Login />} />
 
         <Route path="areapublica" element={<LayoutLogin />}>
-          <Route path="login" element={<Login />} />
+          <Route path="login" element={<Navigate to="/entrar" replace />} />
           <Route path="cadastro" element={<Cadastro />} />
           <Route path="esqueciSenha" element={<EsqueciSenha />} />
           <Route path="solicitarAcesso" element={<Navigate to="/areapublica/cadastro" replace />} />
@@ -102,9 +107,13 @@ root.render(
             <Route path="rh/folha-ponto" element={
               <PermissaoRoute permissao="rh:folha-ponto"><FolhaPonto /></PermissaoRoute>
             } />
-            <Route path="rh/fechamento-mensal" element={
+            <Route path="rh/ferias" element={
+              <PermissaoRoute permissao="rh:ferias"><RhFerias /></PermissaoRoute>
+            } />
+            <Route path="rh/conferencia-mensal" element={
               <PermissaoRoute permissao="rh:fechamento-mensal"><FechamentoMensalRh /></PermissaoRoute>
             } />
+            <Route path="rh/fechamento-mensal" element={<Navigate to="/arealogada/rh/conferencia-mensal" replace />} />
             <Route path="rh/lancamento-holerite" element={
               <PermissaoRoute permissao="rh:holerite-lancamento"><LancamentoHolerite /></PermissaoRoute>
             } />
@@ -126,15 +135,6 @@ root.render(
               } />
               <Route path="inadimplencia" element={
                 <PermissaoRoute permissao="financeiro:relatorio"><Inadimplencia /></PermissaoRoute>
-              } />
-              <Route path="folha-pagamento" element={
-                <PermissaoRoute permissao="financeiro:cobranca"><FolhaPagamento /></PermissaoRoute>
-              } />
-              <Route path="conciliacao" element={
-                <PermissaoRoute permissao="financeiro:visualizar"><ConciliacaoBancaria /></PermissaoRoute>
-              } />
-              <Route path="fechamento-mes" element={
-                <PermissaoRoute permissao="financeiro:relatorio"><FechamentoMes /></PermissaoRoute>
               } />
             </Route>
 

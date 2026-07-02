@@ -26,6 +26,7 @@ public class AlteradorDeTurma implements IAlteradorDeTurma {
     FuncionarioRepository funcionarioRepository;
     InstituicaoRepository instituicaoRepository;
     AlunoRepository alunoRepository;
+    VinculoTurmaAluno vinculoTurmaAluno;
 
     @Override
     public void alterarTurma(Turma turmaParaAlterar) {
@@ -74,10 +75,12 @@ public class AlteradorDeTurma implements IAlteradorDeTurma {
         ExcecaoDeDominio.quandoNulo(turma, "Turma não encontrada na base");
 
         for (Aluno aluno : turmaParaAlterar.getAlunos()) {
-            ExcecaoDeDominio.quandoNulo(alunoRepository.findByCpf(aluno.getCpf()), "Aluno não encontrado na base");
-            ExcecaoDeDominio.quando(turma.get().getAlunos().contains(aluno), String.format("Aluno %s já matriculado na turma", aluno.getNome()));
+            Aluno gerenciado = alunoRepository.findByCpf(aluno.getCpf());
+            ExcecaoDeDominio.quandoNulo(gerenciado, "Aluno não encontrado na base");
+            ExcecaoDeDominio.quando(turma.get().getAlunos().contains(gerenciado),
+                    String.format("Aluno %s já matriculado na turma", gerenciado.getNome()));
 
-            turma.get().getAlunos().add(aluno);
+            vinculoTurmaAluno.vincular(turma.get(), gerenciado);
         }
 
         turmaRepository.save(turma.get());
@@ -89,10 +92,11 @@ public class AlteradorDeTurma implements IAlteradorDeTurma {
         ExcecaoDeDominio.quandoNulo(turma, "Turma não encontrada na base");
 
         for (Aluno aluno : turmaParaAlterar.getAlunos()) {
-            ExcecaoDeDominio.quandoNulo(alunoRepository.findByCpf(aluno.getCpf()), "Aluno não encontrado na base");
-            ExcecaoDeDominio.quando(!turma.get().getAlunos().contains(aluno), "Aluno não matriculado na turma");
+            Aluno gerenciado = alunoRepository.findByCpf(aluno.getCpf());
+            ExcecaoDeDominio.quandoNulo(gerenciado, "Aluno não encontrado na base");
+            ExcecaoDeDominio.quando(!turma.get().getAlunos().contains(gerenciado), "Aluno não matriculado na turma");
 
-            turma.get().getAlunos().remove(aluno);
+            vinculoTurmaAluno.desvincular(turma.get(), gerenciado);
         }
 
         turmaRepository.save(turma.get());

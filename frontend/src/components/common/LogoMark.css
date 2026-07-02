@@ -1,0 +1,76 @@
+.logo-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  color: var(--color-primary, #2563eb);
+}
+
+.logo-mark__badge {
+  position: relative;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--brand-primary, #2563eb) 0%, var(--brand-accent, #06b6d4) 100%);
+  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.4);
+  flex-shrink: 0;
+  animation: logo-float 4s ease-in-out infinite;
+}
+
+@keyframes logo-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+.logo-mark__ring {
+  position: absolute;
+  inset: 3px;
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  border-radius: 50%;
+  animation: logo-spin 12s linear infinite;
+}
+
+@keyframes logo-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.logo-mark--sm .logo-mark__badge {
+  width: 2rem;
+  height: 2rem;
+}
+
+.logo-mark--md .logo-mark__badge {
+  width: 2.75rem;
+  height: 2.75rem;
+}
+
+.logo-mark--lg .logo-mark__badge {
+  width: 3.5rem;
+  height: 3.5rem;
+}
+
+.logo-mark__core {
+  position: relative;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: #fff;
+  line-height: 1;
+}
+
+.logo-mark--sm .logo-mark__core { font-size: 0.55rem; }
+.logo-mark--md .logo-mark__core { font-size: 0.7rem; }
+.logo-mark--lg .logo-mark__core { font-size: 0.85rem; }
+
+.logo-mark__name {
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--color-text, #0f172a);
+}
+
+.logo-mark--sm .logo-mark__name { font-size: 1rem; }
+.logo-mark--md .logo-mark__name { font-size: clamp(1.15rem, 4vw, 1.65rem); }
+.logo-mark--lg .logo-mark__name { font-size: clamp(1.5rem, 5vw, 2rem); }
+
+.logo-mark__name-accent {
+  color: var(--brand-energy, #f59e0b);
+}

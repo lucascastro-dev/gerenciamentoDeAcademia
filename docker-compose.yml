@@ -38,17 +38,27 @@ services:
         condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-docker}
-      JAVA_OPTS: ${JAVA_OPTS:--XX:+UseContainerSupport -Xms256m -Xmx512m -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+ExitOnOutOfMemoryError -Djava.security.egd=file:/dev/./urandom}
+      JAVA_OPTS: ${JAVA_OPTS:--XX:+UseContainerSupport -Xms256m -Xmx512m -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+ExitOnOutOfMemoryError -Djava.security.egd=file:/dev/./urandom -Duser.timezone=America/Sao_Paulo}
+      TZ: America/Sao_Paulo
+      APP_INTEGRACOES_MODO_LOCAL: ${APP_INTEGRACOES_MODO_LOCAL:-true}
+      ASAAS_ENABLED: ${ASAAS_ENABLED:-false}
+      ASAAS_API_KEY: ${ASAAS_API_KEY:-}
+      ASAAS_WEBHOOK_TOKEN: ${ASAAS_WEBHOOK_TOKEN:-}
+      ASAAS_BASE_URL: ${ASAAS_BASE_URL:-https://sandbox.asaas.com/api/v3}
+      TWILIO_ENABLED: ${TWILIO_ENABLED:-false}
+      BREVO_ENABLED: ${BREVO_ENABLED:-false}
       JWT_SECRET: ${JWT_SECRET:-change-me-in-production-min-32-chars!!}
       APP_MASTER_CPF: ${APP_MASTER_CPF:-00000000191}
       APP_MASTER_PASSWORD: ${APP_MASTER_PASSWORD:-Master@2024!}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-academia_dev_secret}
       APP_SEED_DEMO: ${APP_SEED_DEMO:-true}
       APP_BOOTSTRAP_MASTER: ${APP_BOOTSTRAP_MASTER:-true}
+      REMUNERACAO_DOCS_PATH: /app/documentos-remuneracao
     ports:
       - "127.0.0.1:8000:8000"
     volumes:
       - certificados_data:/app/certificados
+      - remuneracao_docs_data:/app/documentos-remuneracao
     mem_limit: ${BACKEND_MEM_LIMIT:-768m}
     memswap_limit: ${BACKEND_MEM_LIMIT:-768m}
     cpus: ${BACKEND_CPUS:-1.5}
@@ -85,3 +95,4 @@ services:
 volumes:
   postgres_data:
   certificados_data:
+  remuneracao_docs_data:

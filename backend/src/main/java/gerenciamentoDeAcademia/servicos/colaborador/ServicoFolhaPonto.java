@@ -1,21 +1,28 @@
 package gerenciamentoDeAcademia.servicos.colaborador;
 
+import gerenciamentoDeAcademia.dto.DecidirAjustePontoFormDto;
 import gerenciamentoDeAcademia.dto.FolhaPontoColaboradorRhDto;
 import gerenciamentoDeAcademia.dto.RegistroDiaPontoDto;
 import gerenciamentoDeAcademia.dto.ResumoPontoMensalDto;
+import gerenciamentoDeAcademia.dto.SolicitacaoAjustePontoDto;
+import gerenciamentoDeAcademia.dto.SolicitarAjustePontoFormDto;
 import gerenciamentoDeAcademia.dto.StatusIntegracaoPontoDto;
 import gerenciamentoDeAcademia.dto.StatusPontoHojeDto;
 import gerenciamentoDeAcademia.entidades.ConferenciaPontoMensal;
 import gerenciamentoDeAcademia.entidades.Funcionario;
 import gerenciamentoDeAcademia.entidades.Instituicao;
 import gerenciamentoDeAcademia.entidades.RegistroDiaPonto;
+import gerenciamentoDeAcademia.entidades.SolicitacaoAjustePonto;
 import gerenciamentoDeAcademia.entidades.VinculoFuncionarioInstituicao;
+import gerenciamentoDeAcademia.enums.StatusSolicitacaoAjustePonto;
 import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
 import gerenciamentoDeAcademia.repositorios.ConferenciaPontoMensalRepository;
 import gerenciamentoDeAcademia.repositorios.InstituicaoRepository;
 import gerenciamentoDeAcademia.repositorios.RegistroDiaPontoRepository;
+import gerenciamentoDeAcademia.repositorios.SolicitacaoAjustePontoRepository;
 import gerenciamentoDeAcademia.repositorios.VinculoFuncionarioInstituicaoRepository;
 import gerenciamentoDeAcademia.util.FolhaPontoUtil;
+import gerenciamentoDeAcademia.util.RelogioAplicacao;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,11 +43,12 @@ public class ServicoFolhaPonto {
     private final ConferenciaPontoMensalRepository conferenciaRepository;
     private final VinculoFuncionarioInstituicaoRepository vinculoRepository;
     private final InstituicaoRepository instituicaoRepository;
+    private final SolicitacaoAjustePontoRepository ajustePontoRepository;
 
     @Transactional(readOnly = true)
     public StatusPontoHojeDto statusHoje(Long instituicaoId, String cpfColaborador) {
         validarCpf(cpfColaborador);
-        LocalDate hoje = LocalDate.now();
+        LocalDate hoje = RelogioAplicacao.hoje();
         Optional<RegistroDiaPonto> registro = registroRepository
                 .findByInstituicao_IdAndCpfColaboradorAndDataRegistro(instituicaoId, cpfColaborador, hoje);
 
@@ -70,12 +78,14 @@ public class ServicoFolhaPonto {
         validarCpf(cpfColaborador);
         ExcecaoDeDominio.quandoNuloOuVazio(nomeColaborador, "Nome do colaborador não identificado.");
 
-        if (isMesConferido(instituicaoId, LocalDate.now().getMonthValue(), LocalDate.now().getYear())) {
+        if (isMesConferido(instituicaoId, RelogioAplicacao.hoje().getMonthValue(), RelogioAplicacao.hoje().getYear())) {
             throw new ExcecaoDeDominio("O ponto deste mês já foi conferido pelo RH. Novas marcações estão bloqueadas.");
         }
 
-        LocalDate hoje = LocalDate.now();
-        LocalDateTime agora = LocalDateTime.now();
+        validarLiberacaoMarcacao(instituicaoId, RelogioAplicacao.hoje());
+
+        LocalDate hoje = RelogioAplicacao.hoje();
+        LocalDateTime agora = RelogioAplicacao.agora();
 
         RegistroDiaPonto registro = registroRepository
                 .findByInstituicao_IdAndCpfColaboradorAndDataRegistro(instituicaoId, cpfColaborador, hoje)
@@ -183,6 +193,7 @@ public class ServicoFolhaPonto {
     public StatusIntegracaoPontoDto conferirMesRh(Long instituicaoId, String cpfConferidor, Integer mes, Integer ano) {
         validarCompetencia(mes, ano);
         validarCpf(cpfConferidor);
+        validarCompetenciaEncerrada(mes, ano);
 
         List<FolhaPontoColaboradorRhDto> colaboradores = listarColaboradoresRh(instituicaoId, mes, ano);
         boolean possuiAberto = colaboradores.stream().anyMatch(FolhaPontoColaboradorRhDto::possuiRegistroAberto);
@@ -200,10 +211,24 @@ public class ServicoFolhaPonto {
                         .anoCompetencia(ano)
                         .build());
 
-        conferencia.setConferidoEm(LocalDateTime.now());
+        conferencia.setConferidoEm(RelogioAplicacao.agora());
         conferencia.setConferidoPorCpf(cpfConferidor);
         conferenciaRepository.save(conferencia);
 
+        return statusIntegracao(instituicaoId, mes, ano);
+    }
+
+    @Transactional
+    public StatusIntegracaoPontoDto reabrirConferenciaRh(Long instituicaoId, Integer mes, Integer ano) {
+        validarCompetencia(mes, ano);
+        ConferenciaPontoMensal conferencia = conferenciaRepository
+                .findByInstituicao_IdAndMesCompetenciaAndAnoCompetencia(instituicaoId, mes, ano)
+                .orElseThrow(() -> new ExcecaoDeDominio("Esta competência não está conferida."));
+
+        ExcecaoDeDominio.quando(conferencia.getIntegradoFinanceiroEm() != null,
+                "Não é possível reabrir após integração com o financeiro.");
+
+        conferenciaRepository.delete(conferencia);
         return statusIntegracao(instituicaoId, mes, ano);
     }
 
@@ -218,7 +243,7 @@ public class ServicoFolhaPonto {
                 .findByInstituicao_IdAndMesCompetenciaAndAnoCompetencia(instituicaoId, mes, ano)
                 .orElseThrow(() -> new ExcecaoDeDominio("Conferência de ponto não encontrada."));
 
-        conferencia.setIntegradoFinanceiroEm(LocalDateTime.now());
+        conferencia.setIntegradoFinanceiroEm(RelogioAplicacao.agora());
         conferencia.setIntegradoPorCpf(cpfIntegrador != null ? cpfIntegrador.replaceAll("\\D", "") : null);
         conferenciaRepository.save(conferencia);
 
@@ -308,8 +333,34 @@ public class ServicoFolhaPonto {
         ExcecaoDeDominio.quando(mes < 1 || mes > 12, "Mês de competência inválido.");
     }
 
+    /** Só permite conferir meses já encerrados — evita bloquear marcações do mês em andamento. */
+    private void validarCompetenciaEncerrada(Integer mes, Integer ano) {
+        YearMonth competencia = YearMonth.of(ano, mes);
+        YearMonth mesAtual = YearMonth.from(RelogioAplicacao.hoje());
+        ExcecaoDeDominio.quando(!competencia.isBefore(mesAtual),
+                "Só é possível conferir competências de meses já encerrados.");
+    }
+
     private void validarCpf(String cpf) {
         ExcecaoDeDominio.quandoNuloOuVazio(cpf, "CPF do colaborador inválido.");
+    }
+
+    /**
+     * Libera marcações no mês atual somente após o RH conferir o mês anterior.
+     * Na primeira competência da instituição, não exige conferência prévia.
+     */
+    private void validarLiberacaoMarcacao(Long instituicaoId, LocalDate data) {
+        if (!conferenciaRepository.existsByInstituicao_Id(instituicaoId)) {
+            return;
+        }
+        YearMonth competenciaAtual = YearMonth.from(data);
+        YearMonth anterior = competenciaAtual.minusMonths(1);
+        if (!isMesConferido(instituicaoId, anterior.getMonthValue(), anterior.getYear())) {
+            throw new ExcecaoDeDominio(
+                    "O RH ainda não conferiu a folha de ponto de "
+                            + String.format("%02d", anterior.getMonthValue()) + "/" + anterior.getYear()
+                            + ". Aguarde a conferência para registrar ponto neste mês.");
+        }
     }
 
     private static final class AgregadoPonto {
@@ -327,5 +378,134 @@ public class ServicoFolhaPonto {
                 diasCompletos++;
             }
         }
+    }
+
+    @Transactional
+    public SolicitacaoAjustePontoDto solicitarAjuste(
+            Long instituicaoId,
+            String cpfColaborador,
+            String nomeColaborador,
+            SolicitarAjustePontoFormDto form) {
+        validarCpf(cpfColaborador);
+        ExcecaoDeDominio.quandoNulo(form, "Dados obrigatórios.");
+        ExcecaoDeDominio.quandoNulo(form.dataRegistro(), "Informe a data do registro.");
+        ExcecaoDeDominio.quandoNuloOuVazio(form.justificativa(), "Informe a justificativa do ajuste.");
+        ExcecaoDeDominio.quando(
+                form.horaEntradaProposta() == null && form.horaSaidaProposta() == null,
+                "Informe pelo menos um horário a ajustar.");
+
+        if (isMesConferido(instituicaoId, form.dataRegistro().getMonthValue(), form.dataRegistro().getYear())) {
+            throw new ExcecaoDeDominio("Competência já conferida pelo RH. Ajustes não são permitidos.");
+        }
+
+        RegistroDiaPonto registro = registroRepository
+                .findByInstituicao_IdAndCpfColaboradorAndDataRegistro(instituicaoId, cpfColaborador, form.dataRegistro())
+                .orElse(null);
+
+        LocalDateTime entradaProposta = form.horaEntradaProposta() != null
+                ? LocalDateTime.of(form.dataRegistro(), form.horaEntradaProposta()) : null;
+        LocalDateTime saidaProposta = form.horaSaidaProposta() != null
+                ? LocalDateTime.of(form.dataRegistro(), form.horaSaidaProposta()) : null;
+
+        if (entradaProposta != null && saidaProposta != null && saidaProposta.isBefore(entradaProposta)) {
+            throw new ExcecaoDeDominio("Horário de saída não pode ser anterior à entrada.");
+        }
+
+        Instituicao instituicao = instituicaoRepository.findById(instituicaoId)
+                .orElseThrow(() -> new ExcecaoDeDominio("Instituição não encontrada."));
+
+        SolicitacaoAjustePonto solicitacao = SolicitacaoAjustePonto.builder()
+                .instituicao(instituicao)
+                .cpfColaborador(cpfColaborador)
+                .nomeColaborador(nomeColaborador)
+                .dataRegistro(form.dataRegistro())
+                .horaEntradaAtual(registro != null ? registro.getHoraEntrada() : null)
+                .horaSaidaAtual(registro != null ? registro.getHoraSaida() : null)
+                .horaEntradaProposta(entradaProposta)
+                .horaSaidaProposta(saidaProposta)
+                .justificativa(form.justificativa().trim())
+                .status(StatusSolicitacaoAjustePonto.PENDENTE)
+                .criadoEm(RelogioAplicacao.agora())
+                .build();
+
+        return SolicitacaoAjustePontoDto.of(ajustePontoRepository.save(solicitacao));
+    }
+
+    @Transactional(readOnly = true)
+    public List<SolicitacaoAjustePontoDto> listarMeusAjustes(Long instituicaoId, String cpfColaborador) {
+        validarCpf(cpfColaborador);
+        return ajustePontoRepository
+                .findByInstituicao_IdAndCpfColaboradorOrderByCriadoEmDesc(instituicaoId, cpfColaborador)
+                .stream()
+                .map(SolicitacaoAjustePontoDto::of)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<SolicitacaoAjustePontoDto> listarAjustesRh(Long instituicaoId, StatusSolicitacaoAjustePonto status) {
+        if (status != null) {
+            return ajustePontoRepository.findByInstituicao_IdAndStatusOrderByCriadoEmAsc(instituicaoId, status)
+                    .stream()
+                    .map(SolicitacaoAjustePontoDto::of)
+                    .toList();
+        }
+        return ajustePontoRepository.findByInstituicao_IdOrderByCriadoEmDesc(instituicaoId)
+                .stream()
+                .map(SolicitacaoAjustePontoDto::of)
+                .toList();
+    }
+
+    @Transactional
+    public SolicitacaoAjustePontoDto decidirAjuste(
+            Long instituicaoId,
+            Long id,
+            String cpfGestor,
+            DecidirAjustePontoFormDto form) {
+        ExcecaoDeDominio.quandoNulo(form, "Dados obrigatórios.");
+        ExcecaoDeDominio.quando(
+                form.status() != StatusSolicitacaoAjustePonto.APROVADO
+                        && form.status() != StatusSolicitacaoAjustePonto.REJEITADO,
+                "Status de decisão inválido.");
+
+        SolicitacaoAjustePonto solicitacao = ajustePontoRepository.findById(id)
+                .orElseThrow(() -> new ExcecaoDeDominio("Solicitação não encontrada."));
+        ExcecaoDeDominio.quando(
+                solicitacao.getInstituicao() == null || !instituicaoId.equals(solicitacao.getInstituicao().getId()),
+                "Solicitação não pertence a esta instituição.");
+        ExcecaoDeDominio.quando(
+                solicitacao.getStatus() != StatusSolicitacaoAjustePonto.PENDENTE,
+                "Solicitação já foi decidida.");
+
+        solicitacao.setStatus(form.status());
+        solicitacao.setDecididoEm(RelogioAplicacao.agora());
+        solicitacao.setDecididoPorCpf(cpfGestor);
+        solicitacao.setObservacaoGestor(form.observacaoGestor());
+
+        if (form.status() == StatusSolicitacaoAjustePonto.APROVADO) {
+            aplicarAjusteAprovado(instituicaoId, solicitacao);
+        }
+
+        return SolicitacaoAjustePontoDto.of(ajustePontoRepository.save(solicitacao));
+    }
+
+    private void aplicarAjusteAprovado(Long instituicaoId, SolicitacaoAjustePonto solicitacao) {
+        RegistroDiaPonto registro = registroRepository
+                .findByInstituicao_IdAndCpfColaboradorAndDataRegistro(
+                        instituicaoId, solicitacao.getCpfColaborador(), solicitacao.getDataRegistro())
+                .orElseGet(() -> RegistroDiaPonto.builder()
+                        .instituicao(solicitacao.getInstituicao())
+                        .cpfColaborador(solicitacao.getCpfColaborador())
+                        .nomeColaborador(solicitacao.getNomeColaborador())
+                        .dataRegistro(solicitacao.getDataRegistro())
+                        .build());
+
+        if (solicitacao.getHoraEntradaProposta() != null) {
+            registro.setHoraEntrada(solicitacao.getHoraEntradaProposta());
+        }
+        if (solicitacao.getHoraSaidaProposta() != null) {
+            registro.setHoraSaida(solicitacao.getHoraSaidaProposta());
+        }
+        registro.setNomeColaborador(solicitacao.getNomeColaborador());
+        registroRepository.save(registro);
     }
 }

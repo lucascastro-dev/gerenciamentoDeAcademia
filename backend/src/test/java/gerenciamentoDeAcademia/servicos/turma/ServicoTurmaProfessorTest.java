@@ -18,7 +18,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -38,8 +37,6 @@ class ServicoTurmaProfessorTest {
     private static final String CPF_PROFESSOR = "61482582007";
     private static final String CPF_ALUNO = "12345678909";
 
-    @InjectMocks
-    ServicoTurmaProfessor servicoTurmaProfessor;
     @Mock
     TurmaRepository turmaRepository;
     @Mock
@@ -48,6 +45,16 @@ class ServicoTurmaProfessorTest {
     InstituicaoRepository instituicaoRepository;
     @Mock
     ServicoEscopoProfessor servicoEscopoProfessor;
+
+    private VinculoTurmaAluno vinculoTurmaAluno;
+    private ServicoTurmaProfessor servicoTurmaProfessor;
+
+    @org.junit.jupiter.api.BeforeEach
+    void setUp() {
+        vinculoTurmaAluno = new VinculoTurmaAluno(alunoRepository);
+        servicoTurmaProfessor = new ServicoTurmaProfessor(
+                turmaRepository, alunoRepository, instituicaoRepository, servicoEscopoProfessor, vinculoTurmaAluno);
+    }
 
     @Test
     @DisplayName("Dado turma com alunos, Quando listar alunos, Então retorna DTO mascarado")

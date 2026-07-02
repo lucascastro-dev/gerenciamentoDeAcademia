@@ -12,11 +12,12 @@ $Root = Split-Path -Parent $PSScriptRoot
 $Container = 'academia-postgres'
 
 function Test-ContainerExists([string]$Name) {
-    docker inspect $Name 2>$null | Out-Null
+    $out = cmd /c "docker inspect $Name 2>nul"
     return $LASTEXITCODE -eq 0
 }
 
 function Test-ContainerRunning([string]$Name) {
+    if (-not (Test-ContainerExists $Name)) { return $false }
     $state = docker inspect --format '{{.State.Running}}' $Name 2>$null
     return $state -eq 'true'
 }

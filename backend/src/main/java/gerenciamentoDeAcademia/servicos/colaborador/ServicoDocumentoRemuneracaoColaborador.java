@@ -1,5 +1,6 @@
 package gerenciamentoDeAcademia.servicos.colaborador;
 
+import gerenciamentoDeAcademia.dto.ArquivoPdfDto;
 import gerenciamentoDeAcademia.dto.ConfirmarPagamentoFolhaDto;
 import gerenciamentoDeAcademia.dto.DocumentoRemuneracaoDto;
 import gerenciamentoDeAcademia.dto.FolhaPagamentoColaboradorDto;
@@ -11,6 +12,7 @@ import gerenciamentoDeAcademia.entidades.Instituicao;
 import gerenciamentoDeAcademia.entidades.VinculoFuncionarioInstituicao;
 import gerenciamentoDeAcademia.enums.TipoDocumentoRemuneracao;
 import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
+import gerenciamentoDeAcademia.infra.arquivos.ArmazenamentoDocumentoRemuneracao;
 import gerenciamentoDeAcademia.repositorios.DocumentoRemuneracaoColaboradorRepository;
 import gerenciamentoDeAcademia.repositorios.FuncionarioRepository;
 import gerenciamentoDeAcademia.repositorios.InstituicaoRepository;
@@ -18,6 +20,7 @@ import gerenciamentoDeAcademia.repositorios.VinculoFuncionarioInstituicaoReposit
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -38,6 +41,7 @@ public class ServicoDocumentoRemuneracaoColaborador {
     private final FuncionarioRepository funcionarioRepository;
     private final InstituicaoRepository instituicaoRepository;
     private final ServicoFolhaPonto servicoFolhaPonto;
+    private final ArmazenamentoDocumentoRemuneracao armazenamentoDocumentos;
 
     @Transactional(readOnly = true)
     public List<DocumentoRemuneracaoDto> listarMeusDocumentos(
@@ -57,6 +61,66 @@ public class ServicoDocumentoRemuneracaoColaborador {
                 .findByIdAndCpfColaboradorAndInstituicao_Id(id, cpfColaborador, instituicaoId)
                 .orElseThrow(() -> new ExcecaoDeDominio("Documento não encontrado."));
         return DocumentoRemuneracaoDto.of(doc);
+    }
+
+    @Transactional(readOnly = true)
+    public ArquivoPdfDto baixarMeuDocumentoPdf(Long instituicaoId, String cpfColaborador, Long id) {
+        DocumentoRemuneracaoColaborador doc = repository
+                .findByIdAndCpfColaboradorAndInstituicao_Id(id, cpfColaborador, instituicaoId)
+                .orElseThrow(() -> new ExcecaoDeDominio("Documento não encontrado."));
+        return montarArquivoPdf(doc);
+    }
+
+    @Transactional
+    public DocumentoRemuneracaoDto anexarDocumentoPdf(
+            Long instituicaoId,
+            String cpfPublicador,
+            String cpfColaborador,
+            TipoDocumentoRemuneracao tipo,
+            Integer mes,
+            Integer ano,
+            String observacao,
+            MultipartFile arquivo) {
+        validarCompetencia(mes, ano);
+        ExcecaoDeDominio.quandoNuloOuVazio(cpfColaborador, "Informe o colaborador.");
+        ExcecaoDeDominio.quando(tipo == null || tipo == TipoDocumentoRemuneracao.INFORME,
+                "Informe o tipo de documento (holerite ou recibo).");
+
+        String cpf = cpfColaborador.replaceAll("\\D", "");
+        Funcionario funcionario = funcionarioRepository.findByCpf(cpf);
+        ExcecaoDeDominio.quandoNulo(funcionario, "Colaborador não encontrado.");
+        ExcecaoDeDominio.quando(
+                !instituicaoRepository.existsByCnpjAndFuncionarioCpf(instituicaoId, cpf),
+                "Colaborador não vinculado à instituição.");
+
+        Instituicao instituicao = instituicaoRepository.findById(instituicaoId)
+                .orElseThrow(() -> new ExcecaoDeDominio("Instituição não encontrada."));
+
+        DocumentoRemuneracaoColaborador documento = repository
+                .findByInstituicao_IdAndCpfColaboradorAndTipoAndMesCompetenciaAndAnoCompetencia(
+                        instituicaoId, cpf, tipo, mes, ano)
+                .orElse(DocumentoRemuneracaoColaborador.builder()
+                        .instituicao(instituicao)
+                        .cpfColaborador(cpf)
+                        .nomeColaborador(funcionario.getNome())
+                        .tipo(tipo)
+                        .mesCompetencia(mes)
+                        .anoCompetencia(ano)
+                        .build());
+
+        armazenamentoDocumentos.removerSeExistir(documento.getCaminhoArquivo());
+        String caminho = armazenamentoDocumentos.salvarPdf(instituicaoId, cpf, tipo, mes, ano, arquivo);
+
+        documento.setNomeColaborador(funcionario.getNome());
+        documento.setCaminhoArquivo(caminho);
+        documento.setNomeArquivoOriginal(arquivo.getOriginalFilename());
+        documento.setConteudo(observacao != null && !observacao.isBlank() ? observacao.trim() : null);
+        documento.setValorBruto(null);
+        documento.setValorLiquido(null);
+        documento.setPublicadoEm(LocalDateTime.now());
+        documento.setPublicadoPorCpf(cpfPublicador != null ? cpfPublicador.replaceAll("\\D", "") : null);
+
+        return DocumentoRemuneracaoDto.of(repository.save(documento));
     }
 
     @Transactional(readOnly = true)
@@ -286,5 +350,16 @@ public class ServicoDocumentoRemuneracaoColaborador {
                 bruto.subtract(liquido).toPlainString(),
                 liquido.toPlainString(),
                 obs);
+    }
+
+    private ArquivoPdfDto montarArquivoPdf(DocumentoRemuneracaoColaborador doc) {
+        ExcecaoDeDominio.quando(
+                doc.getCaminhoArquivo() == null || doc.getCaminhoArquivo().isBlank(),
+                "Este documento não possui arquivo PDF anexado.");
+        String nome = doc.getNomeArquivoOriginal();
+        if (nome == null || nome.isBlank()) {
+            nome = doc.getTipo().name().toLowerCase(Locale.ROOT) + ".pdf";
+        }
+        return new ArquivoPdfDto(armazenamentoDocumentos.carregar(doc.getCaminhoArquivo()), nome);
     }
 }

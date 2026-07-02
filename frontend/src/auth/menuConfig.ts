@@ -78,9 +78,9 @@ export function obterMenus(sessao: SessaoUsuario | null): MenuSection[] {
         itens: ITENS_COLABORADOR,
       },
       {
-        titulo: 'Financeiro',
+        titulo: 'Plataforma',
         itens: [
-          { label: 'Dashboard financeiro', path: '/arealogada/financeiro' },
+          { label: 'Resumo financeiro', path: '/arealogada/financeiro' },
           { label: 'Pagamentos pendentes', path: '/arealogada/financeiro/pendentes' },
           { label: 'Planos expirados', path: '/arealogada/financeiro/planos-expirados' },
         ],
@@ -127,26 +127,24 @@ export function obterMenus(sessao: SessaoUsuario | null): MenuSection[] {
 
   if (pode('financeiro:visualizar')) {
     sections.push({
-      titulo: 'Financeiro',
+      titulo: 'Cobranças escolares',
       itens: filtrarItens([
-        { label: 'Dashboard financeiro', path: '/arealogada/financeiro' },
+        { label: 'Resumo', path: '/arealogada/financeiro' },
         { label: 'Mensalidades', path: '/arealogada/financeiro/mensalidades' },
         { label: 'Inadimplências', path: '/arealogada/financeiro/inadimplencia', permissao: 'financeiro:relatorio' },
-        { label: 'Folha de pagamento', path: '/arealogada/financeiro/folha-pagamento', permissao: 'financeiro:cobranca' },
-        { label: 'Conciliação bancária', path: '/arealogada/financeiro/conciliacao' },
-        { label: 'Fechamento de mês', path: '/arealogada/financeiro/fechamento-mes', permissao: 'financeiro:relatorio' },
       ]),
     });
   }
 
   const itensRh: MenuItem[] = [
     { label: 'Folha de ponto', path: '/arealogada/rh/folha-ponto', permissao: 'rh:folha-ponto' },
-    { label: 'Fechamento mensal', path: '/arealogada/rh/fechamento-mensal', permissao: 'rh:fechamento-mensal' },
-    { label: 'Lançamento de holerite', path: '/arealogada/rh/lancamento-holerite', permissao: 'rh:holerite-lancamento' },
+    { label: 'Férias da equipe', path: '/arealogada/rh/ferias', permissao: 'rh:ferias' },
+    { label: 'Conferência mensal', path: '/arealogada/rh/conferencia-mensal', permissao: 'rh:fechamento-mensal' },
+    { label: 'Holerites e recibos (PDF)', path: '/arealogada/rh/lancamento-holerite', permissao: 'rh:holerite-lancamento' },
   ];
   const rhFiltrado = filtrarItens(itensRh);
   if (rhFiltrado.length > 0) {
-    sections.push({ titulo: 'Recursos Humanos', itens: rhFiltrado });
+    sections.push({ titulo: 'Gestão de equipe', itens: rhFiltrado });
   }
 
   const itensProfessor: MenuItem[] = [

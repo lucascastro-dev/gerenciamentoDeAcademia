@@ -27,7 +27,7 @@ public class PessoaListagemDto {
     public static PessoaListagemDto deAluno(Aluno aluno, boolean mascararCpf) {
         PessoaListagemDto dto = new PessoaListagemDto();
         dto.setId(aluno.getId());
-        dto.setNome(aluno.getNome());
+        dto.setNome(textoSeguro(aluno.getNome()));
         dto.setDataDeNascimento(aluno.getDataDeNascimento());
         if (mascararCpf) {
             dto.setCpfExibicao(MascaramentoDadosUtil.cpf(aluno.getCpf()));
@@ -68,6 +68,10 @@ public class PessoaListagemDto {
         dto.setInstituicaoId(vinculo.getInstituicao().getId());
         dto.setInstituicaoNome(vinculo.getInstituicao().getRazaoSocial());
         return dto;
+    }
+
+    private static String textoSeguro(String valor) {
+        return valor != null ? valor : "";
     }
 
     private static String formatarCpf(String cpf) {

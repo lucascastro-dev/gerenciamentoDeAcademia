@@ -10,6 +10,10 @@ public class GerenciadorDeExcecoes {
 
     @ExceptionHandler(ApplicationException.class)
     public ResponseEntity<String> tratarApplicationException(ApplicationException ex) {
+        if (ex.getStatus().is5xxServerError()) {
+            org.slf4j.LoggerFactory.getLogger(GerenciadorDeExcecoes.class)
+                    .warn("Erro de aplicação: {}", ex.getMessage());
+        }
         return ResponseEntity.status(ex.getStatus()).body(ex.getMessage());
     }
 

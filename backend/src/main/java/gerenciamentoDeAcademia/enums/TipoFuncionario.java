@@ -70,7 +70,12 @@ public enum TipoFuncionario {
                     PermissaoSistema.PLANO_INSTITUICAO_VISUALIZAR,
                     PermissaoSistema.PROGRAMACAO_CONSULTAR,
                     PermissaoSistema.PROGRAMACAO_GERENCIAR,
-                    PermissaoSistema.PROGRAMACAO_GERENCIAR_ITENS
+                    PermissaoSistema.PROGRAMACAO_GERENCIAR_ITENS,
+                    PermissaoSistema.RH_FOLHA_PONTO,
+                    PermissaoSistema.RH_FECHAMENTO_MENSAL,
+                    PermissaoSistema.RH_FERIAS,
+                    PermissaoSistema.RH_FERIAS_GERENCIAR,
+                    PermissaoSistema.RH_LANCAMENTO_HOLERITE
             );
             case TI -> EnumSet.of(
                     PermissaoSistema.DASHBOARD_VISUALIZAR,
@@ -102,7 +107,9 @@ public enum TipoFuncionario {
                     PermissaoSistema.FUNCIONARIO_ATIVAR,
                     PermissaoSistema.RH_FOLHA_PONTO,
                     PermissaoSistema.RH_FECHAMENTO_MENSAL,
-                    PermissaoSistema.RH_LANCAMENTO_HOLERITE
+                    PermissaoSistema.RH_LANCAMENTO_HOLERITE,
+                    PermissaoSistema.RH_FERIAS,
+                    PermissaoSistema.RH_FERIAS_GERENCIAR
             );
             case RECEPCIONISTA -> EnumSet.of(
                     PermissaoSistema.ALUNO_CONSULTAR,

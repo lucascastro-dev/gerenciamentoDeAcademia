@@ -54,6 +54,9 @@ public class ServicoVinculoFuncionarioInstituicao {
         vinculo.setTipoFuncionario(tipo);
         vinculo.setAreaTerceirizado(funcionario.getAreaTerceirizado());
         vinculo.setEspecializacao(funcionario.getEspecializacao());
+        if (vinculo.getDataAdmissao() == null) {
+            vinculo.setDataAdmissao(java.time.LocalDate.now());
+        }
         return vinculoRepository.save(vinculo);
     }
 
@@ -62,6 +65,9 @@ public class ServicoVinculoFuncionarioInstituicao {
                                            TipoFuncionario tipo, gerenciamentoDeAcademia.enums.AreaTerceirizado area,
                                            String especializacao) {
         VinculoFuncionarioInstituicao vinculo = garantirVinculo(instituicao, funcionario);
+        if (vinculo.getDataAdmissao() == null) {
+            vinculo.setDataAdmissao(java.time.LocalDate.now());
+        }
         vinculo.atualizarFuncao(tipo, area, especializacao);
         vinculoRepository.save(vinculo);
         sincronizarFuncionarioPrincipal(funcionario);

@@ -308,7 +308,7 @@ const GerenciarFuncionario: React.FC = () => {
               <div><PhoneInput label="Telefone" value={telefone} onChange={setTelefone} /></div>
               <div>
                 <label>E-mail</label>
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="nome@email.com" />
+                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="seuemail@exemplo.com" />
               </div>
             </div>
             <EnderecoFields value={endereco} onChange={setEndereco} />

@@ -13,8 +13,8 @@
     <groupId>com.lucastro-dev</groupId>
     <artifactId>gerenciamentoDeAcademia</artifactId>
     <version>1.0.1-SNAPSHOT</version>
-    <name>EduGestão Inteligente — API</name>
-    <description>API de gestão de instituições de ensino (EduGestão Inteligente)</description>
+    <name>Turma360 — API</name>
+    <description>API Turma360 — gestão de instituições de ensino</description>
     <properties>
         <java.version>17</java.version>
     </properties>

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { COPY_UI } from '../../constants/copy';
 import PageShell from '../../components/common/PageShell';
 import HttpService from '../../services/HttpService';
 import { extractApiMessage } from '../../utils/apiError';
@@ -6,6 +7,8 @@ import '../../theme/programacao.css';
 
 interface ItemProgramacao {
   id: number;
+  escopoLancamento?: string;
+  nomeTurma?: string;
   tipo: string;
   tipoDescricao: string;
   titulo: string;
@@ -39,15 +42,12 @@ const PortalAlunoProgramacao: React.FC = () => {
   return (
     <PageShell
       title="Minha programação"
-      subtitle="Provas, aulas, séries de treino e eventos que a sua instituição preparou para você"
+      subtitle={COPY_UI.portalAluno.programacaoSubtitulo}
     >
       {erro && <p style={{ color: '#b91c1c' }}>{erro}</p>}
       {!erro && ordenados.length === 0 && (
         <div className="card">
-          <p>Nenhum item programado no momento.</p>
-          <p className="field-hint">
-            Quando a instituição publicar provas, treinos ou eventos, eles aparecerão aqui em ordem cronológica.
-          </p>
+          <p>{COPY_UI.portalAluno.programacaoVazio}</p>
         </div>
       )}
       {!erro && proximos.length > 0 && (
@@ -63,6 +63,9 @@ const PortalAlunoProgramacao: React.FC = () => {
           >
             <p style={{ margin: 0 }}>
               <span className={`tipo-badge tipo-badge--${item.tipo}`}>{item.tipoDescricao || item.tipo}</span>
+              {item.escopoLancamento === 'TURMA' && item.nomeTurma && (
+                <span className="field-hint" style={{ marginLeft: '0.35rem' }}>· Turma: {item.nomeTurma}</span>
+              )}
               <strong style={{ marginLeft: '0.35rem' }}>{item.titulo}</strong>
             </p>
             {(item.dataPrevista || item.horario || item.sala) && (

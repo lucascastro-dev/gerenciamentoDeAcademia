@@ -1,0 +1,222 @@
+.precos-page {
+  flex: 1;
+}
+
+.precos-hero {
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #2563eb 100%);
+  color: #fff;
+  padding: 3rem 1.25rem;
+  text-align: center;
+}
+
+.precos-hero__inner {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.precos-hero h1 {
+  margin: 0 0 0.75rem;
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  font-weight: 800;
+}
+
+.precos-hero p {
+  margin: 0;
+  opacity: 0.9;
+  line-height: 1.6;
+}
+
+.precos-grid-section {
+  padding: 2.5rem 1.25rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.precos-grid {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+@media (min-width: 1100px) {
+  .precos-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+
+  .precos-grid .precos-card:last-child:nth-child(5n + 1) {
+    grid-column: 3;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1099px) {
+  .precos-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .precos-grid .precos-card:nth-child(4) {
+    grid-column: 1 / span 1;
+  }
+
+  .precos-grid .precos-card:nth-child(5) {
+    grid-column: 2 / span 1;
+  }
+}
+
+.precos-card {
+  position: relative;
+  background: #fff;
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: 16px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow);
+}
+
+.precos-card--destaque {
+  border-color: var(--brand-primary, #2563eb);
+  box-shadow: 0 8px 28px rgba(37, 99, 235, 0.15);
+  transform: scale(1.02);
+}
+
+.precos-card__badge {
+  position: absolute;
+  top: -0.65rem;
+  right: 1rem;
+  background: var(--brand-energy, #f59e0b);
+  color: #0f172a;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+}
+
+.precos-card h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.15rem;
+}
+
+.precos-card__preco {
+  margin: 0 0 1rem;
+}
+
+.precos-card__preco strong {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--brand-primary, #2563eb);
+}
+
+.precos-card__preco span {
+  font-size: 0.9rem;
+  color: var(--color-muted, #64748b);
+  margin-left: 0.15rem;
+}
+
+.precos-card ul {
+  margin: 0 0 1.25rem;
+  padding: 0;
+  list-style: none;
+  flex: 1;
+}
+
+.precos-card li {
+  font-size: 0.88rem;
+  color: var(--color-muted, #64748b);
+  padding: 0.35rem 0 0.35rem 1.25rem;
+  position: relative;
+  line-height: 1.45;
+}
+
+.precos-card li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: var(--brand-primary, #2563eb);
+  font-weight: 700;
+}
+
+.precos-card__cta {
+  display: block;
+  text-align: center;
+  padding: 0.75rem;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #fff !important;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.precos-card__cta:hover {
+  filter: brightness(1.05);
+}
+
+.precos-inclusos {
+  background: #f8fafc;
+  padding: 2.5rem 1.25rem;
+  border-top: 1px solid var(--color-border, #e2e8f0);
+}
+
+.precos-inclusos__inner {
+  max-width: 720px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.precos-inclusos h2 {
+  margin: 0 0 1rem;
+}
+
+.precos-inclusos ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  justify-content: center;
+}
+
+.precos-inclusos li {
+  font-size: 0.9rem;
+  color: var(--color-muted, #64748b);
+}
+
+.precos-inclusos li::before {
+  content: '• ';
+  color: var(--brand-primary, #2563eb);
+}
+
+.precos-inclusos__nota {
+  font-size: 0.85rem;
+  color: var(--color-muted, #64748b);
+  line-height: 1.55;
+  margin-bottom: 1.25rem;
+}
+
+.precos-inclusos__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.precos-inclusos__btn {
+  padding: 0.7rem 1.25rem;
+  border-radius: 999px;
+  font-weight: 600;
+  text-decoration: none;
+  background: #25d366;
+  color: #fff;
+}
+
+.precos-inclusos__btn--ghost {
+  background: transparent;
+  color: var(--brand-primary, #2563eb);
+  border: 2px solid var(--brand-primary, #2563eb);
+}
+
+@media (max-width: 640px) {
+  .precos-card--destaque {
+    transform: none;
+  }
+}

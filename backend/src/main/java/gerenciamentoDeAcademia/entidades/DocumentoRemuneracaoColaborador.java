@@ -58,6 +58,13 @@ public class DocumentoRemuneracaoColaborador {
     @Column(length = 4000)
     private String conteudo;
 
+    /** Caminho relativo ao diretório base de documentos de remuneração */
+    @Column(length = 500)
+    private String caminhoArquivo;
+
+    @Column(length = 255)
+    private String nomeArquivoOriginal;
+
     private LocalDateTime publicadoEm;
 
     @Column(length = 11)

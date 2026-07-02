@@ -175,7 +175,7 @@ const MatriculaAluno: React.FC = () => {
           <PhoneInput label="Telefone" value={telefone} onChange={setTelefone} required />
           <div>
             <label>E-mail</label>
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="nome@email.com" />
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="seuemail@exemplo.com" />
           </div>
           <div>
             <label>Mensalidade</label>

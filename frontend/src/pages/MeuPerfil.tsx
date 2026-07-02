@@ -101,7 +101,7 @@ const MeuPerfil: React.FC = () => {
           <PhoneInput label="Telefone" value={telefone} onChange={setTelefone} />
           <div>
             <label>E-mail</label>
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="nome@email.com" />
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="seuemail@exemplo.com" />
           </div>
           {tipo === 'PROFESSOR' && (
             <div><label>Especialização</label><input value={especializacao} onChange={(e) => setEspecializacao(e.target.value)} /></div>

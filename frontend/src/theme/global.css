@@ -1,4 +1,7 @@
 :root {
+  --brand-primary: #2563eb;
+  --brand-accent: #06b6d4;
+  --brand-energy: #f59e0b;
   --color-primary: #2563eb;
   --color-primary-dark: #1d4ed8;
   --color-sidebar: #1e293b;
@@ -195,6 +198,35 @@ label {
 .table-wrap {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  margin: 0 -0.25rem;
+  padding: 0 0.25rem;
+}
+
+.table-wrap table {
+  min-width: 520px;
+}
+
+.action-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.action-bar .btn-primary,
+.action-bar .btn-secondary {
+  flex: 1 1 auto;
+  min-width: min(100%, 140px);
+  text-align: center;
+  text-decoration: none;
+}
+
+@media (min-width: 601px) {
+  .action-bar .btn-primary,
+  .action-bar .btn-secondary {
+    flex: 0 1 auto;
+  }
 }
 
 .card + .card {

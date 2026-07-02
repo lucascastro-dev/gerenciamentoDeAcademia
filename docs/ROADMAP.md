@@ -1,6 +1,19 @@
-# Roadmap — EduGestão Inteligente
+# Roadmap — Turma360
+
+> Reposição de marca a partir de **EduGestão Inteligente**. Escopo e decisões de produto: [ESCOPO_PRODUTO.md](./ESCOPO_PRODUTO.md).
 
 Documento único de planejamento. Histórico na seção **Entregue**; prioridade atual em **Próxima fase**.
+
+## Entregue — reposicionamento Turma360 (jun/2026)
+
+- Marca **Turma360**: landing `/`, login `/entrar`, logo, docs e scripts
+- **Gestão de equipe**: holerite/recibo via upload **PDF** (API + Meu holerite)
+- Financeiro legado (folha interna, conciliação) **fora do menu principal**
+- Frontend modular: `services/api/*` + fachada `HttpService`
+- CD staging: workflow Docker build pós-CI
+- Documentação: `ESCOPO_PRODUTO`, `BENCHMARK_MERCADO`, `BOUNDED_CONTEXTS`, `DEPLOY_STAGING`
+- Integrações (modo local): Brevo/Twilio log, Asaas simulado, cobrança mensalidade e plano, webhook Asaas
+- Deploy VPS: `DEPLOY_VPS.md`, `docker-compose.vps-app.yml`
 
 ## Entregue (base + evolução até mai/2026)
 

@@ -1,6 +1,6 @@
 # Arquitetura do repositório
 
-Monorepo **EduGestão Inteligente** — gestão de instituições de ensino (colaboradores, alunos, turmas, financeiro, portal do aluno).
+Monorepo **Turma360** — gestão de instituições de ensino (colaboradores, alunos, turmas, financeiro, portal do aluno, gestão de equipe).
 
 ## Visão geral
 
@@ -60,10 +60,10 @@ Perfis Spring: `local` (PostgreSQL host), `docker` (stack Compose), `h2` (memór
 | Área | Papel |
 |------|--------|
 | `src/auth/` | Permissões, menu por perfil |
-| `src/services/` | Cliente HTTP (`HttpService`), integrações |
+| `src/services/` | Cliente HTTP (`HttpService` fachada + módulos em `api/`) |
 | `src/components/` | UI por domínio (login, acadêmico, financeiro, …) |
 | `src/pages/` | Páginas de rota (portal aluno, auditoria, plano, …) |
-| `src/constants/` | Branding (`EduGestão Inteligente`, termos “instituição”) |
+| `src/constants/` | Branding (`Turma360`, termos “instituição”, gestão de equipe) |
 
 Autenticação: JWT no `localStorage`, guards (`ProtectedRoute`, `PlanoInstituicaoGuard`), interceptor de cobrança pós-login.
 

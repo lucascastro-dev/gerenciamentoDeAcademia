@@ -25,8 +25,9 @@ public class ExcecaoDeDominio extends ApplicationException {
     }
 
     public static void quandoNuloOuVazio(Double valor, String mensagemDeErro) {
-        if (StringUtils.isEmpty(valor) || StringUtils.isEmpty(valor))
+        if (valor == null) {
             entaoDisparar(mensagemDeErro);
+        }
     }
 
     public static void quando(Boolean valor, String mensagemDeErro) {

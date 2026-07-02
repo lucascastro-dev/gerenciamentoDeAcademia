@@ -36,16 +36,30 @@ const MeuPonto: React.FC = () => {
   } | null>(null);
   const [carregando, setCarregando] = useState(false);
   const [modal, setModal] = useState({ open: false, success: false, message: '' });
+  const [ajusteAberto, setAjusteAberto] = useState(false);
+  const [ajusteData, setAjusteData] = useState('');
+  const [ajusteEntrada, setAjusteEntrada] = useState('');
+  const [ajusteSaida, setAjusteSaida] = useState('');
+  const [ajusteJustificativa, setAjusteJustificativa] = useState('');
+  const [meusAjustes, setMeusAjustes] = useState<Array<{
+    id: number;
+    dataRegistro: string;
+    status: string;
+    justificativa: string;
+    observacaoGestor?: string;
+  }>>([]);
 
   const carregar = useCallback(() => {
     setCarregando(true);
     Promise.all([
       HttpService.pontoStatusHoje(),
       HttpService.pontoMeuMes(mes, ano),
+      HttpService.pontoMeusAjustes(),
     ])
-      .then(([statusRes, mesRes]) => {
+      .then(([statusRes, mesRes, ajustesRes]) => {
         setStatusHoje(statusRes.data);
         setResumo(mesRes.data);
+        setMeusAjustes(ajustesRes.data || []);
       })
       .catch(() => {
         setStatusHoje(null);
@@ -73,6 +87,34 @@ const MeuPonto: React.FC = () => {
       carregar();
     } catch (e) {
       setModal({ open: true, success: false, message: extractApiMessage(e, 'Erro ao registrar ponto.') });
+    }
+  };
+
+  const solicitarAjuste = async () => {
+    if (!ajusteData || !ajusteJustificativa.trim()) {
+      setModal({ open: true, success: false, message: 'Informe a data e a justificativa.' });
+      return;
+    }
+    if (!ajusteEntrada && !ajusteSaida) {
+      setModal({ open: true, success: false, message: 'Informe pelo menos um horário a ajustar.' });
+      return;
+    }
+    try {
+      await HttpService.pontoSolicitarAjuste({
+        dataRegistro: ajusteData,
+        horaEntradaProposta: ajusteEntrada || undefined,
+        horaSaidaProposta: ajusteSaida || undefined,
+        justificativa: ajusteJustificativa.trim(),
+      });
+      setAjusteAberto(false);
+      setAjusteData('');
+      setAjusteEntrada('');
+      setAjusteSaida('');
+      setAjusteJustificativa('');
+      setModal({ open: true, success: true, message: 'Solicitação enviada para aprovação do RH/Administrador.' });
+      carregar();
+    } catch (e) {
+      setModal({ open: true, success: false, message: extractApiMessage(e, 'Erro ao solicitar ajuste.') });
     }
   };
 
@@ -104,6 +146,37 @@ const MeuPonto: React.FC = () => {
           >
             {labelBotao}
           </button>
+        </div>
+
+        <div className="card" style={{ marginBottom: '1rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+            <h3 className="colab-ponto__titulo" style={{ margin: 0 }}>Ajuste de horário</h3>
+            <button type="button" className="btn-secondary" onClick={() => setAjusteAberto((v) => !v)}>
+              {ajusteAberto ? 'Cancelar' : 'Solicitar ajuste'}
+            </button>
+          </div>
+          <p className="field-hint">Correções de entrada/saída precisam de aprovação do RH ou Administrador.</p>
+          {ajusteAberto && (
+            <div className="form-grid" style={{ marginTop: '0.75rem' }}>
+              <div><label>Data</label><input type="date" value={ajusteData} onChange={(e) => setAjusteData(e.target.value)} /></div>
+              <div><label>Nova entrada</label><input type="time" value={ajusteEntrada} onChange={(e) => setAjusteEntrada(e.target.value)} /></div>
+              <div><label>Nova saída</label><input type="time" value={ajusteSaida} onChange={(e) => setAjusteSaida(e.target.value)} /></div>
+              <div style={{ gridColumn: '1 / -1' }}>
+                <label>Justificativa</label>
+                <textarea rows={3} value={ajusteJustificativa} onChange={(e) => setAjusteJustificativa(e.target.value)} />
+              </div>
+              <div><button type="button" className="btn-primary" onClick={solicitarAjuste}>Enviar solicitação</button></div>
+            </div>
+          )}
+          {meusAjustes.length > 0 && (
+            <ul style={{ margin: '1rem 0 0', paddingLeft: '1.2rem' }}>
+              {meusAjustes.slice(0, 5).map((a) => (
+                <li key={a.id}>
+                  {FolhaPontoUtil.formatarData(a.dataRegistro)} — {a.status} — {a.justificativa}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
         <div className="colab-toolbar card">

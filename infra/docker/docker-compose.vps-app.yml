@@ -1,0 +1,13 @@
+# Overlay: app em VPS separada do PostgreSQL (sem container postgres local)
+# Uso: docker compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.vps-app.yml up -d --build
+services:
+  postgres:
+    profiles:
+      - never-on-vps-app
+
+  backend:
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${DB_HOST}:${DB_PORT:-5432}/gerenciamento_academia
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-academia_app}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+    depends_on: []

@@ -5,6 +5,9 @@ import FeedbackModal from '../common/FeedbackModal';
 import PasswordInput from '../common/PasswordInput';
 import PasswordStrengthHints from '../common/PasswordStrengthHints';
 import PhoneInput from '../common/PhoneInput';
+import AuthLayout from '../common/AuthLayout';
+import { COPY, PLACEHOLDERS } from '../../constants/copy';
+import '../common/AuthLayout.css';
 import '../common/PasswordFields.css';
 import '../common/PhoneFields.css';
 import HttpService from '../../services/HttpService';
@@ -13,7 +16,6 @@ import { EnderecoCompleto, enderecoVazio, serializarEndereco } from '../../utils
 import { isEmailValido } from '../../utils/emailPolicy';
 import { isSenhaForte } from '../../utils/passwordPolicy';
 import { telefoneParaApi, telefoneValido } from '../../utils/phoneFormat';
-import './Login.css';
 
 const Cadastro: React.FC = () => {
   const [nome, setNome] = useState('');
@@ -84,143 +86,146 @@ const Cadastro: React.FC = () => {
       });
       setModal({
         open: true,
-        message:
-          'Pré-cadastro enviado com sucesso. O RH da sua instituição irá ativar seu acesso e definir sua função. Você poderá entrar após a ativação.',
+        message: COPY.cadastroSucesso,
         success: true,
       });
     } catch (err) {
-      setModal({ open: true, message: extractApiMessage(err, 'Erro ao processar requisição.'), success: false });
+      setModal({ open: true, message: extractApiMessage(err, 'Não foi possível enviar o pré-cadastro. Tente novamente.'), success: false });
     } finally {
       setLoading(false);
     }
   };
 
   const closeModal = () => {
-    if (modal.success) navigate('/areapublica/login');
+    if (modal.success) navigate('/entrar');
     setModal((m) => ({ ...m, open: false }));
   };
 
   return (
-    <div className="auth-page">
-      <div className="auth-page__brand">EduGestão Inteligente</div>
+    <AuthLayout
+      wide
+      title="Pré-cadastro de colaborador"
+      subtitle={COPY.cadastroIntro}
+    >
+      <p className="auth-hint--info">
+        {COPY.cadastroNotaInstituicao}{' '}
+        <Link to="/contato">Fale conosco</Link>
+      </p>
 
-      <div className="login-container login-container--cadastro">
-        <h2>Pré-cadastro colaborador</h2>
-        <p className="login-intro">
-          Preencha seus dados pessoais. A função na instituição será definida pelo RH na ativação do cadastro.
-          Cadastro de novas instituições na plataforma é exclusivo do administrador master.
-        </p>
+      <form onSubmit={handleCadastro}>
+        <fieldset className="auth-form-section">
+          <legend>Identificação</legend>
+          <label className="auth-label" htmlFor="cad-nome">Nome completo</label>
+          <input
+            id="cad-nome"
+            placeholder={PLACEHOLDERS.nomeCompleto}
+            value={nome}
+            onChange={(e) => setNome(e.target.value)}
+            autoComplete="name"
+          />
 
-        <form onSubmit={handleCadastro}>
-          <fieldset className="auth-form-section">
-            <legend>Identificação</legend>
-            <label className="login-label" htmlFor="cad-nome">Nome completo</label>
-            <input
-              id="cad-nome"
-              placeholder="Como consta em documentos"
-              value={nome}
-              onChange={(e) => setNome(e.target.value)}
-              autoComplete="name"
-            />
+          <div className="auth-form-row">
+            <div>
+              <label className="auth-label" htmlFor="cad-cpf">CPF</label>
+              <input
+                id="cad-cpf"
+                placeholder={PLACEHOLDERS.cpf}
+                inputMode="numeric"
+                value={cpf}
+                onChange={(e) => setCpf(maskCPF(e.target.value))}
+                autoComplete="username"
+              />
+            </div>
+            <div>
+              <label className="auth-label" htmlFor="cad-rg">RG</label>
+              <input
+                id="cad-rg"
+                placeholder={PLACEHOLDERS.rg}
+                value={rg}
+                onChange={(e) => setRg(e.target.value)}
+              />
+            </div>
+          </div>
 
-            <label className="login-label" htmlFor="cad-cpf">CPF</label>
-            <input
-              id="cad-cpf"
-              placeholder="000.000.000-00"
-              inputMode="numeric"
-              value={cpf}
-              onChange={(e) => setCpf(maskCPF(e.target.value))}
-              autoComplete="username"
-            />
+          <label className="auth-label" htmlFor="cad-nasc">Data de nascimento</label>
+          <input
+            id="cad-nasc"
+            type="date"
+            value={dataDeNascimento}
+            onChange={(e) => setDataDeNascimento(e.target.value)}
+          />
+        </fieldset>
 
-            <label className="login-label" htmlFor="cad-rg">RG</label>
-            <input
-              id="cad-rg"
-              placeholder="Número do RG"
-              value={rg}
-              onChange={(e) => setRg(e.target.value)}
-            />
+        <fieldset className="auth-form-section">
+          <legend>Contato</legend>
+          <PhoneInput
+            id="cad-tel"
+            label="Telefone / WhatsApp"
+            labelClassName="auth-label"
+            value={telefone}
+            onChange={setTelefone}
+            required
+          />
 
-            <label className="login-label" htmlFor="cad-nasc">Data de nascimento</label>
-            <input
-              id="cad-nasc"
-              type="date"
-              value={dataDeNascimento}
-              onChange={(e) => setDataDeNascimento(e.target.value)}
-            />
-          </fieldset>
-
-          <fieldset className="auth-form-section">
-            <legend>Contato</legend>
-            <PhoneInput
-              id="cad-tel"
-              label="Telefone / WhatsApp"
-              labelClassName="login-label"
-              value={telefone}
-              onChange={setTelefone}
-              required
-            />
-
-            <label className="login-label" htmlFor="cad-email">E-mail</label>
-            <input
-              id="cad-email"
-              type="email"
-              placeholder="nome@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              autoComplete="email"
-            />
-            {email.trim().length > 0 && !emailValido && (
-              <p className="password-field--mismatch" role="alert">
-                Informe um e-mail válido (ex.: nome@dominio.com).
-              </p>
-            )}
-          </fieldset>
-
-          <fieldset className="auth-form-section">
-            <legend>Endereço</legend>
-            <p className="login-hint" style={{ marginTop: 0 }}>
-              Informe o CEP para preencher logradouro, bairro e cidade. Depois informe apenas número e complemento.
+          <label className="auth-label" htmlFor="cad-email">E-mail</label>
+          <input
+            id="cad-email"
+            type="email"
+            placeholder={PLACEHOLDERS.email}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="email"
+          />
+          {email.trim().length > 0 && !emailValido && (
+            <p className="password-field--mismatch" role="alert">
+              Informe um e-mail válido.
             </p>
-            <EnderecoFields value={endereco} onChange={setEndereco} />
-          </fieldset>
+          )}
+        </fieldset>
 
-          <fieldset className="auth-form-section">
-            <legend>Senha de acesso</legend>
-            <PasswordInput
-              id="cad-senha"
-              label="Criar senha"
-              value={senha}
-              onChange={setSenha}
-              placeholder="Defina uma senha forte"
-              autoComplete="new-password"
-              showStrength
-              strengthHints={<PasswordStrengthHints password={senha} idPrefix="cad" />}
-            />
+        <fieldset className="auth-form-section">
+          <legend>Endereço</legend>
+          <p className="auth-hint" style={{ marginTop: 0 }}>
+            Informe o CEP para preencher logradouro e cidade automaticamente.
+          </p>
+          <EnderecoFields value={endereco} onChange={setEndereco} />
+        </fieldset>
 
-            <PasswordInput
-              id="cad-senha-conf"
-              label="Confirmar senha"
-              value={senhaConfirmacao}
-              onChange={setSenhaConfirmacao}
-              placeholder="Repita a senha"
-              autoComplete="new-password"
-            />
-            {senhaConfirmacao.length > 0 && !senhasConferem && (
-              <p className="password-field--mismatch" role="alert">
-                As senhas não coincidem.
-              </p>
-            )}
-          </fieldset>
+        <fieldset className="auth-form-section">
+          <legend>Senha de acesso</legend>
+          <PasswordInput
+            id="cad-senha"
+            label="Criar senha"
+            value={senha}
+            onChange={setSenha}
+            placeholder={PLACEHOLDERS.senhaNova}
+            autoComplete="new-password"
+            showStrength
+            strengthHints={<PasswordStrengthHints password={senha} idPrefix="cad" />}
+          />
 
-          <button type="submit" className="auth-btn-primary" disabled={!isFormValid || loading}>
-            {loading ? 'Enviando...' : 'Enviar pré-cadastro'}
-          </button>
-        </form>
+          <PasswordInput
+            id="cad-senha-conf"
+            label="Confirmar senha"
+            value={senhaConfirmacao}
+            onChange={setSenhaConfirmacao}
+            placeholder={PLACEHOLDERS.senhaConfirmacao}
+            autoComplete="new-password"
+          />
+          {senhaConfirmacao.length > 0 && !senhasConferem && (
+            <p className="password-field--mismatch" role="alert">
+              As senhas não coincidem.
+            </p>
+          )}
+        </fieldset>
 
-        <div className="links-container">
-          <Link to="/areapublica/login">Já tenho cadastro — voltar ao login</Link>
-        </div>
+        <button type="submit" className="auth-btn-primary" disabled={!isFormValid || loading}>
+          {loading ? 'Enviando...' : 'Enviar pré-cadastro'}
+        </button>
+      </form>
+
+      <div className="auth-links">
+        <Link to="/entrar">Já tenho cadastro — entrar</Link>
       </div>
 
       <FeedbackModal
@@ -230,7 +235,7 @@ const Cadastro: React.FC = () => {
         message={modal.message}
         onClose={closeModal}
       />
-    </div>
+    </AuthLayout>
   );
 };
 

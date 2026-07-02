@@ -38,6 +38,30 @@ public class AlteraradorDeDadosDoAlunoTest {
     }
 
     @Test
+    void deveAtualizarSomenteFinanceiroSemApagarDadosPessoais() {
+        Aluno alunoExistente = Instancio.of(Aluno.class)
+                .set(field(Aluno::getCpf), "80430802080")
+                .set(field(Aluno::getNome), "Bernardo")
+                .set(field(Aluno::getRg), "123456")
+                .set(field(Aluno::getTelefone), "21999998888")
+                .create();
+        AlunoDto financeiro = new AlunoDto();
+        financeiro.setCpf("80430802080");
+        financeiro.setInstituicaoId(4L);
+        financeiro.setValorMensalidade(200.0);
+        financeiro.setDiaVencimentoMensalidade(15);
+
+        Mockito.when(alunoRepository.findByCpf("80430802080")).thenReturn(alunoExistente);
+
+        alteadorDeDadosDoAluno.alterarAluno(financeiro);
+
+        org.junit.jupiter.api.Assertions.assertEquals("Bernardo", alunoExistente.getNome());
+        org.junit.jupiter.api.Assertions.assertEquals("123456", alunoExistente.getRg());
+        org.junit.jupiter.api.Assertions.assertEquals("21999998888", alunoExistente.getTelefone());
+        Mockito.verify(servicoMatriculaInstituicao).atualizarFinanceiro(alunoExistente, financeiro);
+    }
+
+    @Test
     void deveConsultarSeOAlunoExisteAntesDeAlterar() {
         AlunoDto alunoDto = Instancio.of(AlunoDto.class).set(field(AlunoDto::getCpf), "80430802080").create();
         Aluno alunoEncontrado = Instancio.of(Aluno.class).set(field(Aluno::getCpf), "80430802080").create();

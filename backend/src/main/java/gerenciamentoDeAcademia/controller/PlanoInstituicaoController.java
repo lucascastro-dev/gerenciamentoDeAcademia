@@ -1,12 +1,17 @@
 package gerenciamentoDeAcademia.controller;
 
 import gerenciamentoDeAcademia.dto.AssinaturaPlataformaDto;
+import gerenciamentoDeAcademia.dto.integracoes.CobrancaExternaDto;
 import gerenciamentoDeAcademia.enums.PlanoInstituicaoTipo;
+import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
+import gerenciamentoDeAcademia.servicos.integracoes.ServicoCobrancaExterna;
+import gerenciamentoDeAcademia.servicos.integracoes.ServicoNotificacoes;
 import gerenciamentoDeAcademia.servicos.plano.ServicoAssinaturaPlataforma;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,6 +28,12 @@ public class PlanoInstituicaoController {
 
     @Autowired
     private ServicoAssinaturaPlataforma servicoAssinaturaPlataforma;
+
+    @Autowired
+    private ServicoCobrancaExterna servicoCobrancaExterna;
+
+    @Autowired
+    private ServicoNotificacoes servicoNotificacoes;
 
     @GetMapping("/tipos")
     public List<Map<String, String>> listarTiposPlano() {
@@ -50,5 +61,25 @@ public class PlanoInstituicaoController {
                 ? PlanoInstituicaoTipo.valueOf(codigo)
                 : null;
         return servicoAssinaturaPlataforma.ativarPlano(instituicaoId, plano);
+    }
+
+    @PostMapping("/{instituicaoId}/cobranca")
+    @PreAuthorize("@permissaoEvaluator.possui(authentication, 'plano:gerenciar')")
+    public CobrancaExternaDto gerarCobrancaPlano(
+            @PathVariable Long instituicaoId,
+            @RequestBody Map<String, String> body) {
+        String codigo = body != null ? body.get("plano") : null;
+        PlanoInstituicaoTipo plano = codigo != null ? PlanoInstituicaoTipo.valueOf(codigo) : null;
+        return servicoCobrancaExterna.criarCobrancaPlanoInstituicao(instituicaoId, plano);
+    }
+
+    @PostMapping("/{instituicaoId}/cobranca/{cobrancaId}/simular-pagamento")
+    @PreAuthorize("@permissaoEvaluator.possui(authentication, 'plano:gerenciar')")
+    public CobrancaExternaDto simularPagamentoPlano(
+            @PathVariable Long instituicaoId,
+            @PathVariable Long cobrancaId) {
+        ExcecaoDeDominio.quando(!servicoNotificacoes.status().modoLocal(),
+                "Simulação disponível apenas em modo local.");
+        return servicoCobrancaExterna.confirmarPagamento(cobrancaId, instituicaoId);
     }
 }

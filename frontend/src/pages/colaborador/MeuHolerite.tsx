@@ -15,6 +15,8 @@ interface Documento {
   id: number;
   tipo: 'HOLERITE' | 'RECIBO' | 'INFORME';
   tipoDescricao: string;
+  possuiArquivoPdf?: boolean;
+  nomeArquivo?: string;
   valorLiquido?: number;
 }
 
@@ -23,6 +25,8 @@ const MeuHolerite: React.FC = () => {
   const [ano, setAno] = useState(String(ANO_ATUAL));
   const [documentos, setDocumentos] = useState<Documento[]>([]);
   const [visualizando, setVisualizando] = useState<{ titulo: string; conteudo: string } | null>(null);
+  const [abrindoPdf, setAbrindoPdf] = useState(false);
+  const [erroPdf, setErroPdf] = useState<string | null>(null);
 
   const carregar = useCallback(() => {
     HttpService.meusDocumentosRemuneracao(Number(mes), Number(ano))
@@ -36,9 +40,31 @@ const MeuHolerite: React.FC = () => {
 
   const docPorTipo = (tipo: Documento['tipo']) => documentos.find((d) => d.tipo === tipo);
 
+  const abrirPdf = async (doc: Documento, titulo: string) => {
+    setAbrindoPdf(true);
+    setErroPdf(null);
+    try {
+      const response = await HttpService.meuDocumentoRemuneracaoPdf(doc.id);
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank', 'noopener,noreferrer');
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch {
+      setErroPdf(`Não foi possível abrir o PDF de ${titulo}.`);
+    } finally {
+      setAbrindoPdf(false);
+    }
+  };
+
   const abrir = async (tipo: Documento['tipo'], titulo: string) => {
     const doc = docPorTipo(tipo);
     if (!doc) return;
+
+    if (doc.possuiArquivoPdf) {
+      await abrirPdf(doc, titulo);
+      return;
+    }
+
     try {
       const r = await HttpService.meuDocumentoRemuneracao(doc.id);
       setVisualizando({ titulo, conteudo: r.data.conteudo || 'Documento sem conteúdo.' });
@@ -48,8 +74,8 @@ const MeuHolerite: React.FC = () => {
   };
 
   const cards = [
-    { tipo: 'HOLERITE' as const, titulo: 'Holerite', descricao: 'Contracheque do mês' },
-    { tipo: 'RECIBO' as const, titulo: 'Recibo', descricao: 'Recibo de pagamento' },
+    { tipo: 'HOLERITE' as const, titulo: 'Holerite', descricao: 'Contracheque do mês (PDF)' },
+    { tipo: 'RECIBO' as const, titulo: 'Recibo', descricao: 'Recibo de pagamento (PDF)' },
     { tipo: 'INFORME' as const, titulo: 'Informe de rendimentos', descricao: 'Documento anual (IR)' },
   ];
 
@@ -73,13 +99,16 @@ const MeuHolerite: React.FC = () => {
             </div>
           </div>
           <p className="field-hint colab-toolbar__hint">
-            Documentos publicados pelo RH e Financeiro da sua instituição.
+            Documentos anexados pela gestão de equipe da sua instituição.
           </p>
+          {erroPdf && <p className="field-hint" style={{ color: 'var(--color-danger)' }}>{erroPdf}</p>}
         </div>
 
         <div className="colab-doc-grid">
           {cards.map((doc) => {
             const publicado = !!docPorTipo(doc.tipo);
+            const item = docPorTipo(doc.tipo);
+            const labelPdf = item?.possuiArquivoPdf ? 'Abrir PDF' : 'Visualizar';
             return (
               <div key={doc.titulo} className={`colab-doc-card ${publicado ? '' : 'colab-doc-card--off'}`}>
                 <div className="colab-doc-card__head">
@@ -87,15 +116,18 @@ const MeuHolerite: React.FC = () => {
                   <div>
                     <h3>{doc.titulo}</h3>
                     <p>{doc.descricao}</p>
+                    {item?.nomeArquivo && (
+                      <p className="field-hint" style={{ marginTop: '0.35rem' }}>{item.nomeArquivo}</p>
+                    )}
                   </div>
                 </div>
                 <button
                   type="button"
                   className={publicado ? 'btn-primary' : 'btn-secondary'}
-                  disabled={!publicado}
+                  disabled={!publicado || abrindoPdf}
                   onClick={() => abrir(doc.tipo, doc.titulo)}
                 >
-                  {publicado ? 'Visualizar' : 'Indisponível'}
+                  {publicado ? (abrindoPdf ? 'Abrindo...' : labelPdf) : 'Indisponível'}
                 </button>
               </div>
             );

@@ -25,6 +25,8 @@ public class TurmaResumoDto {
     private String horaInicio;
     private String horaFim;
     private Integer totalAlunos;
+    private String professorNome;
+    private String professorEspecializacao;
 
     private static final DateTimeFormatter HORA = DateTimeFormatter.ofPattern("HH:mm");
 
@@ -38,6 +40,10 @@ public class TurmaResumoDto {
         dto.setHoraFim(formatarHora(turma.getHoraFim()));
         dto.setHorario(montarHorarioExibicao(turma));
         dto.setTotalAlunos(turma.getAlunos() != null ? turma.getAlunos().size() : 0);
+        if (turma.getProfessor() != null) {
+            dto.setProfessorNome(turma.getProfessor().getNome());
+            dto.setProfessorEspecializacao(turma.getProfessor().getEspecializacao());
+        }
         return dto;
     }
 

@@ -1,6 +1,6 @@
-# EduGestão Inteligente
+# Turma360
 
-Sistema SaaS para gestão de **instituições de ensino**: colaboradores, alunos, turmas, grade horária, financeiro, portal do aluno, permissões por perfil e auditoria.
+Sistema SaaS para gestão de **instituições de ensino**: colaboradores, alunos, turmas, grade horária, financeiro escolar, portal do aluno, gestão de equipe e auditoria.
 
 ## Estrutura do projeto
 
@@ -8,9 +8,10 @@ Sistema SaaS para gestão de **instituições de ensino**: colaboradores, alunos
 gerenciamentoDeAcademia/
 ├── backend/          # API Spring Boot (Java 17)
 ├── frontend/         # SPA React + TypeScript + Vite
-├── docs/             # Roadmap, deploy, migrações, testes — índice em docs/README.md
-├── infra/            # Docker/PostgreSQL init — ver infra/README.md
-├── scripts/          # Portas, subida Docker, URL do túnel
+├── docs/             # Roadmap, deploy, migrações — docs/README.md
+├── infra/            # Docker overlays (infra/docker/) e PostgreSQL init
+├── scripts/          # Subida Docker, backup — scripts/README.md
+├── subir.bat         # Atalho: stack completa + túnel
 ├── docker-compose.yml
 └── .env.example
 ```
@@ -25,7 +26,7 @@ Arquitetura detalhada: **[docs/ARQUITETURA.md](docs/ARQUITETURA.md)**.
 | Frontend | React 18, TypeScript, Vite, React Router, styled-components |
 | Infra | Docker Compose (PostgreSQL + API + frontend + túnel opcional) |
 
-Pacotes: backend `com.lucastro-dev:gerenciamentoDeAcademia` · frontend `edugestao-inteligente-frontend` (`1.0.1-SNAPSHOT`).
+Pacotes: backend `com.lucastro-dev:gerenciamentoDeAcademia` · frontend `turma360-frontend` (`1.0.1-SNAPSHOT`). Marca comercial: **Turma360**. Escopo: [docs/ESCOPO_PRODUTO.md](docs/ESCOPO_PRODUTO.md).
 
 ## Execução rápida (Docker — teste na internet)
 

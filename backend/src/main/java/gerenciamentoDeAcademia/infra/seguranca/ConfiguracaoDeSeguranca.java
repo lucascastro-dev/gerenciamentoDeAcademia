@@ -48,8 +48,10 @@ public class ConfiguracaoDeSeguranca {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .antMatchers("/**/login", "/**/login/**").permitAll()
+                        .antMatchers("/**/webhooks/**").permitAll()
                         .antMatchers("/**/solicitarPrimeiroAcesso/**").permitAll()
                         .antMatchers("/**/preCadastroColaborador").permitAll()
+                        .antMatchers("/**/publico/contato").permitAll()
                         .antMatchers("/actuator/health", "/actuator/info").permitAll()
                         .antMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .anyRequest().authenticated()

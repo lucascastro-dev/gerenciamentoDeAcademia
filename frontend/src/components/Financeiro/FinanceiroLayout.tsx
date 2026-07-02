@@ -12,7 +12,7 @@ const FinanceiroLayout: React.FC = () => {
     <div>
       <nav style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
         <NavLink to="/arealogada/financeiro" end className={({ isActive }) => (isActive ? 'btn-primary' : '')} style={linkStyle}>
-          Dashboard
+          {master ? 'Resumo plataforma' : 'Resumo'}
         </NavLink>
         {master && (
           <>
@@ -32,21 +32,6 @@ const FinanceiroLayout: React.FC = () => {
         {!master && pode('financeiro:relatorio') && (
           <NavLink to="/arealogada/financeiro/inadimplencia" className={({ isActive }) => (isActive ? 'btn-primary' : '')} style={linkStyle}>
             Inadimplências
-          </NavLink>
-        )}
-        {!master && pode('financeiro:cobranca') && (
-          <NavLink to="/arealogada/financeiro/folha-pagamento" className={({ isActive }) => (isActive ? 'btn-primary' : '')} style={linkStyle}>
-            Folha
-          </NavLink>
-        )}
-        {!master && pode('financeiro:visualizar') && (
-          <NavLink to="/arealogada/financeiro/conciliacao" className={({ isActive }) => (isActive ? 'btn-primary' : '')} style={linkStyle}>
-            Conciliação
-          </NavLink>
-        )}
-        {!master && pode('financeiro:relatorio') && (
-          <NavLink to="/arealogada/financeiro/fechamento-mes" className={({ isActive }) => (isActive ? 'btn-primary' : '')} style={linkStyle}>
-            Fechamento
           </NavLink>
         )}
       </nav>

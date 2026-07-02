@@ -1,0 +1,26 @@
+name: CD Staging
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [master, main]
+
+concurrency:
+  group: cd-staging-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  docker-build:
+    name: Build imagens Docker
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build backend e frontend
+        run: docker compose build backend frontend
+
+      - name: Validar compose prod overlay
+        run: docker compose -f docker-compose.yml -f infra/docker/docker-compose.prod.yml config --quiet

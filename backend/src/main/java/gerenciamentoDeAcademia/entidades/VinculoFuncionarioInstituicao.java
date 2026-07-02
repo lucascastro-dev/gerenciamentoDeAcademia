@@ -6,6 +6,7 @@ import gerenciamentoDeAcademia.excecao.ExcecaoDeDominio;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -46,6 +47,9 @@ public class VinculoFuncionarioInstituicao {
     private AreaTerceirizado areaTerceirizado;
 
     private String especializacao;
+
+    /** Data de início do vínculo na instituição — base para período aquisitivo de férias. */
+    private LocalDate dataAdmissao;
 
     public void atualizarFuncao(TipoFuncionario tipo, AreaTerceirizado area, String especializacao) {
         ExcecaoDeDominio.quandoNulo(tipo, "Tipo de funcionário é obrigatório na instituição.");

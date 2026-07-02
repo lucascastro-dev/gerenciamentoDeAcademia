@@ -22,9 +22,21 @@ export function telefoneMascarado(v: string): boolean {
   return v.includes('*');
 }
 
-/** Formata DDD + número nacional: 21 96532 4465 */
+/** Remove código do país quando digitado junto com o DDD+número. */
+export function extrairDigitosNacionais(digitos: string, dialPais = PAIS_PADRAO.dial): string {
+  let d = digitos.replace(/\D/g, '');
+  while (d.startsWith(dialPais) && d.length > dialPais.length + 8) {
+    d = d.slice(dialPais.length);
+  }
+  if (d.startsWith(dialPais) && d.length >= 12) {
+    d = d.slice(dialPais.length);
+  }
+  return d.slice(0, 11);
+}
+
+/** Formata DDD + número nacional: 00 00000 0000 */
 export function formatarParteNacional(nacional: string): string {
-  const d = nacional.replace(/\D/g, '').slice(0, 11);
+  const d = extrairDigitosNacionais(nacional).slice(0, 11);
   if (d.length === 0) return '';
   if (d.length <= 2) return d;
 
@@ -53,7 +65,7 @@ function detectarPaisPorDigitos(digits: string): PaisTelefone | null {
   return null;
 }
 
-/** Exibe no padrão internacional: +55 21 96532 4465 */
+/** Exibe no padrão internacional: +55 00 00000 0000 */
 export function formatarTelefoneExibicao(valor: string, dialPadrao = PAIS_PADRAO.dial): string {
   if (!valor || telefoneMascarado(valor)) return valor;
 
@@ -77,9 +89,9 @@ export function telefoneParaApi(valor: string): string {
   const digits = somenteDigitosTelefone(valor);
   const pais = detectarPaisPorDigitos(digits);
   if (pais) {
-    return digits.slice(pais.dial.length);
+    return extrairDigitosNacionais(digits, pais.dial);
   }
-  return digits;
+  return extrairDigitosNacionais(digits);
 }
 
 export function telefoneValido(valor: string): boolean {

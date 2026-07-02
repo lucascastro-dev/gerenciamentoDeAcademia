@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { COPY_UI } from '../../constants/copy';
 import FeedbackModal from '../../components/common/FeedbackModal';
 import PageShell from '../../components/common/PageShell';
 import HttpService from '../../services/HttpService';
@@ -32,7 +33,7 @@ const PortalAlunoSenha: React.FC = () => {
   };
 
   return (
-    <PageShell title="Alterar senha" subtitle="Portal do aluno">
+    <PageShell title={COPY_UI.portalAluno.senhaTitulo} subtitle="Mantenha sua conta segura com uma senha forte">
       <form className="card" onSubmit={salvar} style={{ maxWidth: 420 }}>
         <div className="form-grid">
           <div>
@@ -48,7 +49,7 @@ const PortalAlunoSenha: React.FC = () => {
             <input type="password" value={senhaConfirma} onChange={(e) => setSenhaConfirma(e.target.value)} required minLength={4} />
           </div>
         </div>
-        <p className="field-hint">Mínimo de 4 caracteres. Após a matrícula, a senha inicial costuma ser <strong>123</strong>.</p>
+        <p className="field-hint">Use uma senha forte com letras, números e símbolos. Se ainda não alterou, consulte a secretaria sobre a senha inicial.</p>
         <div className="form-actions">
           <button type="submit" className="btn-primary">Salvar nova senha</button>
         </div>

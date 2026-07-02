@@ -6,7 +6,7 @@ import PageShell from '../common/PageShell';
 import CurrencyInput from '../common/CurrencyInput';
 import PhoneInput from '../common/PhoneInput';
 import '../common/PhoneFields.css';
-import { carregarSessao, isModoPlataforma, isProfessor } from '../../auth/permissoes';
+import { carregarSessao, isModoPlataforma, possuiPermissao } from '../../auth/permissoes';
 import HttpService from '../../services/HttpService';
 import { extractApiMessage } from '../../utils/apiError';
 import { EnderecoCompleto, enderecoVazio, parseEndereco, serializarEndereco } from '../../utils/endereco';
@@ -26,10 +26,13 @@ interface FinanceiroInstituicao {
   dia: string;
 }
 
+const str = (v?: string | null) => v ?? '';
+
 const GerenciarAlunos: React.FC = () => {
   const sessao = carregarSessao();
   const master = isModoPlataforma(sessao);
-  const modoProfessor = isProfessor(sessao);
+  const podeEditarAluno = possuiPermissao(sessao, 'aluno:editar');
+  const consultaSomenteLeitura = !podeEditarAluno;
 
   const [tela, setTela] = useState<'lista' | 'detalhe'>('lista');
   const [lista, setLista] = useState<PessoaListagemItem[]>([]);
@@ -48,6 +51,7 @@ const GerenciarAlunos: React.FC = () => {
   const [turmasProfessor, setTurmasProfessor] = useState<Array<{ id: number; modalidade: string; horario: string; sala?: string }>>([]);
   const [financeiroPorInstituicao, setFinanceiroPorInstituicao] = useState<Record<number, FinanceiroInstituicao>>({});
   const [alunoCarregado, setAlunoCarregado] = useState(false);
+  const [carregandoDetalhe, setCarregandoDetalhe] = useState(false);
   const [modal, setModal] = useState({ open: false, success: false, message: '' });
 
   const onlyNumbers = (v: string) => v.replace(/\D/g, '');
@@ -123,17 +127,17 @@ const GerenciarAlunos: React.FC = () => {
     }
     setCpfBusca(maskCPF(cpf));
     try {
-      if (modoProfessor) {
+      if (consultaSomenteLeitura) {
         const r = await HttpService.consultarAlunoProfessor(cpf);
         const d = r.data;
-        setNome(d.nome);
-        setRg(d.rgMascarado);
-        setDataDeNascimento(d.dataDeNascimento);
+        setNome(str(d.nome));
+        setRg(str(d.rgMascarado));
+        setDataDeNascimento(str(d.dataDeNascimento));
         setEndereco(parseEndereco(d.enderecoResumido || ''));
-        setTelefone(d.telefoneMascarado);
-        setEmail(d.emailMascarado ?? '');
-        setNomeResponsavel(d.nomeResponsavel ?? '');
-        setTelefoneResponsavel(d.telefoneResponsavelMascarado ?? '');
+        setTelefone(str(d.telefoneMascarado));
+        setEmail(str(d.emailMascarado));
+        setNomeResponsavel(str(d.nomeResponsavel));
+        setTelefoneResponsavel(str(d.telefoneResponsavelMascarado));
         setMatriculas([]);
         setTurmasProfessor(d.turmasInstituicao || []);
         setFinanceiroPorInstituicao({});
@@ -143,14 +147,14 @@ const GerenciarAlunos: React.FC = () => {
 
       const r = await HttpService.consultarAlunoPorCpf(cpf);
       const d = r.data;
-      setNome(d.nome);
-      setRg(d.rg);
-      setDataDeNascimento(d.dataDeNascimento);
+      setNome(str(d.nome));
+      setRg(str(d.rg));
+      setDataDeNascimento(str(d.dataDeNascimento));
       setEndereco(parseEndereco(d.endereco));
-      setTelefone(formatarTelefoneExibicao(d.telefone));
-      setEmail(d.email ?? '');
-      setNomeResponsavel(d.nomeResponsavel ?? '');
-      setTelefoneResponsavel(formatarTelefoneExibicao(d.telefoneResponsavel ?? ''));
+      setTelefone(formatarTelefoneExibicao(str(d.telefone)));
+      setEmail(str(d.email));
+      setNomeResponsavel(str(d.nomeResponsavel));
+      setTelefoneResponsavel(formatarTelefoneExibicao(str(d.telefoneResponsavel)));
       const mats = d.matriculas || [];
       setMatriculas(mats);
       aplicarFinanceiroDasMatriculas(mats);
@@ -167,34 +171,37 @@ const GerenciarAlunos: React.FC = () => {
   const abrirDetalhe = async (item: PessoaListagemItem) => {
     limparForm();
     setTela('detalhe');
-    if (modoProfessor) {
-      try {
+    setCarregandoDetalhe(true);
+    try {
+      if (consultaSomenteLeitura) {
         const r = await HttpService.consultarAlunoProfessorPorId(item.id);
         const d = r.data;
-        setNome(d.nome);
-        setRg(d.rgMascarado);
-        setDataDeNascimento(d.dataDeNascimento);
+        setNome(str(d.nome));
+        setRg(str(d.rgMascarado));
+        setDataDeNascimento(str(d.dataDeNascimento));
         setEndereco(parseEndereco(d.enderecoResumido || ''));
-        setTelefone(d.telefoneMascarado);
-        setEmail(d.emailMascarado ?? '');
-        setNomeResponsavel(d.nomeResponsavel ?? '');
-        setTelefoneResponsavel(d.telefoneResponsavelMascarado ?? '');
+        setTelefone(str(d.telefoneMascarado));
+        setEmail(str(d.emailMascarado));
+        setNomeResponsavel(str(d.nomeResponsavel));
+        setTelefoneResponsavel(str(d.telefoneResponsavelMascarado));
         setTurmasProfessor(d.turmasInstituicao || []);
         setCpfBusca(d.cpfMascarado || item.cpfExibicao || '');
         setAlunoCarregado(true);
-      } catch (e) {
-        setModal({ open: true, success: false, message: extractApiMessage(e, 'Aluno não encontrado.') });
-        setTela('lista');
+        return;
       }
-      return;
-    }
-    const cpf = item.cpf || onlyNumbers(item.cpfExibicao || '');
-    if (cpf.length < 11) {
-      setModal({ open: true, success: false, message: 'Não foi possível identificar o CPF do aluno.' });
+      const cpf = item.cpf || onlyNumbers(item.cpfExibicao || '');
+      if (cpf.length < 11) {
+        setModal({ open: true, success: false, message: 'Não foi possível identificar o CPF do aluno.' });
+        setTela('lista');
+        return;
+      }
+      await consultar(cpf);
+    } catch (e) {
+      setModal({ open: true, success: false, message: extractApiMessage(e, 'Aluno não encontrado.') });
       setTela('lista');
-      return;
+    } finally {
+      setCarregandoDetalhe(false);
     }
-    await consultar(cpf);
   };
 
   const atualizarFinanceiroInstituicao = (instituicaoId: number, campo: 'valor' | 'dia', valor: string) => {
@@ -212,20 +219,29 @@ const GerenciarAlunos: React.FC = () => {
       setModal({ open: true, success: false, message: 'Nenhum aluno selecionado.' });
       return;
     }
+    const cpf = onlyNumbers(cpfBusca);
+    if (cpf.length < 11) {
+      setModal({ open: true, success: false, message: 'CPF inválido. Reabra o aluno pela lista.' });
+      return;
+    }
     try {
-      await HttpService.alterarAluno(payloadPessoal());
-      for (const m of matriculas) {
-        const fin = financeiroPorInstituicao[m.instituicaoId];
-        if (!fin) continue;
-        await HttpService.alterarAluno({
-          cpf: onlyNumbers(cpfBusca),
-          instituicaoId: m.instituicaoId,
-          valorMensalidade: parseMoeda(fin.valor),
-          diaVencimentoMensalidade: parseInt(fin.dia, 10),
-        });
+      const base = payloadPessoal();
+      if (matriculas.length === 0) {
+        await HttpService.alterarAluno(base);
+      } else {
+        for (const m of matriculas) {
+          const fin = financeiroPorInstituicao[m.instituicaoId];
+          await HttpService.alterarAluno({
+            ...base,
+            cpf,
+            instituicaoId: m.instituicaoId,
+            valorMensalidade: fin ? parseMoeda(fin.valor) : m.valorMensalidade,
+            diaVencimentoMensalidade: fin ? parseInt(fin.dia, 10) : m.diaVencimentoMensalidade,
+          });
+        }
       }
       setModal({ open: true, success: true, message: 'Dados do aluno atualizados com sucesso.' });
-      await consultar(cpfBusca);
+      await consultar(cpf);
       carregarLista();
     } catch (e) {
       setModal({ open: true, success: false, message: extractApiMessage(e) });
@@ -247,7 +263,7 @@ const GerenciarAlunos: React.FC = () => {
   return (
     <PageShell
       title="Consultar alunos"
-      subtitle={modoProfessor
+      subtitle={consultaSomenteLeitura
         ? 'Consulta somente leitura de alunos matriculados na instituição'
         : master
           ? 'Listagem de todos os alunos da base — busca e paginação na tabela'
@@ -263,6 +279,10 @@ const GerenciarAlunos: React.FC = () => {
         </div>
       )}
 
+      {tela === 'detalhe' && carregandoDetalhe && (
+        <p className="field-hint">Carregando dados do aluno...</p>
+      )}
+
       {tela === 'detalhe' && alunoCarregado && (
         <>
           <div className="form-actions" style={{ marginBottom: '1rem' }}>
@@ -271,7 +291,7 @@ const GerenciarAlunos: React.FC = () => {
             </button>
           </div>
 
-          {modoProfessor && turmasProfessor.length > 0 && (
+          {consultaSomenteLeitura && turmasProfessor.length > 0 && (
             <div className="card" style={{ marginBottom: '1rem' }}>
               <h3 style={{ marginTop: 0 }}>Turmas na instituição</h3>
               <ul style={{ margin: 0, paddingLeft: '1.2rem' }}>
@@ -284,7 +304,7 @@ const GerenciarAlunos: React.FC = () => {
             </div>
           )}
 
-          {!modoProfessor && (
+          {!consultaSomenteLeitura && (
             <div className="card" style={{ marginBottom: '1rem' }}>
               <h3 style={{ marginTop: 0 }}>Matrículas e mensalidade por instituição</h3>
               {matriculas.length === 0 ? (
@@ -336,20 +356,20 @@ const GerenciarAlunos: React.FC = () => {
           <div className="card" style={{ marginBottom: '1rem' }}>
             <h3 style={{ marginTop: 0 }}>Dados do aluno</h3>
             <div className="form-grid">
-              <div><label>Nome</label><input value={nome} readOnly={modoProfessor} onChange={(e) => setNome(e.target.value)} /></div>
+              <div><label>Nome</label><input value={nome} readOnly={consultaSomenteLeitura} onChange={(e) => setNome(e.target.value)} /></div>
               <div><label>CPF</label><input value={cpfBusca} readOnly /></div>
-              <div><label>RG</label><input value={rg} readOnly={modoProfessor} onChange={(e) => setRg(e.target.value)} /></div>
-              <div><label>Nascimento</label><input type="date" value={dataDeNascimento} readOnly={modoProfessor} onChange={(e) => setDataDeNascimento(e.target.value)} /></div>
-              <PhoneInput label="Telefone" value={telefone} onChange={setTelefone} readOnly={modoProfessor} />
+              <div><label>RG</label><input value={rg} readOnly={consultaSomenteLeitura} onChange={(e) => setRg(e.target.value)} /></div>
+              <div><label>Nascimento</label><input type="date" value={dataDeNascimento} readOnly={consultaSomenteLeitura} onChange={(e) => setDataDeNascimento(e.target.value)} /></div>
+              <PhoneInput label="Telefone" value={telefone} onChange={setTelefone} readOnly={consultaSomenteLeitura} />
               <div>
                 <label>E-mail</label>
-                <input type="email" value={email} readOnly={modoProfessor} onChange={(e) => setEmail(e.target.value)} placeholder="nome@email.com" />
+                <input type="email" value={email} readOnly={consultaSomenteLeitura} onChange={(e) => setEmail(e.target.value)} placeholder="seuemail@exemplo.com" />
               </div>
-              <div><label>Responsável</label><input value={nomeResponsavel} readOnly={modoProfessor} onChange={(e) => setNomeResponsavel(e.target.value)} /></div>
-              <PhoneInput label="Tel. responsável" value={telefoneResponsavel} onChange={setTelefoneResponsavel} readOnly={modoProfessor} />
+              <div><label>Responsável</label><input value={nomeResponsavel} readOnly={consultaSomenteLeitura} onChange={(e) => setNomeResponsavel(e.target.value)} /></div>
+              <PhoneInput label="Tel. responsável" value={telefoneResponsavel} onChange={setTelefoneResponsavel} readOnly={consultaSomenteLeitura} />
             </div>
-            <EnderecoFields value={endereco} onChange={setEndereco} disabled={modoProfessor} />
-            {!modoProfessor && (
+            <EnderecoFields value={endereco} onChange={setEndereco} disabled={consultaSomenteLeitura} />
+            {!consultaSomenteLeitura && (
               <div className="form-actions">
                 <button type="button" className="btn-primary" onClick={salvarAlteracoes}>Salvar alterações</button>
                 <button type="button" className="btn-danger" onClick={desmatricular}>Desmatricular</button>
